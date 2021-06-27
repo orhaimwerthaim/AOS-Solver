@@ -22,6 +22,9 @@ set(CMAKE_MODULE_PATH ${CMAKE_PREFIX_PATH} "${PROJECT_SOURCE_DIR}/cmake")
 
 include_directories(include)
 
+
+
+
 add_library("${PROJECT_NAME}" SHARED
   src/core/belief.cpp
   src/core/globals.cpp
@@ -43,6 +46,7 @@ add_library("${PROJECT_NAME}" SHARED
   src/solver/despot.cpp
   src/solver/pomcp.cpp
   src/util/coord.cpp
+  src/util/mongoDB_Bridge.cpp
   src/util/dirichlet.cpp
   src/util/exec_tracker.cpp
   src/util/floor.cpp
@@ -59,6 +63,24 @@ add_library("${PROJECT_NAME}" SHARED
 target_link_libraries("${PROJECT_NAME}"
   ${TinyXML_LIBRARIES}
 )
+
+
+##############
+#added for mongo DB client
+find_package(libmongocxx REQUIRED)
+find_package(libbsoncxx REQUIRED)
+include_directories(${LIBMONGOCXX_INCLUDE_DIR})
+include_directories(${LIBBSONCXX_INCLUDE_DIR})
+include_directories("/usr/local/include/mongocxx/v_noabi")
+include_directories("/usr/local/include/bsoncxx/v_noabi")
+include_directories("/usr/local/include/libmongoc-1.0")
+include_directories("/usr/local/include/libbson-1.0")
+include_directories("/usr/local/lib")
+ 
+
+target_link_libraries("${PROJECT_NAME}" ${LIBMONGOCXX_LIBRARIES})
+target_link_libraries("${PROJECT_NAME}" ${LIBBSONCXX_LIBRARIES})
+##############
 
 # Build example files
 if(DESPOT_BUILD_EXAMPLES)

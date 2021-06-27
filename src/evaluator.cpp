@@ -1,5 +1,5 @@
 #include <despot/evaluator.h>
-
+#include <despot/util/mongoDB_Bridge.h>
 using namespace std;
 
 namespace despot {
@@ -346,6 +346,18 @@ double POMDPEvaluator::EndRound() {
 }
 
 bool POMDPEvaluator::ExecuteAction(int action, double& reward, OBS_TYPE& obs) {
+	bool usingRos = true;
+	if(usingRos)
+	{
+		bsoncxx::document::view res = MongoDB_Bridge::WaitForModuleResponse("");
+		bsoncxx::document::element element = res["wasRead"];
+		bool val = element.get_bool().value;
+		bsoncxx::document::element element2 = res["responseText"];
+	 //s = element2.get_utf8().value;
+		int i = 2;
+	}
+	else
+	{
 	double random_num = random_.NextDouble();
 	bool terminal = model_->Step(*state_, random_num, action, reward, obs);
 
@@ -354,6 +366,7 @@ bool POMDPEvaluator::ExecuteAction(int action, double& reward, OBS_TYPE& obs) {
 	total_undiscounted_reward_ += reward;
 
 	return terminal;
+	}
 }
 
 double POMDPEvaluator::End() {
