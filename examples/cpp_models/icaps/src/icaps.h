@@ -37,24 +37,7 @@ class Prints
 	static std::string PrintObs(int action, int obs);
 };
 
-class IcapsState : public State
-{
-public:
-	std::vector<tDiscreteLocation> tDiscreteLocationObjects;
-	std::vector<tLocation> tLocationObjects;
 
-	tDiscreteLocation cupDiscreteGeneralLocation;
-	tDiscreteLocation robotGenerallocation;
-
-	tLocation locationOutside_lab211;
-	tLocation locationAuditorium;
-	tLocation locationNear_elevator1;
-	tLocation locationCorridor;
-
-	anyValue cupAccurateLocation;
-
-	bool handEmpty;
-};
 
 /* ==============================================================================
  * Icaps and PocmanBelief class
