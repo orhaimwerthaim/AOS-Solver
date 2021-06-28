@@ -5,7 +5,8 @@
 
 namespace despot {
 
-struct Config { 
+struct Config {
+	bool internalSimulation; 
 	int search_depth;
 	double discount;
 	unsigned int root_seed;
@@ -20,7 +21,7 @@ struct Config {
 	bool silence;
 
 	Config() :
-		search_depth(50),
+		search_depth(42),
 		discount(0.9999),
 		root_seed(42),
 		time_per_move(2),
@@ -31,7 +32,9 @@ struct Config {
 		default_action(""),
 		max_policy_sim_len(10),
 		noise(0.1),
-		silence(false){
+		silence(false),
+		internalSimulation(false)
+		{
 		
 	}
 };

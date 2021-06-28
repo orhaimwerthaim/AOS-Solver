@@ -54,6 +54,8 @@
         "core": "cpp",
         "geometry": "cpp",
         "*.txx": "cpp",
-        "string": "cpp"
+        "string": "cpp",
+        "optional": "cpp",
+        "string_view": "cpp"
     }
 }

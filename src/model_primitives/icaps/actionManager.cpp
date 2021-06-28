@@ -1,5 +1,6 @@
 
-#include "actionManager.h"
+#include <despot/model_primitives/icaps/actionManager.h>
+//#include "actionManager.h"
 #include <vector>
 #include <utility>
 #include <string>

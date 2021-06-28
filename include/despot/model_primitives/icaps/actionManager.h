@@ -1,4 +1,8 @@
-#include "icaps.h"
+#ifndef ACTION_MANAGER_H
+#define ACTION_MANAGER_H
+
+#include "state.h"
+#include <despot/model_primitives/icaps/enum_map_icaps.h> 
 #include <vector>
 #include <utility>
 #include <string>
@@ -31,4 +35,4 @@ public:
 
 
 }
-
+#endif //ACTION_MANAGER_H

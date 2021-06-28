@@ -1,10 +1,12 @@
+#ifndef VAR_TYPES_H
+#define VAR_TYPES_H
+
 #include <string>
 #include <iostream> 
 
 namespace despot
 {
-	typedef bool anyValue;
-	struct tLocation;
+	typedef bool anyValue; 
 	enum tDiscreteLocation
 	{
 		eCorridor,
@@ -24,3 +26,4 @@ namespace despot
 
  
 } // namespace despot
+#endif //VAR_TYPES_H

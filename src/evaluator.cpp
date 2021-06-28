@@ -1,5 +1,7 @@
 #include <despot/evaluator.h>
 #include <despot/util/mongoDB_Bridge.h>
+#include <despot/model_primitives/icaps/enum_map_icaps.h>
+#include <despot/model_primitives/icaps/actionManager.h>
 using namespace std;
 
 namespace despot {
@@ -346,17 +348,8 @@ double POMDPEvaluator::EndRound() {
 }
 
 bool POMDPEvaluator::ExecuteAction(int action, double& reward, OBS_TYPE& obs) {
-	bool usingRos = true;
-	if(usingRos)
-	{
-		bsoncxx::document::view res = MongoDB_Bridge::WaitForModuleResponse("");
-		bsoncxx::document::element element = res["wasRead"];
-		bool val = element.get_bool().value;
-		bsoncxx::document::element element2 = res["responseText"];
-	 //s = element2.get_utf8().value;
-		int i = 2;
-	}
-	else
+	
+	if(Globals::IsInternalSimulation())
 	{
 	double random_num = random_.NextDouble();
 	bool terminal = model_->Step(*state_, random_num, action, reward, obs);
@@ -366,6 +359,28 @@ bool POMDPEvaluator::ExecuteAction(int action, double& reward, OBS_TYPE& obs) {
 	total_undiscounted_reward_ += reward;
 
 	return terminal;
+	}
+	else
+	{
+		//auto pos = enum_map_icaps::vecActionTypeEnumToString.find(ActionManager::actions[action]);
+		ActionType acType = ActionManager::actions[action].actionType;
+		std::string actionName = enum_map_icaps::vecActionTypeEnumToString[acType];
+		std::vector<std::string> parameterValues;
+		parameterValues.push_back("valueTest1");
+		std::vector<std::string> parameterNames;
+		parameterNames.push_back("valueName1");
+
+		MongoDB_Bridge::SendActionToExecution(actionName, parameterValues, parameterNames);
+
+		bsoncxx::document::view res = MongoDB_Bridge::WaitForModuleResponse(actionName);
+		bsoncxx::document::element element = res["wasRead"];
+		bool val = element.get_bool().value;
+		bsoncxx::document::element element2 = res["responseText"];
+	    auto s = element2.get_utf8().value;
+		std::string str = s.to_string();
+		obs = enum_map_icaps::vecStringToResponseEnum[str];
+		int i = 2;
+		return 0;
 	}
 }
 

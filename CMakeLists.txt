@@ -26,6 +26,10 @@ include_directories(include)
 
 
 add_library("${PROJECT_NAME}" SHARED
+  src/model_primitives/icaps/state.cpp
+  src/model_primitives/icaps/enum_map_icaps.cpp #added
+  src/model_primitives/icaps/actionManager.cpp #added
+
   src/core/belief.cpp
   src/core/globals.cpp
   src/core/lower_bound.cpp
@@ -35,6 +39,7 @@ add_library("${PROJECT_NAME}" SHARED
   src/core/pomdp.cpp
   src/core/solver.cpp
   src/core/upper_bound.cpp
+  
   src/evaluator.cpp
   src/pomdpx/parser/function.cpp
   src/pomdpx/parser/parser.cpp
@@ -91,13 +96,16 @@ if(DESPOT_BUILD_EXAMPLES)
   add_subdirectory(examples/cpp_models/pocman)
   add_subdirectory(examples/cpp_models/robocup_cleanroom)
   add_subdirectory(examples/cpp_models/robocup_findmates)
-  add_subdirectory(examples/cpp_models/icaps)
   add_subdirectory(examples/cpp_models/temp)
   add_subdirectory(examples/cpp_models/reg_demo)
   add_subdirectory(examples/cpp_models/rock_sample)
   add_subdirectory(examples/cpp_models/simple_rock_sample)
   add_subdirectory(examples/cpp_models/tag)
   add_subdirectory(examples/cpp_models/tiger)
+
+
+  add_subdirectory(examples/cpp_models/icaps)
+  add_subdirectory(examples/cpp_models/icaps_working_toy)
 endif()
 
 if(DESPOT_BUILD_POMDPX)

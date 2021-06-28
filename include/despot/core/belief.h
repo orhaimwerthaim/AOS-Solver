@@ -67,7 +67,8 @@ public:
 	virtual std::vector<State*> Sample(int num) const;
 
 	virtual void Update(int action, OBS_TYPE obs);
-
+	virtual void UpdateStateByRealModuleObservation(State &s_state, int actionId, OBS_TYPE &observation) const {};
+	
 	virtual Belief* MakeCopy() const;
 
 	virtual std::string text() const;

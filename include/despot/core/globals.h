@@ -45,6 +45,10 @@ inline double Discount() {
 	return config.discount;
 } 
 
+inline double IsInternalSimulation() {
+	return config.internalSimulation;
+} 
+
 inline double Discount(int d) {
 	return std::pow(config.discount, d);
 }

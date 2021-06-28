@@ -3,66 +3,12 @@
 #include <stdlib.h>
 #include <despot/solver/pomcp.h>
 #include <sstream>
-
+#include <despot/model_primitives/icaps/enum_map_icaps.h> 
 using namespace std;
 
 namespace despot {
 
-enum pick_enumRealCase
-	{
-		actual_pick_action_success,
-		actual_not_holding,
-		actual_broke_the_object
-	};
 
-enum enumIllegalActionObs
-{
-	illegalActionObs = 100
-};
-enum pick_enumResponse
-{
-	res_pick_action_success,
-	res_not_holding,
-	res_broke_the_object
-};
-
-enum place_enumRealCase
-{
-	success,
-	droppedObject,
-	unknownFailure
-};
-
-enum place_enumResponse
-{
-	ePlaceActionSuccess,
-	eDroppedObject,
-	eFailedUnknown
-};
-
-enum navigate_enumResponse
-{
-	eSuccess,
-	eFailed,
-};
-
-enum navigate_enumRealCase
-{
-	action_success,
-	failed
-};
-
-enum observe_enumResponse
-{
-	eObserved,
-	eNotObserved,
-};
-
-enum observe_enumRealCase
-{
-	observed,
-	notObserved
-};
 
 /* ==============================================================================
  *IcapsBelief class
@@ -107,64 +53,37 @@ std::string Prints::PrintLocation(tDiscreteLocation loc)
 	}
 std::string Prints::PrintObs(int action, int obs)
 {
-	switch (ActionManager::actions[action]->actionType)
-	{
-	case pickAction:
-		switch ((pick_enumResponse)obs)
-		{
-		case res_pick_action_success:
-			return "res_pick_action_success";
-		case res_not_holding:
-			return "res_not_holding";
-		case res_broke_the_object:
-			return "res_broke_the_object"; 
-		case illegalActionObs:
-			return "illegalActionObs";
-		default:
-			return "Error obs!!!";
-		}
-	case placeAction:
-		switch ((place_enumResponse)obs)
-		{
-		case ePlaceActionSuccess:
+	IcapsResponseModuleAndTempEnums eObs = (IcapsResponseModuleAndTempEnums)obs;
+	switch (eObs)
+	{ 
+		case pick_res_pick_action_success:
+			return "pick_res_pick_action_success";
+		case pick_res_not_holding:
+			return "pick_res_not_holding";
+		case pick_res_broke_the_object:
+			return "pick_res_broke_the_object";  
+	 
+		case place_ePlaceActionSuccess:
 			return "ePlaceActionSuccess";
-		case eDroppedObject:
-			return "eDroppedObject";
-		case eFailedUnknown:
-			return "eFailedUnknown"; 
-		case illegalActionObs:
-			return "illegalActionObs";
-		default:
-			return "Error obs!!!";
-		} 
-	case navigateAction:
-		switch((navigate_enumResponse)obs)
-		{
-		case eSuccess:
-			return "eSuccess";
-		case eFailed:
-			return "eFailed";
-		case eFailedUnknown:
-			return "eFailedUnknown"; 
-		case illegalActionObs:
-			return "illegalActionObs";
-		default:
-			return "Error obs!!!";
-		} 
-	case observeAction:
-		switch((observe_enumResponse)obs)
-		{
-		case eObserved:
-			return "eObserved";
-		case eFailed:
-			return "eNotObserved";  
+		case place_eDroppedObject:
+			return "place_eDroppedObject";
+		case place_eFailedUnknown:
+			return "place_eFailedUnknown";  
+		  
+		case navigate_eSuccess:
+			return "navigate_eSuccess";
+		case navigate_eFailed:
+			return "navigate_eFailed";  
+		  
+		case observe_eObserved:
+			return "observe_eObserved";
+		case observe_eNotObserved:
+			return "observe_eNotObserved";  
 		case illegalActionObs:
 			return "illegalActionObs";
 		default:
 			return "Error obs(unknown action observation)!!!";
-		} 
-	default:
-		return "Error obs(unknown action)!!!";
+		
 	}
      
 }
@@ -196,6 +115,12 @@ std::string Prints::PrintActionType(ActionType actType)
 			return "navigateAction"; 
 		}
 }
+
+void IcapsBelief::UpdateStateByRealModuleObservation(State &s_state, int actionId, OBS_TYPE &observation) const
+{
+	IcapsState &state__ = static_cast<IcapsState &>(s_state);
+}
+
 void IcapsBelief::Update(int actionId, OBS_TYPE obs) {
 	history_.Add(actionId, obs);
 
@@ -207,11 +132,13 @@ void IcapsBelief::Update(int actionId, OBS_TYPE obs) {
 		State* particle = icaps_->Copy(particles_[cur]);
 		bool terminal = icaps_->Step(*particle, Random::RANDOM.NextDouble(),
 			actionId, reward, o);
-
+ 
 		if (!terminal && o == obs)
 			//|| icaps_->LocalMove(*particle, history_, obs)) 
 			{
-			updated.push_back(particle);
+				if(!Globals::IsInternalSimulation())
+					IcapsBelief::UpdateStateByRealModuleObservation(*particle, actionId, obs);
+				updated.push_back(particle);
 		} else {
 			icaps_->Free(particle);
 		}
@@ -476,56 +403,56 @@ void Icaps::ExtrinsicChangesDynamicModel(const IcapsState& state, IcapsState& st
 		if (ActionManager::actions[actionId]->actionType == pickAction)
 		{
 			//layer name: 'realCase'
-			pick_enumRealCase realCase = (pick_enumRealCase)Icaps::pick_discrete_dist1(Icaps::generator);
+			IcapsResponseModuleAndTempEnums realCase = (IcapsResponseModuleAndTempEnums)(pick_enumRealCase + 1 + Icaps::pick_discrete_dist1(Icaps::generator));
 			
 			//layer name: 'handEmpty'
 			//TODO: uncomment and delete the next line
-			state__.handEmpty = (realCase == actual_pick_action_success) ? false: true;
+			state__.handEmpty = (realCase == pick_actual_pick_action_success) ? false: true;
 			
 			//layer name: 'cupDiscreteGeneralLocation'
-			if(realCase == actual_pick_action_success || realCase == actual_broke_the_object)
+			if(realCase == pick_actual_pick_action_success || realCase == pick_actual_broke_the_object)
 			{
 				state__.cupDiscreteGeneralLocation = eUnknown; state__.cupAccurateLocation = false;
 			}
 			
 			//layer name: '__moduleResponse'
-			if (realCase == actual_not_holding) 
+			if (realCase == pick_actual_not_holding) 
 			{
 				if (AOSUtils::Bernoulli(0.9))
-					__moduleResponse= res_not_holding; 
-				else __moduleResponse = res_pick_action_success;
+					__moduleResponse= pick_res_not_holding; 
+				else __moduleResponse = pick_res_pick_action_success;
 			}
-			if (realCase == actual_pick_action_success) 
+			if (realCase == pick_actual_pick_action_success) 
 			{
 				if (AOSUtils::Bernoulli(0.9)) 
-					__moduleResponse = res_pick_action_success; 
-				else __moduleResponse = res_not_holding;
+					__moduleResponse = pick_res_pick_action_success; 
+				else __moduleResponse = pick_res_not_holding;
 			} 
-			if(realCase == actual_broke_the_object)
-			 __moduleResponse = res_broke_the_object;
+			if(realCase == pick_actual_broke_the_object)
+			 __moduleResponse = pick_res_broke_the_object;
 
 			//layer name: '__reward'
 			__reward = -100;
-			//if (realCase == actual_not_holding) __reward = -10; if(realCase ==  actual_broke_the_object) __reward = -80; if(realCase == actual_pick_action_success) __reward = 100;
+			//if (realCase == pick_actual_not_holding) __reward = -10; if(realCase ==  pick_actual_broke_the_object) __reward = -80; if(realCase == pick_actual_pick_action_success) __reward = 100;
 		}
 
 		if (ActionManager::actions[actionId]->actionType == placeAction)
 		{
 			//layer name: 'realCase'
-			place_enumRealCase realCase = (place_enumRealCase)Icaps::place_discrete_dist1(Icaps::generator);
+			IcapsResponseModuleAndTempEnums realCase = (IcapsResponseModuleAndTempEnums)(place_enumRealCase + 1 + Icaps::place_discrete_dist1(Icaps::generator));
 			
 			//layer name: 'hand_empty'
-			state__.handEmpty = (realCase == success || realCase == droppedObject) ? true : false;
+			state__.handEmpty = (realCase == place_success || realCase == place_droppedObject) ? true : false;
 
 			//layer name: 'cupDiscreteGeneralLocation'
-			if(realCase == success) state__.cupDiscreteGeneralLocation = state.robotGenerallocation; if(realCase == droppedObject) state__.cupDiscreteGeneralLocation = eUnknown;
+			if(realCase == place_success) state__.cupDiscreteGeneralLocation = state.robotGenerallocation; if(realCase == place_droppedObject) state__.cupDiscreteGeneralLocation = eUnknown;
 
 			//layer name: '__moduleResponse'
-			if (realCase == success) {if (AOSUtils::Bernoulli(0.9)) __moduleResponse = ePlaceActionSuccess; else __moduleResponse = eFailedUnknown;} if (realCase == droppedObject) __moduleResponse = (AOSUtils::Bernoulli(0.9)) ? eDroppedObject : eFailedUnknown; if (realCase == unknownFailure) __moduleResponse = eFailedUnknown;
+			if (realCase == place_success) {if (AOSUtils::Bernoulli(0.9)) __moduleResponse = place_ePlaceActionSuccess; else __moduleResponse = place_eFailedUnknown;} if (realCase == place_droppedObject) __moduleResponse = (AOSUtils::Bernoulli(0.9)) ? place_eDroppedObject : place_eFailedUnknown; if (realCase == place_unknownFailure) __moduleResponse = place_eFailedUnknown;
 		
 			//layer name: '__reward'
 			__reward = -100;
-			//__reward = (realCase == success) ? -10 : (realCase == droppedObject) ? -80: -10;
+			//__reward = (realCase == place_success) ? -10 : (realCase == place_droppedObject) ? -80: -10;
 		}
 
 		if (ActionManager::actions[actionId]->actionType == navigateAction)
@@ -536,15 +463,15 @@ void Icaps::ExtrinsicChangesDynamicModel(const IcapsState& state, IcapsState& st
 			tLocation &oDesiredLocation = act.oDesiredLocation;
 
 			//layer name: 'realCase'
-			navigate_enumRealCase realCase;
+			IcapsResponseModuleAndTempEnums realCase;
 			
-			realCase = (navigate_enumRealCase)Icaps::navigate_discrete_dist1(Icaps::generator);
+			realCase = (IcapsResponseModuleAndTempEnums)(navigate_enumRealCase + 1 + Icaps::navigate_discrete_dist1(Icaps::generator));
 
 			//layer name: 'state.robotGenerallocation'
-			if (realCase == action_success) state__.robotGenerallocation = oDesiredLocation.discrete_location;
+			if (realCase == navigate_action_success) state__.robotGenerallocation = oDesiredLocation.discrete_location;
 
 			//layer name: '__moduleResponse'
-			if (realCase == action_success && AOSUtils::Bernoulli(0.9)) __moduleResponse = eSuccess; else __moduleResponse = eFailed;
+			if (realCase == navigate_action_success && AOSUtils::Bernoulli(0.9)) __moduleResponse = navigate_eSuccess; else __moduleResponse = navigate_eFailed;
 
 			//layer name: '__reward'
 			__reward = -100;
@@ -553,15 +480,15 @@ void Icaps::ExtrinsicChangesDynamicModel(const IcapsState& state, IcapsState& st
 	
 		if (ActionManager::actions[actionId]->actionType == observeAction)
 		{
-			observe_enumRealCase realCase;
+			IcapsResponseModuleAndTempEnums realCase;
 			//layer name: 'realCase'
-			if (state.robotGenerallocation == state.cupDiscreteGeneralLocation){ if(AOSUtils::Bernoulli(0.8)) realCase = observed; else realCase = notObserved;} else realCase = notObserved;
+			if (state.robotGenerallocation == state.cupDiscreteGeneralLocation){ if(AOSUtils::Bernoulli(0.8)) realCase = observe_observed; else realCase = observe_notObserved;} else realCase = observe_notObserved;
 			
 			//layer name: 'state.cupAccurateLocation'
-			if (realCase == observed) 
-			{ if(AOSUtils::Bernoulli(0.7)) {state__.cupAccurateLocation = true;__moduleResponse = eSuccess;} else{ state__.cupAccurateLocation = false; __moduleResponse = eFailed;}}
+			if (realCase == observe_observed) 
+			{ if(AOSUtils::Bernoulli(0.7)) {state__.cupAccurateLocation = true;__moduleResponse = observe_eObserved;} else{ state__.cupAccurateLocation = false; __moduleResponse = observe_eNotObserved;}}
 			else
-			{ if(AOSUtils::Bernoulli(0.3)) {state__.cupAccurateLocation = true;__moduleResponse = eSuccess;} else{ state__.cupAccurateLocation = false; __moduleResponse = eFailed;}}
+			{ if(AOSUtils::Bernoulli(0.3)) {state__.cupAccurateLocation = true;__moduleResponse = observe_eObserved;} else{ state__.cupAccurateLocation = false; __moduleResponse = observe_eNotObserved;}}
 			//layer name: '__reward'
 			__reward = -100;
 			//__reward = -10;

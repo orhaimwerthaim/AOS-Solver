@@ -2,7 +2,8 @@
 #include <cstdlib>
 #include <cmath>
 #include <cassert>
-#include "state_var_types.h"
+#include <despot/model_primitives/icaps/state_var_types.h> 
+
 
 using namespace std;
 

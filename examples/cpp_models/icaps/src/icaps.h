@@ -1,31 +1,25 @@
 
 #include "globals.h"
-#include "state_var_types.h"
 #include <despot/core/pomdp.h>
 #include <despot/solver/pomcp.h> 
 #include <random>
 #include <string>
-
+#include <despot/model_primitives/icaps/enum_map_icaps.h> 
+#include <despot/model_primitives/icaps/state.h> 
 namespace despot {
-     enum ActionType
-{
-    pickAction,
-    placeAction,
-	observeAction,
-	navigateAction
-	
-};
+
 /* ==============================================================================
  * IcapsState class
  * ==============================================================================*/
+
+class IcapsState;
 class AOSUtils
 {
 	public:
 	static bool Bernoulli(double);
 };
 
-class ActionDescription;
-class IcapsState;
+class ActionDescription; 
 
 class Prints
 {
@@ -48,7 +42,7 @@ protected:
 	const Icaps* icaps_;
 public:
 	static int num_particles;
-
+    virtual void UpdateStateByRealModuleObservation(State &s_state, int actionId, OBS_TYPE &observation) const;
 	IcapsBelief(std::vector<State*> particles, const DSPOMDP* model, Belief* prior =
 		NULL);
 	void Update(int actionId, OBS_TYPE obs);
@@ -66,8 +60,9 @@ public:
 	virtual std::string PrintObs(int action, OBS_TYPE obs) const;
 	virtual std::string PrintStateStr(const State &state) const;
 	virtual std::string GetActionDescription(int) const;
-	virtual bool Step(State& state, double rand_num, int actionId, double& reward,
-		OBS_TYPE& observation) const;
+	void UpdateStateByRealModuleObservation(State &state, int actionId, OBS_TYPE &observation) const;
+	virtual bool Step(State &state, double rand_num, int actionId, double &reward,
+					  OBS_TYPE &observation) const;
 	int NumActions() const;
 	virtual double ObsProb(OBS_TYPE obs, const State& state, int actionId) const;
 
