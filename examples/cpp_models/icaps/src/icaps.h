@@ -118,7 +118,7 @@ private:
 	static std::discrete_distribution<> navigate_discrete_dist1;
 };
  
-	class ActionDescription
+/*	class ActionDescription
     {
     public:
         int actionId;
@@ -141,7 +141,7 @@ class ActionManager {
 public:
 	static std::vector<ActionDescription*> actions;
     ActionManager(IcapsState* state);
-};
+};*/
 
 } // namespace despot
  

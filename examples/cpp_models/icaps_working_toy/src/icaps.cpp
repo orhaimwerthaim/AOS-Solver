@@ -592,7 +592,7 @@ bool AOSUtils::Bernoulli(double p)
 	return (p * 100) >= randInt;
 }
 void ActionDescription::SetActionParametersByState(const IcapsState *state){}
-    std::vector<ActionDescription*> ActionManager::actions;
+    //std::vector<ActionDescription*> ActionManager::actions;
 
     void NavigateActionDescription::Initialize(NavigateActionDescription* action, int _oDesiredLocation_Index)
     {

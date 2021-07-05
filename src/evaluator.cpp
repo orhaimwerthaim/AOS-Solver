@@ -2,7 +2,10 @@
 #include <despot/util/mongoDB_Bridge.h>
 #include <despot/model_primitives/icaps/enum_map_icaps.h>
 #include <despot/model_primitives/icaps/actionManager.h>
+#include <despot/model_primitives/icaps/state.h>
+#include <nlohmann/json.hpp>
 using namespace std;
+
 
 namespace despot {
 
@@ -348,42 +351,110 @@ double POMDPEvaluator::EndRound() {
 }
 
 bool POMDPEvaluator::ExecuteAction(int action, double& reward, OBS_TYPE& obs) {
-	
+	ActionDescription &actDesc = *ActionManager::actions[action];
+	double random_num = random_.NextDouble();
 	if(Globals::IsInternalSimulation())
 	{
-	double random_num = random_.NextDouble();
-	bool terminal = model_->Step(*state_, random_num, action, reward, obs);
+		
+		bool terminal = model_->Step(*state_, random_num, action, reward, obs);
 
-	reward_ = reward;
-	total_discounted_reward_ += Globals::Discount(step_) * reward;
-	total_undiscounted_reward_ += reward;
+		reward_ = reward;
+		total_discounted_reward_ += Globals::Discount(step_) * reward;
+		total_undiscounted_reward_ += reward;
 
-	return terminal;
+		return terminal;
 	}
 	else
 	{
 		//auto pos = enum_map_icaps::vecActionTypeEnumToString.find(ActionManager::actions[action]);
-		ActionType acType = ActionManager::actions[action].actionType;
+		ActionType acType(actDesc.actionType);
+		//ActionType acType2 = ActionManager::actions[action].actionType;
+		std::string actionParameters = actDesc.GetActionParametersJson_ForActionExecution();
+		
 		std::string actionName = enum_map_icaps::vecActionTypeEnumToString[acType];
 		std::vector<std::string> parameterValues;
 		parameterValues.push_back("valueTest1");
 		std::vector<std::string> parameterNames;
 		parameterNames.push_back("valueName1");
 
-		MongoDB_Bridge::SendActionToExecution(actionName, parameterValues, parameterNames);
+		MongoDB_Bridge::SendActionToExecution(actDesc.actionId, actionName, actionParameters);
 
-		bsoncxx::document::view res = MongoDB_Bridge::WaitForModuleResponse(actionName);
-		bsoncxx::document::element element = res["wasRead"];
-		bool val = element.get_bool().value;
-		bsoncxx::document::element element2 = res["responseText"];
-	    auto s = element2.get_utf8().value;
-		std::string str = s.to_string();
-		obs = enum_map_icaps::vecStringToResponseEnum[str];
-		int i = 2;
-		return 0;
+		
+
+		// bsoncxx::document::element element = res["wasRead"];
+		// bool val = element.get_bool().value;
+		// bsoncxx::document::element element2 = res["responseText"];
+	    // auto s = element2.get_utf8().value;
+		// std::string str = s.to_string();
+		 
+
+		// bool terminal = model_->Step(*state_, random_num, action, reward, obs);
+
+		// reward_ = reward;
+		// total_discounted_reward_ += Globals::Discount(step_) * reward;
+		// total_undiscounted_reward_ += reward;
+		// obs = enum_map_icaps::vecStringToResponseEnum[str];
+		obs = CalculateModuleResponse(actionName);
+		return false;
 	}
 }
+IcapsResponseModuleAndTempEnums Evaluator::CalculateModuleResponse(std::string moduleName)
+{
+	IcapsResponseModuleAndTempEnums response = illegalActionObs;
+	
+	std::vector<bsoncxx::document::view> moduleLocalVars = MongoDB_Bridge::WaitForActionResponse(moduleName);
+	if(moduleName == "pick")
+	{
+		float gripper_opening = -1;
+		float top_gripper_pressure = -1;
+		float gripper_pressure = -1;
+		for (int i = 0; moduleLocalVars.size() > i; i++)
+		{
+			bsoncxx::document::view &lVar = moduleLocalVars[i];
+			std::string varName = lVar["varName"].get_utf8().value.to_string();
+			if (varName == "top_gripper_pressure")
+			{
+				top_gripper_pressure = lVar["value"].get_double();
+			}
+			if (varName == "gripper_opening")
+			{
+				gripper_opening = lVar["value"].get_double();
+			}
+			if (varName == "gripper_pressure")
+			{
+				gripper_pressure = lVar["value"].get_double();
+			}
+		}
+		IcapsResponseModuleAndTempEnums moduleResponse = pick_res_pick_action_success;
+		if(gripper_pressure > 0 && gripper_opening > 0)
+		{
+			moduleResponse = pick_res_pick_action_success;
+		}
+		else if(gripper_pressure == 0)
+		{
+			moduleResponse = pick_res_not_holding;
+		}
+		else if(top_gripper_pressure > 200)
+		{
+			moduleResponse = pick_res_broke_the_object;
+		}
+	}	
+	if(moduleName == "observe")
+	{
+		bool observedLocation = false;
+		for (int i = 0; moduleLocalVars.size() > i; i++)
+		{
+			bsoncxx::document::view &lVar = moduleLocalVars[i];
+			//json j = "{ \"happy\": true, \"pi\": 3.141 }"_json;
+			json j;
+			
+		}
+	}
+	MongoDB_Bridge::UpdateActionResponse(moduleName, enum_map_icaps::vecResponseEnumToString[response]);
 
+	
+	return response;
+}
 double POMDPEvaluator::End() {
 	return 0; // Not to be used
 }

@@ -19,8 +19,11 @@ namespace despot {
 	public:
         static void Init();
 
-        static bsoncxx::document::view WaitForModuleResponse(std::string moduleName);
-        static void SendActionToExecution(std::string actionName, std::vector<std::string> parameters, std::vector<std::string> parameterNames);
+        static std::vector<bsoncxx::document::view> WaitForActionResponse(std::string moduleName);
+        static void SendActionToExecution(int actionId, std::string actionName, std::string actionParameters);
+        static void RegisterAction(int actionId, std::string actionName, std::string actionParameters);
+        static void UpdateActionResponse(std::string actionName, std::string actionResponse);
+        
 
         static bool isInit;
         static mongocxx::instance instance; // This should be done only once.
@@ -29,6 +32,9 @@ namespace despot {
 
         static mongocxx::database db;
         static mongocxx::collection actionToExecuteCollection;
+        static mongocxx::collection actionsCollection;
         static mongocxx::collection moduleResponseColllection;
+        static mongocxx::collection localVariableColllection;
+       
 };
 }

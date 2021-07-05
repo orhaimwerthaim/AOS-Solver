@@ -22,6 +22,15 @@ set(CMAKE_MODULE_PATH ${CMAKE_PREFIX_PATH} "${PROJECT_SOURCE_DIR}/cmake")
 
 include_directories(include)
 
+##################################
+#adding json
+set(JSON_BuildTests OFF CACHE INTERNAL "")
+add_subdirectory(nlohmann_json) 
+#add_library("${PROJECT_NAME}" SHARED
+#src/model_primitives/icaps/actionManager.cpp #added
+#)
+#target_link_libraries("${PROJECT_NAME}" PRIVATE nlohmann_json::nlohmann_json)
+##################################
 
 
 
@@ -67,6 +76,7 @@ add_library("${PROJECT_NAME}" SHARED
 )
 target_link_libraries("${PROJECT_NAME}"
   ${TinyXML_LIBRARIES}
+  PRIVATE nlohmann_json::nlohmann_json #adding json
 )
 
 

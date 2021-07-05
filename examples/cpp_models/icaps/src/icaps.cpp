@@ -3,7 +3,10 @@
 #include <stdlib.h>
 #include <despot/solver/pomcp.h>
 #include <sstream>
+#include <despot/model_primitives/icaps/actionManager.h> 
 #include <despot/model_primitives/icaps/enum_map_icaps.h> 
+#include <despot/model_primitives/icaps/state.h> 
+
 using namespace std;
 
 namespace despot {
@@ -137,7 +140,9 @@ void IcapsBelief::Update(int actionId, OBS_TYPE obs) {
 			//|| icaps_->LocalMove(*particle, history_, obs)) 
 			{
 				if(!Globals::IsInternalSimulation())
-					IcapsBelief::UpdateStateByRealModuleObservation(*particle, actionId, obs);
+				{
+					//IcapsBelief::UpdateStateByRealModuleObservation(*particle, actionId, obs);
+				}
 				updated.push_back(particle);
 		} else {
 			icaps_->Free(particle);
@@ -221,7 +226,7 @@ State* Icaps::CreateStartState(string tyep) const {
 	state.cupDiscreteGeneralLocation = state.tDiscreteLocationObjects[discrete_dist1(generator)];
 	if(ActionManager::actions.size()==0)
 	{
-		ActionManager(const_cast <IcapsState*> (startState));
+		ActionManager::Init(const_cast <IcapsState*> (startState));
 	}
 	return startState;
 }
@@ -334,9 +339,10 @@ bool Icaps::Step(State& s_state__, double rand_num, int actionId, double& reward
 
 void Icaps::CheckPreconditions(const IcapsState& state, double &reward, bool &meetPrecondition, int actionId) const
 	{
+		ActionType &actType = ActionManager::actions[actionId]->actionType;
 		meetPrecondition = false;
 		//Pick PLP Line: "global_variable_conditionCode": "AOS.IsInitialized(state.cupAccurateLocation) && hand_empty == true && state.robotGenerallocation == state.cupDiscreteGeneralLocation",
-		if(ActionManager::actions[actionId]->actionType == pickAction)
+		if(actType == pickAction)
 		{
 			if(state.cupAccurateLocation == true && state.handEmpty == true && state.robotGenerallocation == state.cupDiscreteGeneralLocation)
 			{
@@ -347,7 +353,7 @@ void Icaps::CheckPreconditions(const IcapsState& state, double &reward, bool &me
 		}
 
 		//Place PLP Line: "dynamicModelPreconditions": "state.handEmpty == false && (state.robotGenerallocatio == eAuditorium || state.robotGenerallocatio == eOutside_lab211 || state.robotGenerallocatio == eCorridor)",
-		if(ActionManager::actions[actionId]->actionType == placeAction)
+		if(actType == placeAction)
 		{
 			if(state.handEmpty == false && (state.robotGenerallocation == eAuditorium || state.robotGenerallocation == eOutside_lab211 || state.robotGenerallocation == eCorridor))
 			{
@@ -356,13 +362,13 @@ void Icaps::CheckPreconditions(const IcapsState& state, double &reward, bool &me
 			} 
 		}
 
-		if(ActionManager::actions[actionId]->actionType == navigateAction)
+		if(actType == navigateAction)
 		{ 
 			meetPrecondition = true;
 			 
 		}
 
-		if(ActionManager::actions[actionId]->actionType == observeAction)
+		if(actType == observeAction)
 		{
 			meetPrecondition = true;
 			 
@@ -376,11 +382,12 @@ void Icaps::CheckPreconditions(const IcapsState& state, double &reward, bool &me
 
 void Icaps::SampleModuleExecutionTime(const IcapsState& farstate, double rand_num, int actionId, int &__moduleExecutionTime) const
 	{
-		if(ActionManager::actions[actionId]->actionType == pickAction)
+		ActionType &actType = ActionManager::actions[actionId]->actionType;
+		if(actType == pickAction)
 		{
 			__moduleExecutionTime = Icaps::normal_dist1(Icaps::generator);
 		}
-		if(ActionManager::actions[actionId]->actionType == placeAction)
+		if(actType == placeAction)
 		{
 			__moduleExecutionTime = Icaps::place_normal_dist1(Icaps::generator);
 		}
@@ -396,11 +403,12 @@ void Icaps::ExtrinsicChangesDynamicModel(const IcapsState& state, IcapsState& st
 	void Icaps::ModuleDynamicModel(const IcapsState &state, const IcapsState &state_, IcapsState &state__, double rand_num, int actionId, double &__reward,
 								   OBS_TYPE &observation, const int &__moduleExecutionTime) const
 	{
+		ActionType &actType = ActionManager::actions[actionId]->actionType;
 		observation = -1;
 		int startObs = observation;
 		OBS_TYPE &__moduleResponse = observation;
 
-		if (ActionManager::actions[actionId]->actionType == pickAction)
+		if (actType == pickAction)
 		{
 			//layer name: 'realCase'
 			IcapsResponseModuleAndTempEnums realCase = (IcapsResponseModuleAndTempEnums)(pick_enumRealCase + 1 + Icaps::pick_discrete_dist1(Icaps::generator));
@@ -436,7 +444,7 @@ void Icaps::ExtrinsicChangesDynamicModel(const IcapsState& state, IcapsState& st
 			//if (realCase == pick_actual_not_holding) __reward = -10; if(realCase ==  pick_actual_broke_the_object) __reward = -80; if(realCase == pick_actual_pick_action_success) __reward = 100;
 		}
 
-		if (ActionManager::actions[actionId]->actionType == placeAction)
+		if (actType == placeAction)
 		{
 			//layer name: 'realCase'
 			IcapsResponseModuleAndTempEnums realCase = (IcapsResponseModuleAndTempEnums)(place_enumRealCase + 1 + Icaps::place_discrete_dist1(Icaps::generator));
@@ -455,11 +463,11 @@ void Icaps::ExtrinsicChangesDynamicModel(const IcapsState& state, IcapsState& st
 			//__reward = (realCase == place_success) ? -10 : (realCase == place_droppedObject) ? -80: -10;
 		}
 
-		if (ActionManager::actions[actionId]->actionType == navigateAction)
+		if (actType == navigateAction)
 		{
 
 			NavigateActionDescription act = *(static_cast<NavigateActionDescription *>(ActionManager::actions[actionId]));
-			act.SetActionParametersByState(&state);
+			
 			tLocation &oDesiredLocation = act.oDesiredLocation;
 
 			//layer name: 'realCase'
@@ -478,7 +486,7 @@ void Icaps::ExtrinsicChangesDynamicModel(const IcapsState& state, IcapsState& st
 			//__reward = -10;
 		}
 	
-		if (ActionManager::actions[actionId]->actionType == observeAction)
+		if (actType == observeAction)
 		{
 			IcapsResponseModuleAndTempEnums realCase;
 			//layer name: 'realCase'
@@ -520,8 +528,8 @@ bool AOSUtils::Bernoulli(double p)
 	int randInt = rand() % 100 + 1;
 	return (p * 100) >= randInt;
 }
-void ActionDescription::SetActionParametersByState(const IcapsState *state){}
-    std::vector<ActionDescription*> ActionManager::actions;
+/*void ActionDescription::SetActionParametersByState(const IcapsState *state){}
+  //  std::vector<ActionDescription*> ActionManager::actions;
 
     void NavigateActionDescription::Initialize(NavigateActionDescription* action, int _oDesiredLocation_Index)
     {
@@ -534,41 +542,8 @@ void NavigateActionDescription::SetActionParametersByState(const IcapsState *sta
     oDesiredLocation = state->tLocationObjects[oDesiredLocation_Index];
 } 
 
-ActionManager::ActionManager(IcapsState* state)
-{
-	
-	int id = 0;
-	ActionDescription *pick = new ActionDescription;
-	pick->actionType = pickAction;
-	pick->actionId = id++;
-	ActionManager::actions.push_back(pick);
 
-	ActionDescription *place = new ActionDescription;
-    place->actionType = placeAction;
-	place->actionId = id++;
-    ActionManager::actions.push_back(place);
-
-	ActionDescription *observe = new ActionDescription;
-    observe->actionType = observeAction;
-	observe->actionId = id++;
-    ActionManager::actions.push_back(observe);
-	
-	NavigateActionDescription* navActions = new NavigateActionDescription[4];
-	for (int i = 0; i < 4; i++)
-	{
-        NavigateActionDescription& navAction = navActions[i];
-		NavigateActionDescription::Initialize(&navAction, i);
-		navAction.actionId = id++;
-		ActionManager::actions.push_back(&navAction);
-	}
-
-	for(int j=0;j< ActionManager::actions.size();j++)
-	{
-		ActionManager::actions[j]->SetActionParametersByState(state);
-		logd << "actionID:" << ActionManager::actions[j]->actionId << ", type:" << ActionManager::actions[j]->actionType << ", index:" << ((j < 3) ? 1 : (*(static_cast<NavigateActionDescription *>(ActionManager::actions[j]))).oDesiredLocation_Index);
-	}
-}
-
+*/
 std::string Icaps::PrintObs(int action, OBS_TYPE obs) const 
 {
 	return Prints::PrintObs(action, obs);

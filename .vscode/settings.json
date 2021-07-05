@@ -56,6 +56,11 @@
         "*.txx": "cpp",
         "string": "cpp",
         "optional": "cpp",
-        "string_view": "cpp"
+        "string_view": "cpp",
+        "csignal": "cpp",
+        "forward_list": "cpp",
+        "unordered_set": "cpp",
+        "mutex": "cpp",
+        "valarray": "cpp"
     }
 }

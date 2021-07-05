@@ -1,37 +1,78 @@
 
 #include <despot/model_primitives/icaps/actionManager.h>
+#include <despot/util/mongoDB_Bridge.h>
+#include <nlohmann/json.hpp> 
+
+// for convenience
+using json = nlohmann::json;
 //#include "actionManager.h"
 #include <vector>
 #include <utility>
 #include <string>
 namespace despot { 
-    void ActionDescription::SetActionParametersByState(IcapsState *state){}
-    std::vector<ActionDescription> ActionManager::actions;
+    void ActionDescription::SetActionParametersByState(IcapsState *state, std::vector<int> indexes){}
+    std::vector<ActionDescription*> ActionManager::actions;
 
-    NavigateActionDescription::NavigateActionDescription(int _oDesiredLocation_Index)
-    {
-        oDesiredLocation_Index = _oDesiredLocation_Index;
+
+void NavigateActionDescription::SetActionParametersByState(IcapsState *state, std::vector<int> indexes)
+{
+    oDesiredLocation = state->tLocationObjects[indexes[0]];
 }
 
-void NavigateActionDescription::SetActionParametersByState(IcapsState *state)
-{
-    oDesiredLocation = state->tLocationObjects[oDesiredLocation_Index];
+std::string NavigateActionDescription::GetActionParametersJson_ForActionExecution()
+{  
+    json j;
+    j["oDesiredLocation"]["discrete_location"] = oDesiredLocation.discrete_location;
+    j["oDesiredLocation"]["actual_location"] = oDesiredLocation.actual_location;
+    std::string str(j.dump().c_str());
+    return str;
+    //std::string s= utility::conversions::to_utf8string(j.dump(4));
 }
 
-ActionManager::ActionManager()
+std::string NavigateActionDescription::GetActionParametersJson_ForActionRegistration()
 {
-    ActionDescription pick;
-    pick.actionType = pickAction;
-    ActionManager::actions.push_back(pick);
+    json j;
+    j["oDesiredLocation->discrete_location"] = oDesiredLocation.discrete_location;
+    std::string str(j.dump().c_str());
+    return str;
+}
 
-    ActionDescription place;
-    pick.actionType = pickAction;
+void ActionManager::Init(IcapsState* state)
+{
+	
+	int id = 0;
+	ActionDescription *pick = new ActionDescription;
+	pick->actionType = pickAction;
+	pick->actionId = id++;
+	ActionManager::actions.push_back(pick);
+
+	ActionDescription *place = new ActionDescription;
+    place->actionType = placeAction;
+	place->actionId = id++;
     ActionManager::actions.push_back(place);
 
-    for (int i = 0; i < 5;i++)
+	ActionDescription *observe = new ActionDescription;
+    observe->actionType = observeAction;
+	observe->actionId = id++;
+    ActionManager::actions.push_back(observe);
+	
+	NavigateActionDescription* navActions = new NavigateActionDescription[4];
+    std::vector<int> indexes;
+    for (int i = 0; i < 4; i++)
     {
-        NavigateActionDescription navAction = NavigateActionDescription(i);
-        ActionManager::actions.push_back(navAction);
+        indexes.clear();
+        indexes.push_back(i);
+        NavigateActionDescription &navAction = navActions[i];
+        navAction.SetActionParametersByState(state, indexes);
+		navAction.actionId = id++;
+        navAction.actionType = navigateAction;
+        ActionManager::actions.push_back(&navAction);
+    }
+
+	for(int j=0;j< ActionManager::actions.size();j++)
+	{
+        MongoDB_Bridge::RegisterAction(ActionManager::actions[j]->actionId, enum_map_icaps::vecActionTypeEnumToString[ActionManager::actions[j]->actionType], ActionManager::actions[j]->GetActionParametersJson_ForActionRegistration());
+        logd << "actionID:" << ActionManager::actions[j]->actionId << ", type:" << ActionManager::actions[j]->actionType << ", index:" << ((j < 3) ? 1 : (*(static_cast<NavigateActionDescription *>(ActionManager::actions[j]))).oDesiredLocation.discrete_location);
     }
 }
 }

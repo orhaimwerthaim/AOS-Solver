@@ -5,7 +5,7 @@
 #include <despot/core/pomdp.h>
 #include <despot/pomdpx/pomdpx.h>
 #include <despot/util/util.h>
-
+#include <despot/model_primitives/icaps/enum_map_icaps.h>
 namespace despot {
 
 /* =============================================================================
@@ -16,8 +16,7 @@ class EvalLog {
 private:
   std::vector<std::string> runned_instances;
 	std::vector<int> num_of_completed_runs;
-	std::string log_file_;
-
+	std::string log_file_; 
 public:
 	static time_t start_time;
 
@@ -119,6 +118,7 @@ public:
 
 	virtual double EndRound() = 0; // Return total undiscounted reward for this round.
 	virtual bool ExecuteAction(int action, double& reward, OBS_TYPE& obs) = 0;
+	IcapsResponseModuleAndTempEnums CalculateModuleResponse(std::string moduleName);
 	virtual void ReportStepReward();
 	virtual double End() = 0; // Free resources and return total reward collected
 
