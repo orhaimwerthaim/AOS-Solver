@@ -6,7 +6,11 @@
 
 namespace despot
 {
-	typedef bool anyValue; 
+	struct anyValue
+	{
+		bool value;
+		bool* 
+	};
 	enum tDiscreteLocation
 	{
 		eCorridor,

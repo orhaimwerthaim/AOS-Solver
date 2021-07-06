@@ -19,7 +19,7 @@ public:
 	tLocation locationCorridor;
 
 	anyValue cupAccurateLocation;
-
+	std::map<std::string, anyValue> anyValueUpdateDic;
 	bool handEmpty;
 };
 }

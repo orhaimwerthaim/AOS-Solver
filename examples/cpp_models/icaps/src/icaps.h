@@ -41,11 +41,10 @@ class IcapsBelief: public ParticleBelief {
 protected:
 	const Icaps* icaps_;
 public:
-	static int num_particles;
-    virtual void UpdateStateByRealModuleObservation(State &s_state, int actionId, OBS_TYPE &observation) const;
+	static int num_particles; 
 	IcapsBelief(std::vector<State*> particles, const DSPOMDP* model, Belief* prior =
 		NULL);
-	void Update(int actionId, OBS_TYPE obs);
+	void Update(int actionId, OBS_TYPE obs, std::map<std::string,bool> updates);
 };
 
 /* ==============================================================================

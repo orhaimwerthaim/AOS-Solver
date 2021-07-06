@@ -29,7 +29,8 @@ namespace despot {
   mongocxx::collection MongoDB_Bridge::moduleResponseColllection;
   mongocxx::collection MongoDB_Bridge::localVariableColllection;
   mongocxx::collection MongoDB_Bridge::actionsCollection;
-
+  mongocxx::collection MongoDB_Bridge::globalVariablesAssignmentsColllection;
+  int MongoDB_Bridge::currentActionSequenceId = 1;
   void MongoDB_Bridge::Init()
   {
     if (!MongoDB_Bridge::isInit)
@@ -43,26 +44,29 @@ namespace despot {
       MongoDB_Bridge::db = MongoDB_Bridge::client["AOS"];
       MongoDB_Bridge::actionToExecuteCollection = MongoDB_Bridge::db["ActionsForExecution"];
       MongoDB_Bridge::moduleResponseColllection = MongoDB_Bridge::db["ModuleResponses"];
+      MongoDB_Bridge::globalVariablesAssignmentsColllection = MongoDB_Bridge::db["GlobalVariablesAssignments"];
       MongoDB_Bridge::localVariableColllection = MongoDB_Bridge::db["localVariables"];
       MongoDB_Bridge::actionsCollection = MongoDB_Bridge::db["Actions"];
     }
 }
 
-void MongoDB_Bridge::UpdateActionResponse(std::string actionName, std::string actionResponse)
-{
-  auto filter = document{} << "wasRead" << false << "module" << actionName << finalize;
-  //auto update = document{} << "$set" << open_document << "wasRead" << true << "moduleResponseText" << actionResponse << close_document << finalize;
-  std::stringstream ss;
-  ss<< "{\"$set\" : {\"wasRead\":true, \"moduleResponseText\" : \"" << actionResponse << "\"}}"; 
+// void MongoDB_Bridge::UpdateActionResponse(std::string actionName, std::string actionResponse)
+// {
+//   auto filter = document{} << "wasRead" << false << "Module" << actionName << finalize;
+//   //auto update = document{} << "$set" << open_document << "wasRead" << true << "moduleResponseText" << actionResponse << close_document << finalize;
+//   std::stringstream ss;
+//   ss<< "{\"$set\" : {\"wasRead\":true, \"moduleResponseText\" : \"" << actionResponse << "\"}}"; 
   
-  MongoDB_Bridge::moduleResponseColllection.update_one(filter.view(), bsoncxx::from_json(ss.str()));
-}
+//   MongoDB_Bridge::moduleResponseColllection.update_one(filter.view(), bsoncxx::from_json(ss.str()));
+// }
 
-std::vector<bsoncxx::document::view> MongoDB_Bridge::WaitForActionResponse(std::string actionName)
+std::map<std::string, bool> MongoDB_Bridge::WaitForActionResponse(bsoncxx::oid actionForExecuteId, std::string& actionTextObservation)
 {
+
+  std::map<std::string, bool> globalVarUpdates;
   std::vector<bsoncxx::document::view> moduleLocalVars;
   MongoDB_Bridge::Init();
-  auto filter = document{} << "wasRead" << false << "module" << actionName << finalize;
+  auto filter = document{} << "ActionForExecutionId" << actionForExecuteId << finalize;
   bool actionFinished = false;
 
   while (!actionFinished)
@@ -71,7 +75,12 @@ std::vector<bsoncxx::document::view> MongoDB_Bridge::WaitForActionResponse(std::
     for(auto doc : cursor) 
     {
       actionFinished = true;
-      //MongoDB_Bridge::moduleResponseColllection.update_one(doc, document{} << "$set" << open_document <<
+      actionTextObservation = doc["ModuleResponseText"].get_utf8().value.to_string();
+      // bsoncxx::document::element element2 = res["responseText"];
+      // auto s = element2.get_utf8().value;
+      // std::string str = s.to_string();
+
+      // MongoDB_Bridge::moduleResponseColllection.update_one(doc, document{} << "$set" << open_document <<
       //                "wasRead" << true << close_document << finalize);
 
       //return *(&doc);
@@ -79,18 +88,23 @@ std::vector<bsoncxx::document::view> MongoDB_Bridge::WaitForActionResponse(std::
     }
     if(actionFinished)
     {
-        auto filter2 = document{} << "module" << actionName << finalize;
-        mongocxx::cursor cursor2 = MongoDB_Bridge::localVariableColllection.find({filter2});
+        auto filter2 = document{} << "UpdatingActionSequenceId" << MongoDB_Bridge::currentActionSequenceId << finalize;
+        mongocxx::cursor cursor2 = MongoDB_Bridge::globalVariablesAssignmentsColllection.find({filter2});
         for(auto doc : cursor2) 
         {
-          moduleLocalVars.push_back(doc);
+          std::string globalVariableName = doc["GlobalVariableName"].get_utf8().value.to_string();
+          bool isInit = doc["IsInitialized"].get_bool();
+          globalVarUpdates[globalVariableName] = isInit;
         }
-        return *(&moduleLocalVars);
+        break;
     }
   }
+
+  MongoDB_Bridge::currentActionSequenceId++;
+  return globalVarUpdates;
 }
 
-void MongoDB_Bridge::SendActionToExecution(int actionId, std::string actionName, std::string actionParameters)
+bsoncxx::oid MongoDB_Bridge::SendActionToExecution(int actionId, std::string actionName, std::string actionParameters)
 {
   MongoDB_Bridge::Init(); 
   auto now = std::chrono::system_clock::now();
@@ -98,9 +112,8 @@ void MongoDB_Bridge::SendActionToExecution(int actionId, std::string actionName,
   bsoncxx::document::value doc_value = !actionParameters.empty() ? (
                                                                        builder << "ActionID" << actionId 
                                                                                << "ActionName" << actionName
+                                                                               << "ActionSequenceId" << MongoDB_Bridge::currentActionSequenceId
                                                                                << "RequestCreateTime" << bsoncxx::types::b_date(now)
-                                                                               << "WasHandled" << false
-                                                                               << "HandleTime" << bsoncxx::types::b_date(now - std::chrono::hours(1))
                                                                                << "Parameters" << open_array
                                                                                << [&](bsoncxx::builder::stream::array_context<> arr)
                                                                        { arr << bsoncxx::from_json(actionParameters); }
@@ -108,14 +121,15 @@ void MongoDB_Bridge::SendActionToExecution(int actionId, std::string actionName,
                                                                  : (
                                                                        builder << "ActionID" << actionId 
                                                                                << "ActionName" << actionName
+                                                                               << "ActionSequenceId" << MongoDB_Bridge::currentActionSequenceId
                                                                                << "RequestCreateTime" << bsoncxx::types::b_date(now)
-                                                                               << "WasHandled" << false
-                                                                               << "HandleTime" << bsoncxx::types::b_date(now - std::chrono::hours(1))
-                                                                               << "Parameters" << open_array
+                                                                                << "Parameters" << open_array
                                                                                << close_array << finalize);
 
+  auto retVal =MongoDB_Bridge::actionToExecuteCollection.insert_one(doc_value.view());
 
-  MongoDB_Bridge::actionToExecuteCollection.insert_one(doc_value.view());
+  bsoncxx::oid oid = retVal->inserted_id().get_oid().value;
+  return oid;
 }
 
 void MongoDB_Bridge::RegisterAction(int actionId, std::string actionName, std::string actionParameters)

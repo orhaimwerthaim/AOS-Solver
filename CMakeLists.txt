@@ -115,7 +115,7 @@ if(DESPOT_BUILD_EXAMPLES)
 
 
   add_subdirectory(examples/cpp_models/icaps)
-  add_subdirectory(examples/cpp_models/icaps_working_toy)
+ # add_subdirectory(examples/cpp_models/icaps_working_toy)
 endif()
 
 if(DESPOT_BUILD_POMDPX)

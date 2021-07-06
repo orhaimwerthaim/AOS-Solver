@@ -118,7 +118,7 @@ public:
 
 	virtual double EndRound() = 0; // Return total undiscounted reward for this round.
 	virtual bool ExecuteAction(int action, double& reward, OBS_TYPE& obs) = 0;
-	IcapsResponseModuleAndTempEnums CalculateModuleResponse(std::string moduleName);
+	//IcapsResponseModuleAndTempEnums CalculateModuleResponse(std::string moduleName);
 	virtual void ReportStepReward();
 	virtual double End() = 0; // Free resources and return total reward collected
 

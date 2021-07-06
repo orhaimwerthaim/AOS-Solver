@@ -119,12 +119,8 @@ std::string Prints::PrintActionType(ActionType actType)
 		}
 }
 
-void IcapsBelief::UpdateStateByRealModuleObservation(State &s_state, int actionId, OBS_TYPE &observation) const
-{
-	IcapsState &state__ = static_cast<IcapsState &>(s_state);
-}
 
-void IcapsBelief::Update(int actionId, OBS_TYPE obs) {
+void IcapsBelief::Update(int actionId, OBS_TYPE obs, std::map<std::string,bool> updates) {
 	history_.Add(actionId, obs);
 
 	vector<State*> updated;
@@ -139,9 +135,14 @@ void IcapsBelief::Update(int actionId, OBS_TYPE obs) {
 		if (!terminal && o == obs)
 			//|| icaps_->LocalMove(*particle, history_, obs)) 
 			{
+				IcapsState &icaps_particle = static_cast<IcapsState &>(*particle);
 				if(!Globals::IsInternalSimulation())
 				{
-					//IcapsBelief::UpdateStateByRealModuleObservation(*particle, actionId, obs);
+					map<std::string,bool>::iterator it;
+					// for (it = updates.begin(); it != updates.end(); it++)
+					// {
+					// 	icaps_particle.anyValueUpdateDic[it->first] = it->second; 
+					// } 
 				}
 				updated.push_back(particle);
 		} else {
@@ -224,7 +225,17 @@ State* Icaps::CreateStartState(string tyep) const {
 	state.cupAccurateLocation = false;
 	//generated from environment file line: state.cupDiscreteGeneralLocation = AOS.SampleDiscrete(tDiscreteLocation,{0.6, 0.4,0,0});
 	state.cupDiscreteGeneralLocation = state.tDiscreteLocationObjects[discrete_dist1(generator)];
-	if(ActionManager::actions.size()==0)
+
+
+
+
+	//startState->anyValueUpdateDic["state.cupDiscreteGeneralLocation"] = state.cupDiscreteGeneralLocation;
+	 startState->anyValueUpdateDic["state.locationOutside_lab211.actual_location"] = state.locationOutside_lab211.actual_location;
+	// startState->anyValueUpdateDic["state.locationAuditorium.actual_location"] = state.locationAuditorium.actual_location;
+	// startState->anyValueUpdateDic["state.locationCorridor.actual_location"] = state.locationCorridor.actual_location;
+	// startState->anyValueUpdateDic["state.locationNear_elevator1.actual_location"] = state.locationNear_elevator1.actual_location;
+
+	if (ActionManager::actions.size() == 0)
 	{
 		ActionManager::Init(const_cast <IcapsState*> (startState));
 	}

@@ -1,6 +1,7 @@
 #include <string>
 #include <iostream> 
-
+#ifndef STATE_VAR_TYPES_H
+#define STATE_VAR_TYPES_H
 namespace despot
 {
 	typedef bool anyValue;
@@ -24,3 +25,4 @@ namespace despot
 
  
 } // namespace despot
+#endif //STATE_VAR_TYPES_H

@@ -19,10 +19,10 @@ namespace despot {
 	public:
         static void Init();
 
-        static std::vector<bsoncxx::document::view> WaitForActionResponse(std::string moduleName);
-        static void SendActionToExecution(int actionId, std::string actionName, std::string actionParameters);
+        static std::map<std::string, bool> WaitForActionResponse(bsoncxx::oid actionForExecuteId, std::string &actionTextObservation);
+        static bsoncxx::oid SendActionToExecution(int actionId, std::string actionName, std::string actionParameters);
         static void RegisterAction(int actionId, std::string actionName, std::string actionParameters);
-        static void UpdateActionResponse(std::string actionName, std::string actionResponse);
+   //     static void UpdateActionResponse(std::string actionName, std::string actionResponse);
         
 
         static bool isInit;
@@ -35,6 +35,7 @@ namespace despot {
         static mongocxx::collection actionsCollection;
         static mongocxx::collection moduleResponseColllection;
         static mongocxx::collection localVariableColllection;
-       
+        static mongocxx::collection globalVariablesAssignmentsColllection;
+        static int currentActionSequenceId;
 };
 }
