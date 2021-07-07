@@ -40,7 +40,8 @@ class Prints
 class IcapsState : public State
 {
 public:
-	std::vector<tDiscreteLocation> tDiscreteLocationObjects;
+	//std::vector<tDiscreteLocation> tDiscreteLocationObjects;
+	std::vector<std::string, tLocation*> tLocationObjectsForActions;
 	std::vector<tLocation> tLocationObjects;
 
 	tDiscreteLocation cupDiscreteGeneralLocation;

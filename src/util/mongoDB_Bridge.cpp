@@ -110,21 +110,34 @@ bsoncxx::oid MongoDB_Bridge::SendActionToExecution(int actionId, std::string act
   auto now = std::chrono::system_clock::now();
   auto builder = bsoncxx::builder::stream::document{};
   bsoncxx::document::value doc_value = !actionParameters.empty() ? (
-                                                                       builder << "ActionID" << actionId 
+                                                                //        builder << "ActionID" << actionId 
+                                                                //                << "ActionName" << actionName
+                                                                //                << "ActionSequenceId" << MongoDB_Bridge::currentActionSequenceId
+                                                                //                << "RequestCreateTime" << bsoncxx::types::b_date(now)
+                                                                //                << "Parameters" << open_array
+                                                                //                << [&](bsoncxx::builder::stream::array_context<> arr)
+                                                                //        { arr << bsoncxx::from_json(actionParameters); }
+                                                                //                << close_array << finalize)
+                                                                //  : (
+                                                                //        builder << "ActionID" << actionId 
+                                                                //                << "ActionName" << actionName
+                                                                //                << "ActionSequenceId" << MongoDB_Bridge::currentActionSequenceId
+                                                                //                << "RequestCreateTime" << bsoncxx::types::b_date(now)
+                                                                //                 << "Parameters" << open_array
+                                                                //                << close_array << finalize);
+                                                                builder << "ActionID" << actionId 
                                                                                << "ActionName" << actionName
                                                                                << "ActionSequenceId" << MongoDB_Bridge::currentActionSequenceId
                                                                                << "RequestCreateTime" << bsoncxx::types::b_date(now)
-                                                                               << "Parameters" << open_array
-                                                                               << [&](bsoncxx::builder::stream::array_context<> arr)
-                                                                       { arr << bsoncxx::from_json(actionParameters); }
-                                                                               << close_array << finalize)
+                                                                               << "Parameters" <<  bsoncxx::from_json(actionParameters)
+                                                                               << finalize)
                                                                  : (
                                                                        builder << "ActionID" << actionId 
                                                                                << "ActionName" << actionName
                                                                                << "ActionSequenceId" << MongoDB_Bridge::currentActionSequenceId
                                                                                << "RequestCreateTime" << bsoncxx::types::b_date(now)
-                                                                                << "Parameters" << open_array
-                                                                               << close_array << finalize);
+                                                                                << "Parameters" << open_document 
+                                                                                << close_document << finalize);
 
   auto retVal =MongoDB_Bridge::actionToExecuteCollection.insert_one(doc_value.view());
 

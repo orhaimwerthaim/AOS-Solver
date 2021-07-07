@@ -283,10 +283,10 @@ State* Icaps::CreateStartState(string tyep) const {
 	startState->tDiscreteLocationObjects.push_back(eNear_elevator1);
 	startState->tDiscreteLocationObjects.push_back(eAuditorium);
 
-	startState->tLocationObjects.push_back(state.locationOutside_lab211);
-	startState->tLocationObjects.push_back(state.locationAuditorium);
-	startState->tLocationObjects.push_back(state.locationNear_elevator1);
-	startState->tLocationObjects.push_back(state.locationCorridor);
+	startState->tLocationObjectsForActions.push_back(state.locationOutside_lab211);
+	startState->tLocationObjectsForActions.push_back(state.locationAuditorium);
+	startState->tLocationObjectsForActions.push_back(state.locationNear_elevator1);
+	startState->tLocationObjectsForActions.push_back(state.locationCorridor);
 
 	state.robotGenerallocation = state.locationNear_elevator1.discrete_location;
 	state.cupAccurateLocation = true;
@@ -602,7 +602,7 @@ void ActionDescription::SetActionParametersByState(const IcapsState *state){}
 
 void NavigateActionDescription::SetActionParametersByState(const IcapsState *state)
 {
-    oDesiredLocation = state->tLocationObjects[oDesiredLocation_Index];
+    oDesiredLocation = state->tLocationObjectsForActions[oDesiredLocation_Index];
 } 
 
 ActionManager::ActionManager(IcapsState* state)

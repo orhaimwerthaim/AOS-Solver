@@ -136,13 +136,14 @@ void IcapsBelief::Update(int actionId, OBS_TYPE obs, std::map<std::string,bool> 
 			//|| icaps_->LocalMove(*particle, history_, obs)) 
 			{
 				IcapsState &icaps_particle = static_cast<IcapsState &>(*particle);
-				if(!Globals::IsInternalSimulation())
+				if(!Globals::IsInternalSimulation() && updates.size() > 0)
 				{
-					map<std::string,bool>::iterator it;
-					// for (it = updates.begin(); it != updates.end(); it++)
-					// {
-					// 	icaps_particle.anyValueUpdateDic[it->first] = it->second; 
-					// } 
+					IcapsState::SetAnyValueLinks(&icaps_particle);
+					map<std::string, bool>::iterator it;
+					for (it = updates.begin(); it != updates.end(); it++)
+					{
+						*(icaps_particle.anyValueUpdateDic[it->first]) = it->second; 
+					} 
 				}
 				updated.push_back(particle);
 		} else {
@@ -216,25 +217,17 @@ State* Icaps::CreateStartState(string tyep) const {
 	startState->tDiscreteLocationObjects.push_back(eNear_elevator1);
 	startState->tDiscreteLocationObjects.push_back(eAuditorium);
 
-	startState->tLocationObjects.push_back(state.locationOutside_lab211);
-	startState->tLocationObjects.push_back(state.locationAuditorium);
-	startState->tLocationObjects.push_back(state.locationNear_elevator1);
-	startState->tLocationObjects.push_back(state.locationCorridor);
+	startState->tLocationObjectsForActions["state.locationOutside_lab211"] = (state.locationOutside_lab211);
+	startState->tLocationObjectsForActions["state.locationAuditorium"]=(state.locationAuditorium);
+	startState->tLocationObjectsForActions["state.locationNear_elevator1"]=(state.locationNear_elevator1);
+	startState->tLocationObjectsForActions["state.locationCorridor"]=(state.locationCorridor);
 
 	state.robotGenerallocation = state.locationNear_elevator1.discrete_location;
 	state.cupAccurateLocation = false;
 	//generated from environment file line: state.cupDiscreteGeneralLocation = AOS.SampleDiscrete(tDiscreteLocation,{0.6, 0.4,0,0});
 	state.cupDiscreteGeneralLocation = state.tDiscreteLocationObjects[discrete_dist1(generator)];
 
-
-
-
-	//startState->anyValueUpdateDic["state.cupDiscreteGeneralLocation"] = state.cupDiscreteGeneralLocation;
-	 startState->anyValueUpdateDic["state.locationOutside_lab211.actual_location"] = state.locationOutside_lab211.actual_location;
-	// startState->anyValueUpdateDic["state.locationAuditorium.actual_location"] = state.locationAuditorium.actual_location;
-	// startState->anyValueUpdateDic["state.locationCorridor.actual_location"] = state.locationCorridor.actual_location;
-	// startState->anyValueUpdateDic["state.locationNear_elevator1.actual_location"] = state.locationNear_elevator1.actual_location;
-
+ 
 	if (ActionManager::actions.size() == 0)
 	{
 		ActionManager::Init(const_cast <IcapsState*> (startState));
@@ -550,7 +543,7 @@ bool AOSUtils::Bernoulli(double p)
 
 void NavigateActionDescription::SetActionParametersByState(const IcapsState *state)
 {
-    oDesiredLocation = state->tLocationObjects[oDesiredLocation_Index];
+    oDesiredLocation = state->tLocationObjectsForActions[oDesiredLocation_Index];
 } 
 
 

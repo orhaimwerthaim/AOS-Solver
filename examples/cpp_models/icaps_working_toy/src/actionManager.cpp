@@ -14,7 +14,7 @@ namespace despot {
 
 void NavigateActionDescription::SetActionParametersByState(IcapsState *state)
 {
-    oDesiredLocation = state->tLocationObjects[oDesiredLocation_Index];
+    oDesiredLocation = state->tLocationObjectsForActions[oDesiredLocation_Index];
 }
 
 ActionManager::ActionManager()

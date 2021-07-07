@@ -14,7 +14,7 @@ namespace despot {
     public:
         int actionId;
         ActionType actionType;
-        virtual void SetActionParametersByState(IcapsState *state, std::vector<int> indexes);
+        virtual void SetActionParametersByState(IcapsState *state, std::vector<std::string> indexes);
         virtual std::string GetActionParametersJson_ForActionExecution() { return ""; };
         virtual std::string GetActionParametersJson_ForActionRegistration() { return ""; };
         
@@ -24,8 +24,9 @@ class NavigateActionDescription: public ActionDescription
 {
     public: 
         tLocation oDesiredLocation;
+        std::string strLink_oDesiredLocation;
         NavigateActionDescription(int _oDesiredLocation_Index);
-        virtual void SetActionParametersByState(IcapsState *state, std::vector<int> indexes);
+        virtual void SetActionParametersByState(IcapsState *state, std::vector<std::string> indexes);
         virtual std::string GetActionParametersJson_ForActionExecution();
         virtual std::string GetActionParametersJson_ForActionRegistration();
         NavigateActionDescription(){};

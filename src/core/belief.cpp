@@ -326,6 +326,7 @@ const vector<State*>& ParticleBelief::particles() const {
 vector<State*> ParticleBelief::Sample(int num) const {
 	return Belief::Sample(num, particles_, model_);
 }
+ 
 
 void ParticleBelief::Update(int action, OBS_TYPE obs) {
 	history_.Add(action, obs);

@@ -28,7 +28,7 @@ public:
 
 	virtual std::vector<State*> Sample(int num) const = 0;
 	virtual void Update(int action, OBS_TYPE obs) = 0;
-
+	virtual void Update(int action, OBS_TYPE obs, std::map<std::string, bool> updatesFromAction){};
 	virtual std::string text() const;
 	friend std::ostream& operator<<(std::ostream& os, const Belief& belief);
 	virtual Belief* MakeCopy() const = 0;
@@ -67,8 +67,9 @@ public:
 	virtual std::vector<State*> Sample(int num) const;
 
 	virtual void Update(int action, OBS_TYPE obs);
+	virtual void Update(int action, OBS_TYPE obs, std::map<std::string, bool> updatesFromAction){};
 	virtual void UpdateStateByRealModuleObservation(State &s_state, int actionId, OBS_TYPE &observation) const {};
-	
+
 	virtual Belief* MakeCopy() const;
 
 	virtual std::string text() const;

@@ -10,20 +10,22 @@ using json = nlohmann::json;
 #include <utility>
 #include <string>
 namespace despot { 
-    void ActionDescription::SetActionParametersByState(IcapsState *state, std::vector<int> indexes){}
+    void ActionDescription::SetActionParametersByState(IcapsState *state, std::vector<std::string> indexes){}
     std::vector<ActionDescription*> ActionManager::actions;
 
 
-void NavigateActionDescription::SetActionParametersByState(IcapsState *state, std::vector<int> indexes)
+void NavigateActionDescription::SetActionParametersByState(IcapsState *state, std::vector<std::string> indexes)
 {
-    oDesiredLocation = state->tLocationObjects[indexes[0]];
+    strLink_oDesiredLocation = indexes[0];
+    oDesiredLocation = (state->tLocationObjectsForActions[indexes[0]]);
 }
 
 std::string NavigateActionDescription::GetActionParametersJson_ForActionExecution()
 {  
     json j;
-    j["oDesiredLocation"]["discrete_location"] = oDesiredLocation.discrete_location;
-    j["oDesiredLocation"]["actual_location"] = oDesiredLocation.actual_location;
+    j["ParameterLinks"]["oDesiredLocation"] = strLink_oDesiredLocation;
+    j["ParameterValues"]["oDesiredLocation"]["discrete_location"] = oDesiredLocation.discrete_location;
+    j["ParameterValues"]["oDesiredLocation"]["actual_location"] = oDesiredLocation.actual_location;
     std::string str(j.dump().c_str());
     return str;
     //std::string s= utility::conversions::to_utf8string(j.dump(4));
@@ -57,17 +59,31 @@ void ActionManager::Init(IcapsState* state)
     ActionManager::actions.push_back(observe);
 	
 	NavigateActionDescription* navActions = new NavigateActionDescription[4];
-    std::vector<int> indexes;
-    for (int i = 0; i < 4; i++)
+    std::vector<std::string> indexes;
+
+    map<std::string, tLocation>::iterator it;
+    int i = 0;
+    for (it = state->tLocationObjectsForActions.begin(); it != state->tLocationObjectsForActions.end(); it++)
     {
         indexes.clear();
-        indexes.push_back(i);
+        indexes.push_back(it->first);
         NavigateActionDescription &navAction = navActions[i];
         navAction.SetActionParametersByState(state, indexes);
 		navAction.actionId = id++;
         navAction.actionType = navigateAction;
         ActionManager::actions.push_back(&navAction);
+        i++;
     }
+    // for (int i = 0; i < 4; i++)
+    // {
+    //     indexes.clear();
+    //     indexes.push_back(i);
+    //     NavigateActionDescription &navAction = navActions[i];
+    //     navAction.SetActionParametersByState(state, indexes);
+	// 	navAction.actionId = id++;
+    //     navAction.actionType = navigateAction;
+    //     ActionManager::actions.push_back(&navAction);
+    // }
 
 	for(int j=0;j< ActionManager::actions.size();j++)
 	{

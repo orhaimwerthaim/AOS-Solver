@@ -170,7 +170,8 @@ bool Evaluator::RunStep(int step, int round) {
 	//TODO:: remove prints
 	logi << "--------------------------------------EXECUTED---------------------------------------------------------------------------" << endl;
 	model_->PrintState(*state_);
-	bool terminal = ExecuteAction(action, reward, obs);
+	std::map<std::string, bool> updatesFromAction;
+	bool terminal = ExecuteAction(action, reward, obs, updatesFromAction);
 	model_->PrintState(*state_);
 	logi << "action:" << action << ", reward:"
 		 << ", reward:" << reward << ", observation:" << obs << endl;
@@ -223,7 +224,7 @@ bool Evaluator::RunStep(int step, int round) {
 	*out_<<endl;
 
 	start_t = get_time_second();
-	solver_->Update(action, obs);
+	solver_->Update(action, obs, updatesFromAction);
 	end_t = get_time_second();
 	logi << "[RunStep] Time spent in Update(): " << (end_t - start_t) << endl;
 
@@ -350,7 +351,7 @@ double POMDPEvaluator::EndRound() {
 	return total_undiscounted_reward_;
 }
 
-bool POMDPEvaluator::ExecuteAction(int action, double& reward, OBS_TYPE& obs) {
+bool POMDPEvaluator::ExecuteAction(int action, double& reward, OBS_TYPE& obs, std::map<std::string, bool>& updates) {
 	ActionDescription &actDesc = *ActionManager::actions[action];
 	double random_num = random_.NextDouble();
 	if(Globals::IsInternalSimulation())
@@ -376,7 +377,7 @@ bool POMDPEvaluator::ExecuteAction(int action, double& reward, OBS_TYPE& obs) {
 		bsoncxx::oid actionId = MongoDB_Bridge::SendActionToExecution(actDesc.actionId, actionName, actionParameters);
 
 		std::string obsStr = "";
-		std::map<std::string, bool> updateStateVariablesList = MongoDB_Bridge::WaitForActionResponse(actionId, obsStr);
+		updates = MongoDB_Bridge::WaitForActionResponse(actionId, obsStr);
 
 		// bsoncxx::document::element element = res["wasRead"];
 		// bool val = element.get_bool().value;
