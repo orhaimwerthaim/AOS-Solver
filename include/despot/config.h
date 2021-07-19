@@ -33,7 +33,7 @@ struct Config {
 		max_policy_sim_len(10),
 		noise(0.1),
 		silence(false),
-		internalSimulation(false)
+		internalSimulation(true)
 		{
 		
 	}
