@@ -12,6 +12,7 @@
 #include <bsoncxx/builder/stream/document.hpp>
 #include <bsoncxx/builder/stream/array.hpp>
 #include <sstream>
+#include <unistd.h>
 
 using bsoncxx::builder::stream::close_array;
 using bsoncxx::builder::stream::close_document;
@@ -88,6 +89,7 @@ std::map<std::string, bool> MongoDB_Bridge::WaitForActionResponse(bsoncxx::oid a
     }
     if(actionFinished)
     {
+      usleep(500000);
         auto filter2 = document{} << "UpdatingActionSequenceId" << MongoDB_Bridge::currentActionSequenceId << finalize;
         mongocxx::cursor cursor2 = MongoDB_Bridge::globalVariablesAssignmentsColllection.find({filter2});
         for(auto doc : cursor2) 
