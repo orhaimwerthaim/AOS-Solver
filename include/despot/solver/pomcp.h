@@ -4,6 +4,7 @@
 #include <despot/core/pomdp.h>
 #include <despot/core/node.h>
 #include <despot/core/globals.h> 
+#include <despot/model_primitives/Bp/actionManager.h> 
 namespace despot {
 
 /* =============================================================================

@@ -31,6 +31,8 @@ namespace despot {
   mongocxx::collection MongoDB_Bridge::localVariableColllection;
   mongocxx::collection MongoDB_Bridge::actionsCollection;
   mongocxx::collection MongoDB_Bridge::globalVariablesAssignmentsColllection;
+
+  mongocxx::collection MongoDB_Bridge::beliefStatesColllection;
   int MongoDB_Bridge::currentActionSequenceId = 1;
   void MongoDB_Bridge::Init()
   {
@@ -48,6 +50,8 @@ namespace despot {
       MongoDB_Bridge::globalVariablesAssignmentsColllection = MongoDB_Bridge::db["GlobalVariablesAssignments"];
       MongoDB_Bridge::localVariableColllection = MongoDB_Bridge::db["localVariables"];
       MongoDB_Bridge::actionsCollection = MongoDB_Bridge::db["Actions"];
+
+      MongoDB_Bridge::beliefStatesColllection = MongoDB_Bridge::db["BeliefStates"];
     }
 }
 
@@ -145,6 +149,15 @@ bsoncxx::oid MongoDB_Bridge::SendActionToExecution(int actionId, std::string act
 
   bsoncxx::oid oid = retVal->inserted_id().get_oid().value;
   return oid;
+}
+
+void MongoDB_Bridge::SaveBeliefState(std::string belief)
+{
+MongoDB_Bridge::Init(); 
+  auto builder = bsoncxx::builder::stream::document{};
+  bsoncxx::document::value doc_value = bsoncxx::from_json(belief); 
+                                                                 
+MongoDB_Bridge::beliefStatesColllection.insert_one(doc_value.view());
 }
 
 void MongoDB_Bridge::RegisterAction(int actionId, std::string actionName, std::string actionParameters, std::string actionDescription)

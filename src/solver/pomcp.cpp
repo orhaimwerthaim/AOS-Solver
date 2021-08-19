@@ -87,8 +87,10 @@ ValuedAction POMCP::Search(double timeout) {
 	std::vector<int> actionSeq (actArr, actArr + sizeof(actArr) / sizeof(actArr[0]) );
 	 
 	std::vector<int>*	simulatedActionSequence = actionSeq.size() > 0 ? &actionSeq : NULL;	 
-	
-
+	////////////////
+	vector<State*> temp = belief_->Sample(1000);
+	Prints::GetJsonForBelief(temp, 1);
+	///////////////////////////////
 	int hist_size = history_.Size();
 	bool done = false;
 	int num_sims = 0;
@@ -515,6 +517,8 @@ void DPOMCP::belief(Belief* b) {
 
 ValuedAction DPOMCP::Search(double timeout) {
 	double start_cpu = clock(), start_real = get_time_second();
+
+
 
 	vector<State*> particles = belief_->Sample(Globals::config.num_scenarios);
 

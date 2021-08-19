@@ -5,7 +5,7 @@
 #include <despot/model_primitives/Bp/enum_map_Bp.h> 
 #include <vector>
 #include <utility>
-#include <string>
+#include <string> 
 namespace despot { 
 
 
@@ -51,6 +51,8 @@ class Prints
 	static std::string PrintActionType(ActionType);
 	static std::string PrintState(BpState state);
 	static std::string PrintObs(int action, int obs);
+    static std::string GetJsonForBelief(vector<State*> particles, int actionSequenceId);
+    static std::string GetStateJson(State& state);
 };
 }
 #endif //ACTION_MANAGER_H

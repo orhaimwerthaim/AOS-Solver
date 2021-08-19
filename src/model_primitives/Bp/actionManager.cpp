@@ -1,9 +1,9 @@
 
 #include <despot/model_primitives/Bp/actionManager.h>
-#include <despot/util/mongoDB_Bridge.h>
-#include <nlohmann/json.hpp> 
-
+#include <despot/util/mongoDB_Bridge.h> 
+#include <nlohmann/json.hpp>  
 // for convenience
+
 using json = nlohmann::json;
 //#include "actionManager.h"
 #include <vector>
@@ -143,6 +143,24 @@ std::string Prints::PrintObs(int action, int obs)
         return ss.str();
     }
 
+    std::string Prints::GetStateJson(State& _state)
+    {
+        const BpState& state = static_cast<const BpState&>(_state);
+        json j;
+    j["agentOneLoc"] = Prints::PrinttCell(state.agentOneLoc);
+    j["agentTwoLoc"] = Prints::PrinttCell(state.agentTwoLoc);
+    j["isAgentOneTurn"] = Prints::PrinttCell(state.bOneLoc);
+    //j["stateTest"] = state;
+
+
+
+     
+
+    std::string str(j.dump().c_str());
+    return str;
+     
+    }
+
 
 
     std::string Prints::PrintActionType(ActionType actType)
@@ -154,5 +172,18 @@ std::string Prints::PrintObs(int action, int obs)
         }
     }
 
+ std::string Prints::GetJsonForBelief(vector<State*> particles, int actionSequenceId)
+{
+    json j;
+    j["ActionSequnceId"] = actionSequenceId; 
 
+    for(int i=0; i< particles.size(); i++)
+    {
+        j["BeliefeState"][i] = json::parse(Prints::GetStateJson(*particles[0])); 
+    }
+    
+    std::string str(j.dump().c_str());
+    MongoDB_Bridge::SaveBeliefState(str);
+    return str;
+}
 }

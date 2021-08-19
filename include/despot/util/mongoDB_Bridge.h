@@ -22,8 +22,8 @@ namespace despot {
         static std::map<std::string, bool> WaitForActionResponse(bsoncxx::oid actionForExecuteId, std::string &actionTextObservation);
         static bsoncxx::oid SendActionToExecution(int actionId, std::string actionName, std::string actionParameters);
         static void RegisterAction(int actionId, std::string actionName, std::string actionParameters, std::string actionDescription);
-   //     static void UpdateActionResponse(std::string actionName, std::string actionResponse);
-        
+        static void SaveBeliefState(std::string belief);
+        //     static void UpdateActionResponse(std::string actionName, std::string actionResponse);
 
         static bool isInit;
         static mongocxx::instance instance; // This should be done only once.
@@ -36,6 +36,7 @@ namespace despot {
         static mongocxx::collection moduleResponseColllection;
         static mongocxx::collection localVariableColllection;
         static mongocxx::collection globalVariablesAssignmentsColllection;
+        static mongocxx::collection beliefStatesColllection;
         static int currentActionSequenceId;
-};
+}; 
 }
