@@ -1,8 +1,8 @@
 #include <despot/evaluator.h>
 #include <despot/util/mongoDB_Bridge.h>
-#include <despot/model_primitives/icaps/enum_map_icaps.h>
-#include <despot/model_primitives/icaps/actionManager.h>
-#include <despot/model_primitives/icaps/state.h>
+#include <despot/model_primitives/Bp/enum_map_Bp.h>
+#include <despot/model_primitives/Bp/actionManager.h>
+#include <despot/model_primitives/Bp/state.h>
 #include <nlohmann/json.hpp>
 using namespace std;
 
@@ -134,6 +134,7 @@ Evaluator::Evaluator(DSPOMDP* model, string belief_type, Solver* solver,
 	start_clockt_(start_clockt),
 	target_finish_time_(-1),
 	out_(out) {
+        
 }
 
 Evaluator::~Evaluator() {
@@ -156,9 +157,23 @@ bool Evaluator::RunStep(int step, int round) {
 	}
 
 	double step_start_t = get_time_second();
+    double start_t = get_time_second();
+	int action = -1;
 
-	double start_t = get_time_second();
-	int action = solver_->Search().action;
+	if(action_sequence_to_sim.size() == 0)
+	{
+        action = solver_->Search().action;
+	}
+	else
+	{
+		action = action_sequence_to_sim[0];
+		action_sequence_to_sim.erase(action_sequence_to_sim.begin());
+		if(action_sequence_to_sim.size() == 0)
+		{
+			action_sequence_to_sim.push_back(-1);
+		}
+	}
+
 	double end_t = get_time_second();
 	logi << "[RunStep] Time spent in " << typeid(*solver_).name()
 		<< "::Search(): " << (end_t - start_t) << endl;
@@ -174,7 +189,7 @@ bool Evaluator::RunStep(int step, int round) {
 	bool terminal = ExecuteAction(action, reward, obs, updatesFromAction);
 	model_->PrintState(*state_);
 	logi << "action:" << action << ", reward:"
-		 << ", reward:" << reward << ", observation:" << obs << endl;
+		 << ", reward:" << reward << ", observation:" << enum_map_Bp::vecResponseEnumToString[(BpResponseModuleAndTempEnums)obs] << endl;
 	end_t = get_time_second();
 	logi << "[RunStep] Time spent in ExecuteAction(): " << (end_t - start_t)
 		<< endl;
@@ -196,8 +211,7 @@ bool Evaluator::RunStep(int step, int round) {
 	}
 
 	if (!Globals::config.silence && out_) {
-		*out_ << "- Observation = ";
-		model_->PrintObs(*state_, obs, *out_);
+		*out_ << endl << "- Observation = " << enum_map_Bp::vecResponseEnumToString[(BpResponseModuleAndTempEnums)obs];
 	}
 
 	if (state_ != NULL) {
@@ -224,7 +238,10 @@ bool Evaluator::RunStep(int step, int round) {
 	*out_<<endl;
 
 	start_t = get_time_second();
-	solver_->Update(action, obs, updatesFromAction);
+	if(action_sequence_to_sim.size() == 0)
+	{
+		solver_->Update(action, obs, updatesFromAction);
+	}
 	end_t = get_time_second();
 	logi << "[RunStep] Time spent in Update(): " << (end_t - start_t) << endl;
 
@@ -367,91 +384,21 @@ bool POMDPEvaluator::ExecuteAction(int action, double& reward, OBS_TYPE& obs, st
 	}
 	else
 	{
-		//auto pos = enum_map_icaps::vecActionTypeEnumToString.find(ActionManager::actions[action]);
 		ActionType acType(actDesc.actionType);
-		//ActionType acType2 = ActionManager::actions[action].actionType;
 		std::string actionParameters = actDesc.GetActionParametersJson_ForActionExecution();
 		
-		std::string actionName = enum_map_icaps::vecActionTypeEnumToString[acType];
+		std::string actionName = enum_map_Bp::vecActionTypeEnumToString[acType];
 	  
 		bsoncxx::oid actionId = MongoDB_Bridge::SendActionToExecution(actDesc.actionId, actionName, actionParameters);
 
 		std::string obsStr = "";
 		updates = MongoDB_Bridge::WaitForActionResponse(actionId, obsStr);
 
-		// bsoncxx::document::element element = res["wasRead"];
-		// bool val = element.get_bool().value;
-		// bsoncxx::document::element element2 = res["responseText"];
-		// auto s = element2.get_utf8().value;
-		// std::string str = s.to_string();
-
-		// bool terminal = model_->Step(*state_, random_num, action, reward, obs);
-
-		// reward_ = reward;
-		// total_discounted_reward_ += Globals::Discount(step_) * reward;
-		// total_undiscounted_reward_ += reward;
-		// obs = enum_map_icaps::vecStringToResponseEnum[str];
-		obs = enum_map_icaps::vecStringToResponseEnum[obsStr];
+		obs = enum_map_Bp::vecStringToResponseEnum[obsStr];
 		return false;
 	}
 }
-// IcapsResponseModuleAndTempEnums Evaluator::CalculateModuleResponse(std::string moduleName)
-// {
-// 	IcapsResponseModuleAndTempEnums response = illegalActionObs;
-	
-// 	// std::vector<bsoncxx::document::view> moduleLocalVars = MongoDB_Bridge::WaitForActionResponse(moduleName);
-// 	// if(moduleName == "pick")
-// 	// {
-// 	// 	float gripper_opening = -1;
-// 	// 	float top_gripper_pressure = -1;
-// 	// 	float gripper_pressure = -1;
-// 	// 	for (int i = 0; moduleLocalVars.size() > i; i++)
-// 	// 	{
-// 	// 		bsoncxx::document::view &lVar = moduleLocalVars[i];
-// 	// 		std::string varName = lVar["varName"].get_utf8().value.to_string();
-// 	// 		if (varName == "top_gripper_pressure")
-// 	// 		{
-// 	// 			top_gripper_pressure = lVar["value"].get_double();
-// 	// 		}
-// 	// 		if (varName == "gripper_opening")
-// 	// 		{
-// 	// 			gripper_opening = lVar["value"].get_double();
-// 	// 		}
-// 	// 		if (varName == "gripper_pressure")
-// 	// 		{
-// 	// 			gripper_pressure = lVar["value"].get_double();
-// 	// 		}
-// 	// 	}
-// 	// 	IcapsResponseModuleAndTempEnums moduleResponse = pick_res_pick_action_success;
-// 	// 	if(gripper_pressure > 0 && gripper_opening > 0)
-// 	// 	{
-// 	// 		moduleResponse = pick_res_pick_action_success;
-// 	// 	}
-// 	// 	else if(gripper_pressure == 0)
-// 	// 	{
-// 	// 		moduleResponse = pick_res_not_holding;
-// 	// 	}
-// 	// 	else if(top_gripper_pressure > 200)
-// 	// 	{
-// 	// 		moduleResponse = pick_res_broke_the_object;
-// 	// 	}
-// 	// }	
-// 	// if(moduleName == "observe")
-// 	// {
-// 	// 	bool observedLocation = false;
-// 	// 	for (int i = 0; moduleLocalVars.size() > i; i++)
-// 	// 	{
-// 	// 		bsoncxx::document::view &lVar = moduleLocalVars[i];
-// 	// 		//json j = "{ \"happy\": true, \"pi\": 3.141 }"_json;
-// 	// 		json j;
-			
-// 	// 	}
-// 	// }
-// 	// MongoDB_Bridge::UpdateActionResponse(moduleName, enum_map_icaps::vecResponseEnumToString[response]);
 
-	
-// 	return response;
-// }
 double POMDPEvaluator::End() {
 	return 0; // Not to be used
 }

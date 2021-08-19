@@ -1,6 +1,6 @@
 #include <despot/simple_tui.h>
-#include <despot/model_primitives/icaps/enum_map_icaps.h> 
-#include <despot/model_primitives/icaps/actionManager.h> 
+#include <despot/model_primitives/Bp/enum_map_Bp.h> 
+#include <despot/model_primitives/Bp/actionManager.h> 
 using namespace std;
 
 namespace despot {
@@ -368,7 +368,7 @@ void SimpleTUI::PrintResult(int num_runs, Evaluator *simulator,
 }
 
 int SimpleTUI::run(int argc, char *argv[]) {
-  enum_map_icaps::Init();
+  enum_map_Bp::Init();
   
   clock_t main_clock_start = clock();
   EvalLog::curr_inst_start_time = get_time_second();

@@ -5,7 +5,7 @@
 #include <despot/core/pomdp.h>
 #include <despot/pomdpx/pomdpx.h>
 #include <despot/util/util.h>
-#include <despot/model_primitives/icaps/enum_map_icaps.h>
+#include <despot/model_primitives/Bp/enum_map_Bp.h>
 namespace despot {
 
 /* =============================================================================
@@ -53,6 +53,8 @@ public:
  * in a real.
  */
 class Evaluator {
+	private:
+	std::vector<int> action_sequence_to_sim;
 protected:
 	DSPOMDP* model_;
 	std::string belief_type_;

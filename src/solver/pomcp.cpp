@@ -592,7 +592,6 @@ void DPOMCP::Update(int action, OBS_TYPE obs) {
 
 std::string POMCP::GenerateDotGraph(VNode* root, int depthLimit, const DSPOMDP* model)
 {
-	std::string debug_graph_dir = "/home/or/Projects/dot";
 	stringstream ssNodes;
 	stringstream ssEdges; 
 	
@@ -603,11 +602,11 @@ std::string POMCP::GenerateDotGraph(VNode* root, int depthLimit, const DSPOMDP* 
 
 	ssNodes << ssEdges.str() << "}" << endl;
 
-	ofstream MyFile("/home/or/Projects/dot/debug.dot");
+	ofstream MyFile("/home/or/Projects/debug.dot");
 	MyFile << ssNodes.str();
 	MyFile.close();
 	//run: "dot -Tpdf  debug.dot > debug.pdf"
-	system("(cd /home/or/Projects/dot;dot -Tpdf  debug.dot > debug.pdf)");
+	system("(cd /home/or/Projects;dot -Tpdf  debug.dot > debug.pdf)");
 	return ssNodes.str();
 }
 

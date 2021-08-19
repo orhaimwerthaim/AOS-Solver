@@ -21,10 +21,10 @@ struct Config {
 	bool silence;
 
 	Config() :
-		search_depth(42),
-		discount(0.9999),
+		search_depth(8),
+		discount(8),
 		root_seed(42),
-		time_per_move(2),
+		time_per_move(0.5),
 		num_scenarios(500),
 		pruning_constant(0),
 		xi(0.95),

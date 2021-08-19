@@ -147,13 +147,14 @@ bsoncxx::oid MongoDB_Bridge::SendActionToExecution(int actionId, std::string act
   return oid;
 }
 
-void MongoDB_Bridge::RegisterAction(int actionId, std::string actionName, std::string actionParameters)
+void MongoDB_Bridge::RegisterAction(int actionId, std::string actionName, std::string actionParameters, std::string actionDescription)
 {
   MongoDB_Bridge::Init(); 
   auto builder = bsoncxx::builder::stream::document{};
   bsoncxx::document::value doc_value = !actionParameters.empty() ? (
                                                                        builder << "ActionID" << actionId 
                                                                                << "ActionName" << actionName
+                                                                               << "ActionDecription" << actionDescription
                                                                                << "ActionConstantParameters" << open_array
                                                                                << [&](bsoncxx::builder::stream::array_context<> arr)
                                                                        { arr << bsoncxx::from_json(actionParameters); }
@@ -161,6 +162,7 @@ void MongoDB_Bridge::RegisterAction(int actionId, std::string actionName, std::s
                                                                  : (
                                                                        builder << "ActionID" << actionId 
                                                                                << "ActionName" << actionName
+                                                                               << "ActionDecription" << actionDescription
                                                                                << "ActionConstantParameters" << open_array
                                                                                << close_array << finalize);
 auto filter = document{} << "ActionID" << actionId << finalize;

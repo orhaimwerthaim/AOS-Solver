@@ -21,7 +21,7 @@ namespace despot {
 
         static std::map<std::string, bool> WaitForActionResponse(bsoncxx::oid actionForExecuteId, std::string &actionTextObservation);
         static bsoncxx::oid SendActionToExecution(int actionId, std::string actionName, std::string actionParameters);
-        static void RegisterAction(int actionId, std::string actionName, std::string actionParameters);
+        static void RegisterAction(int actionId, std::string actionName, std::string actionParameters, std::string actionDescription);
    //     static void UpdateActionResponse(std::string actionName, std::string actionResponse);
         
 
