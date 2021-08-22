@@ -380,6 +380,7 @@ bool POMDPEvaluator::ExecuteAction(int action, double& reward, OBS_TYPE& obs, st
 		total_discounted_reward_ += Globals::Discount(step_) * reward;
 		total_undiscounted_reward_ += reward;
 
+		MongoDB_Bridge::currentActionSequenceId++;
 		return terminal;
 	}
 	else
@@ -395,6 +396,7 @@ bool POMDPEvaluator::ExecuteAction(int action, double& reward, OBS_TYPE& obs, st
 		updates = MongoDB_Bridge::WaitForActionResponse(actionId, obsStr);
 
 		obs = enum_map_Bp::vecStringToResponseEnum[obsStr];
+		MongoDB_Bridge::currentActionSequenceId++;
 		return false;
 	}
 }

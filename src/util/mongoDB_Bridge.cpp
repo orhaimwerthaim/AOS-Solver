@@ -106,7 +106,7 @@ std::map<std::string, bool> MongoDB_Bridge::WaitForActionResponse(bsoncxx::oid a
     }
   }
 
-  MongoDB_Bridge::currentActionSequenceId++;
+  
   return globalVarUpdates;
 }
 

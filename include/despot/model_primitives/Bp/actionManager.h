@@ -44,15 +44,15 @@ public:
 class Prints
 {
 	public:
-    static std::string PrinttDirection(tDirection);
-    static std::string PrinttCell(tCell);
+        static std::string PrinttDirection(tDirection);
+        static std::string PrinttCell(tCell);
 
-	static std::string PrintActionDescription(ActionDescription*);
-	static std::string PrintActionType(ActionType);
-	static std::string PrintState(BpState state);
-	static std::string PrintObs(int action, int obs);
-    static std::string GetJsonForBelief(vector<State*> particles, int actionSequenceId);
-    static std::string GetStateJson(State& state);
+        static std::string PrintActionDescription(ActionDescription *);
+        static std::string PrintActionType(ActionType);
+        static std::string PrintState(BpState state);
+        static std::string PrintObs(int action, int obs);
+        static std::string GetJsonForBelief(vector<State *> particles);
+        static std::string GetStateJson(State &state);
 };
 }
 #endif //ACTION_MANAGER_H

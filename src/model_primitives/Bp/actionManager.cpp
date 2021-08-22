@@ -172,12 +172,12 @@ std::string Prints::PrintObs(int action, int obs)
         }
     }
 
- std::string Prints::GetJsonForBelief(vector<State*> particles, int actionSequenceId)
+ std::string Prints::GetJsonForBelief(vector<State*> particles)
 {
     json j;
-    j["ActionSequnceId"] = actionSequenceId; 
+    j["ActionSequnceId"] =  MongoDB_Bridge::currentActionSequenceId;
 
-    for(int i=0; i< particles.size(); i++)
+    for (int i = 0; i < particles.size(); i++)
     {
         j["BeliefeState"][i] = json::parse(Prints::GetStateJson(*particles[0])); 
     }

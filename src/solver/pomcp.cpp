@@ -88,15 +88,19 @@ ValuedAction POMCP::Search(double timeout) {
 	 
 	std::vector<int>*	simulatedActionSequence = actionSeq.size() > 0 ? &actionSeq : NULL;	 
 	////////////////
-	vector<State*> temp = belief_->Sample(1000);
-	Prints::GetJsonForBelief(temp, 1);
+	if(Globals::config.saveBeliefToDB)
+	{
+		vector<State*> temp = belief_->Sample(1000);
+		Prints::GetJsonForBelief(temp);
+	}
 	///////////////////////////////
 	int hist_size = history_.Size();
 	bool done = false;
 	int num_sims = 0;
 	while (true) {
 		vector<State*> particles = belief_->Sample(1000);
-		for (int i = 0; i < particles.size(); i++) {
+		for (int i = 0; i < particles.size(); i++)
+		{
 			State* particle = particles[i];
 			logd << "[POMCP::Search] Starting simulation " << num_sims << endl;
 
