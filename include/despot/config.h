@@ -22,10 +22,10 @@ struct Config {
     bool saveBeliefToDB;
 
 	Config() :
-		search_depth(140),
+		search_depth(80),
 		discount(0.95),
 		root_seed(42),
-		time_per_move(0.05),
+		time_per_move(0.1),
 		num_scenarios(500),
 		pruning_constant(0),
 		xi(0.95),
@@ -35,7 +35,7 @@ struct Config {
 		noise(0.1),
 		silence(false),
 		internalSimulation(true),
-        saveBeliefToDB(false)
+        saveBeliefToDB(true)
 		{
 		
 	}

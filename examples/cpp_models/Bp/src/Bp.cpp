@@ -53,15 +53,15 @@ void BpBelief::Update(int actionId, OBS_TYPE obs) {
 		if (!terminal && o == obs) 
 			{
 				BpState &Bp_particle = static_cast<BpState &>(*particle);
-				// if(!Globals::IsInternalSimulation() && updates.size() > 0)
-				// {
-				// 	BpState::SetAnyValueLinks(&Bp_particle);
-				// 	map<std::string, bool>::iterator it;
-				// 	for (it = updates.begin(); it != updates.end(); it++)
-				// 	{
-				// 		*(Bp_particle.anyValueUpdateDic[it->first]) = it->second; 
-				// 	} 
-				// }
+				//if(!Globals::IsInternalSimulation() && updates.size() > 0)
+				//{
+				//	BpState::SetAnyValueLinks(&Bp_particle);
+				//	map<std::string, bool>::iterator it;
+				//	for (it = updates.begin(); it != updates.end(); it++)
+				//	{
+				//		*(Bp_particle.anyValueUpdateDic[it->first]) = it->second; 
+				//	} 
+				//}
 				updated.push_back(particle);
 		} else {
 			Bp_->Free(particle);
@@ -87,26 +87,33 @@ void BpBelief::Update(int actionId, OBS_TYPE obs) {
 
 class BpPOMCPPrior: public POMCPPrior {
 private:
-	const Bp* bp_;
+	const Bp* Bp_;
 
 public:
 	BpPOMCPPrior(const Bp* model) :
 		POMCPPrior(model),
-		bp_(model) {
+		Bp_(model) {
 	}
 
 	void ComputePreference(const State& state) {
-		const BpState& bp_state = static_cast<const BpState&>(state);
+		const BpState& Bp_state = static_cast<const BpState&>(state);
 		legal_actions_.clear();
 		preferred_actions_.clear();
 
 		for (int a = 0; a < 12; a++) {
 			double reward = 0;
-			bool meetPrecondition = true;
-			Bp::CheckPreconditions(bp_state, reward, meetPrecondition, a);
+			bool meetPrecondition = false;
+            bool isPreferredAction = false;
+			Bp::CheckPreconditions(Bp_state, reward, meetPrecondition, a);
+            Bp::CheckIsPreferredAction(Bp_state, isPreferredAction, a);
+            
 			if(meetPrecondition)
 			{
-			legal_actions_.push_back(a);
+			    legal_actions_.push_back(a);
+			}
+            if(meetPrecondition && isPreferredAction)
+			{
+			    preferred_actions_.push_back(a);
 			}
 		}
 	}
@@ -197,62 +204,11 @@ POMCPPrior* Bp::CreatePOMCPPrior(string name) const {
 		return new BpPOMCPPrior(this);
 }
 
- std::string Bp::GetCellDesc(tCell cell, const BpState& state) const
-{
-	std::string res = "";
-	
-	if(state.agentOneLoc == cell)
-	{
-		res += (state.isAgentOneTurn ? "A1*" : "A1");
-		if(state.JointPushDirection != None)
-		{
-			res += state.JointPushDirection == Up ? "\^J" : state.JointPushDirection == Down ? "vJ"
-													  : state.JointPushDirection == Left   ? "<J"
-																						   : ">J";
-		}
-	}
-	
-	if (state.agentTwoLoc == cell)
-	{
-		res += res.length() > 0 ? "," : "";
-		res += (state.isAgentOneTurn ? "A2" : "A2*");
-	} 
-	if(state.bOneLoc == cell)
-	{
-		res += res.length() > 0 ? ",B1" : "B1";
-	}
-	if(state.bTwoLoc == cell)
-	{
-		res += res.length() > 0 ? ",B2" : "B2";
-	}
-	int gapsNeeded = 11 - res.length();
-	std::string start(int(ceil(gapsNeeded / 2)), ' ');
-	std::string end(int(floor(gapsNeeded / 2)), ' ');
-
-	res = start + res + end;
-	return res;
-}
-
-void Bp::PrintState(const State& _state, ostream& ostr) const {
-	const BpState& state = static_cast<const BpState&>(_state);
+void Bp::PrintState(const State& state, ostream& ostr) const {
+	const BpState& farstate = static_cast<const BpState&>(state);
 	if (ostr)
-		 try
-		 {
-			 ostr << "------------------------" << endl;
-		ostr << "|" << GetCellDesc(L10,state) << "|" << GetCellDesc(L11,state) << "|" << endl;
-		ostr << "------------------------" << endl;
-		ostr << "|" << GetCellDesc(L00,state) << "|" << GetCellDesc(L01,state) << "|" << endl;
-		ostr << "------------------------" << endl;
-		ostr << Prints::PrintState(state);
-		 }
-		 catch(const std::exception& e)
-		 {
-			 ostr << endl<<"Exception:";
-		 }
-		 
-		
+		ostr << Prints::PrintState(farstate);
 }
-
 
 void Bp::PrintObs(const State& state, OBS_TYPE observation,
 	ostream& ostr) const {
@@ -333,7 +289,7 @@ bool Bp::Step(State& s_state__, double rand_num, int actionId, double& reward,
 	return finalState;
 }
 
-void Bp::CheckPreconditions(const BpState& state, double &reward, bool &__meetPrecondition, int actionId) 
+void Bp::CheckPreconditions(const BpState& state, double &reward, bool &__meetPrecondition, int actionId)
     {
         ActionType &actType = ActionManager::actions[actionId]->actionType;
         __meetPrecondition = true;
@@ -354,7 +310,7 @@ void Bp::CheckPreconditions(const BpState& state, double &reward, bool &__meetPr
                 if(!state.isAgentOneTurn&&(state.agentTwoLoc==L00||state.agentTwoLoc==L01)&&oDirection==Down)__meetPrecondition=false;
                 if(!state.isAgentOneTurn&&(state.agentTwoLoc==L10||state.agentTwoLoc==L00)&&oDirection==Left)__meetPrecondition=false;
                 if(!state.isAgentOneTurn&&(state.agentTwoLoc==L01||state.agentTwoLoc==L11)&&oDirection==Right)__meetPrecondition=false;
-               if(!__meetPrecondition) reward += -1;
+                if(!__meetPrecondition) reward += -1;
             }
             if(actType == navigateAction)
             {
@@ -369,6 +325,24 @@ void Bp::CheckPreconditions(const BpState& state, double &reward, bool &__meetPr
                 if(!state.isAgentOneTurn&&(state.agentTwoLoc==L10||state.agentTwoLoc==L00)&&oDirection==Left)__meetPrecondition=false;
                 if(!state.isAgentOneTurn&&(state.agentTwoLoc==L01||state.agentTwoLoc==L11)&&oDirection==Right)__meetPrecondition=false;
                 if(!__meetPrecondition) reward += -1;
+            }
+    }
+
+void Bp::CheckIsPreferredAction(const BpState& state, bool &__isPreferredAction, int actionId)
+    {
+        ActionType &actType = ActionManager::actions[actionId]->actionType;
+        __isPreferredAction = false;
+            if(actType == pushAction)
+            {
+                PushActionDescription act = *(static_cast<PushActionDescription *>(ActionManager::actions[actionId]));
+                tDirection &oDirection = act.oDirection;
+                tPushType &oIsJointPush = act.oIsJointPush;
+                if(oIsJointPush==JointPush&&!state.isAgentOneTurn&&oDirection==state.JointPushDirection)__isPreferredAction=true;
+            }
+            if(actType == navigateAction)
+            {
+                NavigateActionDescription act = *(static_cast<NavigateActionDescription *>(ActionManager::actions[actionId]));
+                tDirection &oDirection = act.oDirection;
             }
     }
 

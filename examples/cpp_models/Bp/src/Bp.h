@@ -72,7 +72,7 @@ public:
 	POMCPPrior* CreatePOMCPPrior(std::string name = "DEFAULT") const;
 
 	virtual void PrintState(const State& state, std::ostream& out = std::cout) const;
-	std::string GetCellDesc(tCell cell, const BpState &state) const;
+	
 
 	
 	virtual void PrintObs(const State& state, OBS_TYPE observation,
@@ -84,10 +84,13 @@ public:
 	virtual State* Copy(const State* particle) const;
 	virtual void Free(State* particle) const;
 	int NumActiveParticles() const;
- 	static void CheckPreconditions(const BpState& farstate, double &reward, bool &meetPrecondition, int actionId);
+ 	static void CheckPreconditions(const BpState& state, double &reward, bool &meetPrecondition, int actionId);
+    static void CheckIsPreferredAction(const BpState& state, bool &isPreferredAction, int actionId);
+     
+ 
 	Bp(); 
 
-private: 
+private:
 	void SampleModuleExecutionTime(const BpState& state, double rand_num, int actionId, int &moduleExecutionTime) const;
 	void ExtrinsicChangesDynamicModel(const BpState& initState, BpState& afterExState, double rand_num, int actionId,
 		const int &moduleExecutionTime) const;

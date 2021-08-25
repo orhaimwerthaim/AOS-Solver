@@ -148,7 +148,7 @@ ValuedAction POMCP::Search(double timeout) {
 	// 	}
 	// }
 
-	//std::string dot = POMCP::GenerateDotGraph(root_,1, model_);
+	std::string dot = POMCP::GenerateDotGraph(root_,1, model_);
 	// delete root_;
 	return astar;
 }
@@ -166,6 +166,7 @@ void POMCP::belief(Belief* b) {
 	delete root_;
 	root_ = NULL;
 }
+
 
 //void POMCP::Update(int action, OBS_TYPE obs, std::map<std::string, bool> updatesFromAction)
 void POMCP::Update(int action, OBS_TYPE obs)
@@ -190,6 +191,7 @@ void POMCP::Update(int action, OBS_TYPE obs)
 	history_.Add(action, obs);
 	//belief_->Update(action, obs, updatesFromAction);
 	belief_->Update(action, obs);
+
 	logi << "[POMCP::Update] Updated belief, history and root with action "
 		<< action << ", observation " << obs
 		<< " in " << (get_time_second() - start) << "s" << endl;
@@ -238,16 +240,16 @@ int POMCP::UpperBoundAction(const VNode* vnode, double explore_constant, const D
 			best_action = action;
 		}
 		//logi << "[POMCP::UpperBoundAction]:Depth:" << vnode->depth() << "Action:"<< action <<",N:" << vnode->count() << ",V:" << vnode->value() << endl;
-		// if (vnode->depth() < 1 && model)
-		// 	logi << "[POMCP::UpperBoundAction]:Depth:"<< vnode->depth() <<",N:" << vnode->count() <<",V:" << vnode->value() << model->GetActionDescription(action) << ",UCB:"<< ub<< endl;   
+		//if (vnode->depth() < 1 && model)
+		//	logi << "[POMCP::UpperBoundAction]:Depth:"<< vnode->depth() <<",N:" << vnode->count() <<",V:" << vnode->value() << model->GetActionDescription(action) << ",UCB:"<< ub<< endl;   
 
 			// if(model)
 			// logd << "[POMCP::UpperBoundAction]: Best Action is: "<< model->GetActionDescription(best_action) << "|With value:"<<best_ub <<endl;	
 	}
 	
 	assert(best_action != -1);
-	// if(model)
-	// 	logi << "[POMCP::UpperBoundAction]:Selected Action:"<< model->GetActionDescription(best_action) <<endl;
+	//if(model)
+	//	logi << "[POMCP::UpperBoundAction]:Selected Action:"<< model->GetActionDescription(best_action) <<endl;
 	return best_action;
 }
 
