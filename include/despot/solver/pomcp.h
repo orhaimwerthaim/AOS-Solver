@@ -100,7 +100,7 @@ public:
 	void reuse(bool r);
 	virtual void belief(Belief* b);
 	virtual void Update(int action, OBS_TYPE obs);
-	virtual void Update(int action, OBS_TYPE obs, std::map<std::string, bool> updatesFromAction);
+	//virtual void Update(int action, OBS_TYPE obs, std::map<std::string, bool> updatesFromAction);
 	static VNode* CreateVNode(int depth, const State*, POMCPPrior* prior,
 		const DSPOMDP* model);
 	static double Simulate(State* particle, VNode* root, const DSPOMDP* model,

@@ -60,7 +60,7 @@ public:
 	 * needed for Search() to function correctly.
 	 */
 	virtual void Update(int action, OBS_TYPE obs);
-	virtual void Update(int action, OBS_TYPE obs, std::map<std::string, bool> updatesFromAction) { throw 770; };
+	//virtual void Update(int action, OBS_TYPE obs, std::map<std::string, bool> updatesFromAction) { throw 770; };
 
 	/**
 	 * Set initial belief for planning. Make sure internal states associated with

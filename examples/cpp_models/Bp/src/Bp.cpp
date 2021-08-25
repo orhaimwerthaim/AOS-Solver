@@ -37,8 +37,8 @@ BpBelief::BpBelief(vector<State*> particles, const DSPOMDP* model,
 		 return Prints::PrintActionDescription(ActionManager::actions[actionId]);
 	 }
 
-
-void BpBelief::Update(int actionId, OBS_TYPE obs, std::map<std::string,bool> updates) {
+//void BpBelief::Update(int actionId, OBS_TYPE obs, std::map<std::string,bool> updates) {
+void BpBelief::Update(int actionId, OBS_TYPE obs) {
 	history_.Add(actionId, obs);
 
 	vector<State*> updated;
@@ -53,15 +53,15 @@ void BpBelief::Update(int actionId, OBS_TYPE obs, std::map<std::string,bool> upd
 		if (!terminal && o == obs) 
 			{
 				BpState &Bp_particle = static_cast<BpState &>(*particle);
-				if(!Globals::IsInternalSimulation() && updates.size() > 0)
-				{
-					BpState::SetAnyValueLinks(&Bp_particle);
-					map<std::string, bool>::iterator it;
-					for (it = updates.begin(); it != updates.end(); it++)
-					{
-						*(Bp_particle.anyValueUpdateDic[it->first]) = it->second; 
-					} 
-				}
+				// if(!Globals::IsInternalSimulation() && updates.size() > 0)
+				// {
+				// 	BpState::SetAnyValueLinks(&Bp_particle);
+				// 	map<std::string, bool>::iterator it;
+				// 	for (it = updates.begin(); it != updates.end(); it++)
+				// 	{
+				// 		*(Bp_particle.anyValueUpdateDic[it->first]) = it->second; 
+				// 	} 
+				// }
 				updated.push_back(particle);
 		} else {
 			Bp_->Free(particle);

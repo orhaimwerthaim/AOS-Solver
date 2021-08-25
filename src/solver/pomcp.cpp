@@ -167,8 +167,8 @@ void POMCP::belief(Belief* b) {
 	root_ = NULL;
 }
 
-
-void POMCP::Update(int action, OBS_TYPE obs, std::map<std::string, bool> updatesFromAction)
+//void POMCP::Update(int action, OBS_TYPE obs, std::map<std::string, bool> updatesFromAction)
+void POMCP::Update(int action, OBS_TYPE obs)
 {
 	double start = get_time_second();
 
@@ -188,16 +188,16 @@ void POMCP::Update(int action, OBS_TYPE obs, std::map<std::string, bool> updates
 
 	prior_->Add(action, obs);
 	history_.Add(action, obs);
-	belief_->Update(action, obs, updatesFromAction);
-	//belief_->Update(action, obs);
+	//belief_->Update(action, obs, updatesFromAction);
+	belief_->Update(action, obs);
 	logi << "[POMCP::Update] Updated belief, history and root with action "
 		<< action << ", observation " << obs
 		<< " in " << (get_time_second() - start) << "s" << endl;
 }
-void POMCP::Update(int action, OBS_TYPE obs) {
-	std::map<std::string, bool> updatesFromAction;
-	POMCP::Update(action, obs, updatesFromAction);
-}
+// void POMCP::Update(int action, OBS_TYPE obs) {
+// 	std::map<std::string, bool> updatesFromAction;
+// 	POMCP::Update(action, obs, updatesFromAction);
+// }
 
 int POMCP::UpperBoundAction(const VNode* vnode, double explore_constant)
 {
