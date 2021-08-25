@@ -9,9 +9,11 @@ namespace despot
 
 class BpState : public State {
 public:
+    std::vector<tPushType> tPushTypeObjects;
     std::vector<tDirection> tDirectionObjects;
     std::vector<tCell> tCellObjects;
     std::map<std::string, tDirection> tDirectionObjectsForActions;
+    std::map<std::string, tPushType> tPushTypeObjectsForActions;
     tCell agentOneLoc;
     tCell agentTwoLoc;
     tCell bOneLoc;
@@ -21,6 +23,9 @@ public:
     tDirection ParamDown;
     tDirection ParamLeft;
     tDirection ParamRight;
+    tPushType ParamSingleAgentPush;
+    tPushType ParamJointPush;
+    tDirection JointPushDirection;
     std::map<std::string, anyValue*> anyValueUpdateDic;
 
 

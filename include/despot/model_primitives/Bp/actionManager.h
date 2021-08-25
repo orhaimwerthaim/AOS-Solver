@@ -5,7 +5,7 @@
 #include <despot/model_primitives/Bp/enum_map_Bp.h> 
 #include <vector>
 #include <utility>
-#include <string> 
+#include <string>
 namespace despot { 
 
 
@@ -19,6 +19,20 @@ namespace despot {
         virtual std::string GetActionParametersJson_ForActionRegistration() { return ""; };
         
     };
+
+class PushActionDescription: public ActionDescription
+{
+    public:
+        tDirection oDirection;
+        tPushType oIsJointPush;
+        std::string strLink_oDirection;
+        std::string strLink_oIsJointPush;
+        PushActionDescription(int _oDirection_Index, int _oIsJointPush_Index);
+        virtual void SetActionParametersByState(BpState *state, std::vector<std::string> indexes);
+        virtual std::string GetActionParametersJson_ForActionExecution();
+        virtual std::string GetActionParametersJson_ForActionRegistration();
+        PushActionDescription(){};
+};
 
 class NavigateActionDescription: public ActionDescription
 {
@@ -44,15 +58,16 @@ public:
 class Prints
 {
 	public:
-        static std::string PrinttDirection(tDirection);
-        static std::string PrinttCell(tCell);
+    static std::string PrinttPushType(tPushType);
+    static std::string PrinttDirection(tDirection);
+    static std::string PrinttCell(tCell);
 
-        static std::string PrintActionDescription(ActionDescription *);
-        static std::string PrintActionType(ActionType);
-        static std::string PrintState(BpState state);
-        static std::string PrintObs(int action, int obs);
-        static std::string GetJsonForBelief(vector<State *> particles);
-        static std::string GetStateJson(State &state);
+	static std::string PrintActionDescription(ActionDescription*);
+	static std::string PrintActionType(ActionType);
+	static std::string PrintState(BpState state);
+	static std::string PrintObs(int action, int obs);
+    static std::string GetJsonForBelief(vector<State *> particles);
+    static std::string GetStateJson(State &state);
 };
 }
 #endif //ACTION_MANAGER_H

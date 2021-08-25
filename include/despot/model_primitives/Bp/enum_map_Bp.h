@@ -13,6 +13,7 @@ namespace despot
 
   enum ActionType
 {
+    pushAction,
     navigateAction
 	
 };
@@ -21,6 +22,8 @@ namespace despot
 
   enum BpResponseModuleAndTempEnums
   {
+	  push_moduleResponse,
+	  push_eSuccess,
 	  navigate_moduleResponse,
 	  navigate_eSuccess,
 
@@ -33,6 +36,7 @@ namespace despot
 	  static map<BpResponseModuleAndTempEnums,std::string> CreateMapResponseEnumToString()
 	  {
           map<BpResponseModuleAndTempEnums,std::string> m;
+          m[push_eSuccess] = "push_eSuccess";
           m[navigate_eSuccess] = "navigate_eSuccess";
           m[illegalActionObs] = "IllegalActionObs";
           return m;
@@ -54,6 +58,7 @@ namespace despot
 		static map<ActionType,std::string> CreateMapActionTypeEnumToString()
 	  {
           map<ActionType,std::string> m;
+          m[pushAction] = "push";
           m[navigateAction] = "navigate";
 
           return m;

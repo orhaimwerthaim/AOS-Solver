@@ -183,42 +183,30 @@ bool Evaluator::RunStep(int step, int round) {
 	start_t = get_time_second();
 
 	//TODO:: remove prints
-	logi << "--------------------------------------EXECUTED---------------------------------------------------------------------------" << endl;
-	model_->PrintState(*state_);
+    *out_ << "-----------------------------------Round " << round
+				<< " Step " << step << "-----------------------------------"
+				<< endl;
+	logi << "--------------------------------------EXECUTION---------------------------------------------------------------------------" << endl;
+	if (!Globals::config.silence && out_) {
+		*out_ << endl << "Action = ";
+		model_->PrintAction(action, *out_);
+	}
+    logi << endl
+		 << "Before:" << endl;
+    model_->PrintState(*state_);
 	std::map<std::string, bool> updatesFromAction;
 	bool terminal = ExecuteAction(action, reward, obs, updatesFromAction);
+    logi << endl
+		 << "After:" << endl;
 	model_->PrintState(*state_);
-	logi << "action:" << action << ", reward:"
-		 << ", reward:" << reward << ", observation:" << enum_map_Bp::vecResponseEnumToString[(BpResponseModuleAndTempEnums)obs] << endl;
+	logi << endl << "Reward:" << reward << endl <<  "Observation:" << enum_map_Bp::vecResponseEnumToString[(BpResponseModuleAndTempEnums)obs] << endl;
 	end_t = get_time_second();
 	logi << "[RunStep] Time spent in ExecuteAction(): " << (end_t - start_t)
 		<< endl;
-	logi << "-------------------------------------END-EXECUTED---------------------------------------------------------------------------" << endl;
+	logi << "-------------------------------------END-EXECUTION---------------------------------------------------------------------------" << endl;
 	start_t = get_time_second();
-	*out_ << "-----------------------------------Round " << round
-				<< " Step " << step << "-----------------------------------"
-				<< endl;
-	if (!Globals::config.silence && out_) {
-		*out_ << "- Action = ";
-		model_->PrintAction(action, *out_);
-	}
-
-	if (state_ != NULL) {
-		if (!Globals::config.silence && out_) {
-			*out_ << "- State:\n";
-			model_->PrintState(*state_, *out_);
-		}
-	}
-
-	if (!Globals::config.silence && out_) {
-		*out_ << endl << "- Observation = " << enum_map_Bp::vecResponseEnumToString[(BpResponseModuleAndTempEnums)obs];
-	}
-
-	if (state_ != NULL) {
-		if (!Globals::config.silence && out_)
-			*out_ << "- ObsProb = " << model_->ObsProb(obs, *state_, action)
-				<< endl;
-	}
+	
+	
 
 	ReportStepReward();
 	end_t = get_time_second();
@@ -240,7 +228,8 @@ bool Evaluator::RunStep(int step, int round) {
 	start_t = get_time_second();
 	if(action_sequence_to_sim.size() == 0)
 	{
-		solver_->Update(action, obs, updatesFromAction);
+		solver_->Update(action, obs);
+		//solver_->Update(action, obs, updatesFromAction);
 	}
 	end_t = get_time_second();
 	logi << "[RunStep] Time spent in Update(): " << (end_t - start_t) << endl;
@@ -380,7 +369,7 @@ bool POMDPEvaluator::ExecuteAction(int action, double& reward, OBS_TYPE& obs, st
 		total_discounted_reward_ += Globals::Discount(step_) * reward;
 		total_undiscounted_reward_ += reward;
 
-		MongoDB_Bridge::currentActionSequenceId++;
+        MongoDB_Bridge::currentActionSequenceId++;
 		return terminal;
 	}
 	else
@@ -396,7 +385,8 @@ bool POMDPEvaluator::ExecuteAction(int action, double& reward, OBS_TYPE& obs, st
 		updates = MongoDB_Bridge::WaitForActionResponse(actionId, obsStr);
 
 		obs = enum_map_Bp::vecStringToResponseEnum[obsStr];
-		MongoDB_Bridge::currentActionSequenceId++;
+
+        MongoDB_Bridge::currentActionSequenceId++;
 		return false;
 	}
 }

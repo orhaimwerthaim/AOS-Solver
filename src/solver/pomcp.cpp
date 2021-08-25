@@ -87,20 +87,19 @@ ValuedAction POMCP::Search(double timeout) {
 	std::vector<int> actionSeq (actArr, actArr + sizeof(actArr) / sizeof(actArr[0]) );
 	 
 	std::vector<int>*	simulatedActionSequence = actionSeq.size() > 0 ? &actionSeq : NULL;	 
-	////////////////
-	if(Globals::config.saveBeliefToDB)
+	
+    if(Globals::config.saveBeliefToDB)
 	{
-		vector<State*> temp = belief_->Sample(1000);
+		vector<State*> temp = belief_->Sample(0);
 		Prints::GetJsonForBelief(temp);
 	}
-	///////////////////////////////
+
 	int hist_size = history_.Size();
 	bool done = false;
 	int num_sims = 0;
 	while (true) {
 		vector<State*> particles = belief_->Sample(1000);
-		for (int i = 0; i < particles.size(); i++)
-		{
+		for (int i = 0; i < particles.size(); i++) {
 			State* particle = particles[i];
 			logd << "[POMCP::Search] Starting simulation " << num_sims << endl;
 
@@ -135,21 +134,21 @@ ValuedAction POMCP::Search(double timeout) {
 	//untill here
 	
 	
-	logi << "[POMCP::Search] Search statistics" << endl
-		<< "OptimalAction = " << astar << endl 
-		<< "# Simulations = " << root_->count() << endl
-		<< "Time: CPU / Real = " << ((clock() - start_cpu) / CLOCKS_PER_SEC) << " / " << (get_time_second() - start_real) << endl
-		<< "# active particles = " << model_->NumActiveParticles() << endl
-		<< "Tree size = " << root_->Size() << endl;
+	// logi << "[POMCP::Search] Search statistics" << endl
+	// 	<< "OptimalAction = " << astar << endl 
+	// 	<< "# Simulations = " << root_->count() << endl
+	// 	<< "Time: CPU / Real = " << ((clock() - start_cpu) / CLOCKS_PER_SEC) << " / " << (get_time_second() - start_real) << endl
+	// 	<< "# active particles = " << model_->NumActiveParticles() << endl
+	// 	<< "Tree size = " << root_->Size() << endl;
 
-	if (astar.action == -1) {
-		for (int action = 0; action < model_->NumActions(); action++) {
-			cout << "action " << action << ": " << root_->Child(action)->count()
-				<< " " << root_->Child(action)->value() << endl;
-		}
-	}
+	// if (astar.action == -1) {
+	// 	for (int action = 0; action < model_->NumActions(); action++) {
+	// 		cout << "action " << action << ": " << root_->Child(action)->count()
+	// 			<< " " << root_->Child(action)->value() << endl;
+	// 	}
+	// }
 
-	std::string dot = POMCP::GenerateDotGraph(root_,1, model_);
+	//std::string dot = POMCP::GenerateDotGraph(root_,1, model_);
 	// delete root_;
 	return astar;
 }
@@ -190,7 +189,7 @@ void POMCP::Update(int action, OBS_TYPE obs, std::map<std::string, bool> updates
 	prior_->Add(action, obs);
 	history_.Add(action, obs);
 	belief_->Update(action, obs, updatesFromAction);
-
+	//belief_->Update(action, obs);
 	logi << "[POMCP::Update] Updated belief, history and root with action "
 		<< action << ", observation " << obs
 		<< " in " << (get_time_second() - start) << "s" << endl;
@@ -239,16 +238,16 @@ int POMCP::UpperBoundAction(const VNode* vnode, double explore_constant, const D
 			best_action = action;
 		}
 		//logi << "[POMCP::UpperBoundAction]:Depth:" << vnode->depth() << "Action:"<< action <<",N:" << vnode->count() << ",V:" << vnode->value() << endl;
-		if (vnode->depth() < 1 && model)
-			logi << "[POMCP::UpperBoundAction]:Depth:"<< vnode->depth() <<",N:" << vnode->count() <<",V:" << vnode->value() << model->GetActionDescription(action) << ",UCB:"<< ub<< endl;   
+		// if (vnode->depth() < 1 && model)
+		// 	logi << "[POMCP::UpperBoundAction]:Depth:"<< vnode->depth() <<",N:" << vnode->count() <<",V:" << vnode->value() << model->GetActionDescription(action) << ",UCB:"<< ub<< endl;   
 
 			// if(model)
 			// logd << "[POMCP::UpperBoundAction]: Best Action is: "<< model->GetActionDescription(best_action) << "|With value:"<<best_ub <<endl;	
 	}
 	
 	assert(best_action != -1);
-	if(model)
-		logi << "[POMCP::UpperBoundAction]:Selected Action:"<< model->GetActionDescription(best_action) <<endl;
+	// if(model)
+	// 	logi << "[POMCP::UpperBoundAction]:Selected Action:"<< model->GetActionDescription(best_action) <<endl;
 	return best_action;
 }
 
@@ -521,8 +520,6 @@ void DPOMCP::belief(Belief* b) {
 
 ValuedAction DPOMCP::Search(double timeout) {
 	double start_cpu = clock(), start_real = get_time_second();
-
-
 
 	vector<State*> particles = belief_->Sample(Globals::config.num_scenarios);
 

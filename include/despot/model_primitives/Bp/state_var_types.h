@@ -10,12 +10,20 @@ namespace despot
 
 
 
+	enum tPushType
+	{
+		SingleAgentPush,
+		JointPush
+	};
+
+
 	enum tDirection
 	{
 		Up,
 		Down,
 		Left,
-		Right
+		Right,
+		None
 	};
 
 

@@ -71,7 +71,7 @@ public:
 	POMCPPrior* CreatePOMCPPrior(std::string name = "DEFAULT") const;
 
 	virtual void PrintState(const State& state, std::ostream& out = std::cout) const;
-	
+	std::string GetCellDesc(tCell cell, const BpState &state) const;
 
 	
 	virtual void PrintObs(const State& state, OBS_TYPE observation,
@@ -83,23 +83,20 @@ public:
 	virtual State* Copy(const State* particle) const;
 	virtual void Free(State* particle) const;
 	int NumActiveParticles() const;
-
-
-public:
+ 	static void CheckPreconditions(const BpState& farstate, double &reward, bool &meetPrecondition, int actionId);
 	Bp(); 
 
-private:
-	void CheckPreconditions(const BpState& farstate, double &reward, bool &meetPrecondition, int actionId) const;
+private: 
 	void SampleModuleExecutionTime(const BpState& state, double rand_num, int actionId, int &moduleExecutionTime) const;
-	void ExtrinsicChangesDynamicModel(const BpState& initState, BpState& afterExState, double rand_num, int actionId, double& reward,
+	void ExtrinsicChangesDynamicModel(const BpState& initState, BpState& afterExState, double rand_num, int actionId,
 		const int &moduleExecutionTime) const;
 	void ModuleDynamicModel(const BpState &initState, const BpState &afterExState, BpState &nextState, double rand_num, int actionId, double &reward,
-								 OBS_TYPE &observation, const int &moduleExecutionTime) const;
+								 OBS_TYPE &observation, const int &moduleExecutionTime, const bool &__meetPrecondition) const;
 	bool ProcessSpecialStates(const BpState &state, double &reward) const;
 
 	mutable MemoryPool<BpState> memory_pool_;
 	static std::default_random_engine generator;
-    static std::discrete_distribution<> Environment_discrete_dist1; //AOS.SampleDiscrete(tCell,{0.5,0,0,0.5})
+    static std::discrete_distribution<> Environment_discrete_dist1; //AOS.SampleDiscrete(tCell,{0.5,0,0,0})
 
 };
 } // namespace despot

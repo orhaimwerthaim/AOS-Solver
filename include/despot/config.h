@@ -19,23 +19,23 @@ struct Config {
 	int max_policy_sim_len; // Maximum number of steps for simulating the default policy
 	double noise;
 	bool silence;
-	bool saveBeliefToDB;
+    bool saveBeliefToDB;
 
 	Config() :
-		search_depth(8),
-		discount(8),
+		search_depth(140),
+		discount(0.95),
 		root_seed(42),
-		time_per_move(0.5),
+		time_per_move(0.05),
 		num_scenarios(500),
 		pruning_constant(0),
 		xi(0.95),
-		sim_len(90),
+		sim_len(1000),
 		default_action(""),
 		max_policy_sim_len(10),
 		noise(0.1),
 		silence(false),
 		internalSimulation(true),
-		saveBeliefToDB(true)
+        saveBeliefToDB(false)
 		{
 		
 	}
