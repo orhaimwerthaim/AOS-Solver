@@ -13,6 +13,9 @@
 #include <bsoncxx/builder/stream/array.hpp>
 #include <sstream>
 #include <unistd.h>
+#include <nlohmann/json.hpp> 
+// for convenience
+using json = nlohmann::json;
 
 using bsoncxx::builder::stream::close_array;
 using bsoncxx::builder::stream::close_document;
@@ -31,6 +34,7 @@ namespace despot {
   mongocxx::collection MongoDB_Bridge::localVariableColllection;
   mongocxx::collection MongoDB_Bridge::actionsCollection;
   mongocxx::collection MongoDB_Bridge::globalVariablesAssignmentsColllection;
+  mongocxx::collection MongoDB_Bridge::SolversCollection;
 
   mongocxx::collection MongoDB_Bridge::beliefStatesColllection;
   int MongoDB_Bridge::currentActionSequenceId = 1;
@@ -50,7 +54,7 @@ namespace despot {
       MongoDB_Bridge::globalVariablesAssignmentsColllection = MongoDB_Bridge::db["GlobalVariablesAssignments"];
       MongoDB_Bridge::localVariableColllection = MongoDB_Bridge::db["localVariables"];
       MongoDB_Bridge::actionsCollection = MongoDB_Bridge::db["Actions"];
-
+      MongoDB_Bridge::SolversCollection = MongoDB_Bridge::db["Solvers"];
       MongoDB_Bridge::beliefStatesColllection = MongoDB_Bridge::db["BeliefStates"];
     }
 }
@@ -64,6 +68,42 @@ namespace despot {
   
 //   MongoDB_Bridge::moduleResponseColllection.update_one(filter.view(), bsoncxx::from_json(ss.str()));
 // }
+void MongoDB_Bridge::GetSolverDetails(bool& shutDown, bool& isFirst, int solverId)
+{
+  MongoDB_Bridge::Init();
+  auto filter = document{} << "SolverId" << solverId << finalize;
+  bool found = false;
+ 
+    mongocxx::cursor cursor = MongoDB_Bridge::SolversCollection.find({filter});
+    for(auto doc : cursor) 
+    {
+      found = true;
+      std::string s = bsoncxx::to_json(doc);
+      json jsonObj = json::parse(s);
+     
+     shutDown = !jsonObj["ServerShutDownRequestDateTime"].is_null();
+     isFirst = jsonObj["FirstSolverIsAliveDateTime"].is_null(); 
+    }
+    if(!found)
+    {
+      isFirst = false;
+      shutDown = true;
+    }
+}
+
+void MongoDB_Bridge::UpdateSolverDetails(bool isFirst, int solverId)
+{
+  MongoDB_Bridge::Init();
+  
+  auto now = std::chrono::system_clock::now();
+  auto builder = bsoncxx::builder::stream::document{};
+
+  bsoncxx::document::value filter = builder << "SolverId" << solverId << finalize;
+  bsoncxx::document::value update = isFirst ? builder << "$set" << open_document << "FirstSolverIsAliveDateTime" << bsoncxx::types::b_date(now) << "SolverIsAliveDateTime" << bsoncxx::types::b_date(now) << close_document << finalize
+                                            : builder << "$set" << open_document << "SolverIsAliveDateTime" << bsoncxx::types::b_date(now) << close_document << finalize;
+
+  MongoDB_Bridge::SolversCollection.update_one(filter.view(), update.view()); 
+}
 
 std::map<std::string, bool> MongoDB_Bridge::WaitForActionResponse(bsoncxx::oid actionForExecuteId, std::string& actionTextObservation)
 {

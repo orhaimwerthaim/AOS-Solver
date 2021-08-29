@@ -20,6 +20,8 @@ namespace despot {
         static void Init();
 
         static std::map<std::string, bool> WaitForActionResponse(bsoncxx::oid actionForExecuteId, std::string &actionTextObservation);
+        static void UpdateSolverDetails(bool isFirst, int solverId);
+        static void GetSolverDetails(bool& shutDown, bool& isFirst, int solverId);
         static bsoncxx::oid SendActionToExecution(int actionId, std::string actionName, std::string actionParameters);
         static void RegisterAction(int actionId, std::string actionName, std::string actionParameters, std::string actionDescription);
         static void SaveBeliefState(std::string belief);
@@ -31,6 +33,7 @@ namespace despot {
         static mongocxx::client client;
 
         static mongocxx::database db;
+        static mongocxx::collection SolversCollection;
         static mongocxx::collection actionToExecuteCollection;
         static mongocxx::collection actionsCollection;
         static mongocxx::collection moduleResponseColllection;
