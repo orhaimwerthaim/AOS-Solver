@@ -41,5 +41,6 @@ namespace despot {
         static mongocxx::collection globalVariablesAssignmentsColllection;
         static mongocxx::collection beliefStatesColllection;
         static int currentActionSequenceId;
-}; 
+        static std::chrono::milliseconds firstSolverIsAliveDateTime;
+    };
 }

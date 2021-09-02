@@ -38,6 +38,8 @@ namespace despot {
 
   mongocxx::collection MongoDB_Bridge::beliefStatesColllection;
   int MongoDB_Bridge::currentActionSequenceId = 1;
+  std::chrono::milliseconds MongoDB_Bridge::firstSolverIsAliveDateTime = std::chrono::milliseconds(0);
+
   void MongoDB_Bridge::Init()
   {
     if (!MongoDB_Bridge::isInit)
@@ -82,7 +84,12 @@ void MongoDB_Bridge::GetSolverDetails(bool& shutDown, bool& isFirst, int solverI
       json jsonObj = json::parse(s);
      
      shutDown = !jsonObj["ServerShutDownRequestDateTime"].is_null();
-     isFirst = jsonObj["FirstSolverIsAliveDateTime"].is_null(); 
+     isFirst = jsonObj["FirstSolverIsAliveDateTime"].is_null();
+
+     //if server is alive date is initialized but not as in DB. then this solver is a zombie process and should by ShutDown
+     shutDown |=  !(
+                    (isFirst && MongoDB_Bridge::firstSolverIsAliveDateTime == std::chrono::milliseconds(0)) || 
+                    (!isFirst && doc["FirstSolverIsAliveDateTime"].get_date().value == MongoDB_Bridge::firstSolverIsAliveDateTime));
     }
     if(!found)
     {
@@ -102,6 +109,10 @@ void MongoDB_Bridge::UpdateSolverDetails(bool isFirst, int solverId)
   bsoncxx::document::value update = isFirst ? builder << "$set" << open_document << "FirstSolverIsAliveDateTime" << bsoncxx::types::b_date(now) << "SolverIsAliveDateTime" << bsoncxx::types::b_date(now) << close_document << finalize
                                             : builder << "$set" << open_document << "SolverIsAliveDateTime" << bsoncxx::types::b_date(now) << close_document << finalize;
 
+if(isFirst)
+{
+  MongoDB_Bridge::firstSolverIsAliveDateTime = bsoncxx::types::b_date(now).value; //set this solver first is alive date
+}
   MongoDB_Bridge::SolversCollection.update_one(filter.view(), update.view()); 
 }
 
