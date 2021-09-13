@@ -13,9 +13,9 @@
 #include <bsoncxx/builder/stream/array.hpp>
 #include <sstream>
 #include <unistd.h>
+
 #include <nlohmann/json.hpp> 
-// for convenience
-using json = nlohmann::json;
+using json = nlohmann::json; 
 
 using bsoncxx::builder::stream::close_array;
 using bsoncxx::builder::stream::close_document;
@@ -23,6 +23,9 @@ using bsoncxx::builder::stream::document;
 using bsoncxx::builder::stream::finalize;
 using bsoncxx::builder::stream::open_array;
 using bsoncxx::builder::stream::open_document;
+using bsoncxx::builder::basic::kvp;
+using bsoncxx::builder::basic::make_document;
+using bsoncxx::builder::basic::make_array;
 
 namespace despot {
   bool MongoDB_Bridge::isInit = false;
@@ -116,6 +119,24 @@ if(isFirst)
   MongoDB_Bridge::SolversCollection.update_one(filter.view(), update.view()); 
 }
 
+std::map<std::string, bool> MongoDB_Bridge::SaveInternalActionResponse(std::string actionName, bsoncxx::oid actionForExecuteId, std::string observationText)
+{
+
+ MongoDB_Bridge::Init(); 
+ auto now = std::chrono::system_clock::now();
+  auto builder = bsoncxx::builder::stream::document{};
+  bsoncxx::document::value doc_value =
+          builder << "ActionSequenceId" << MongoDB_Bridge::currentActionSequenceId
+                  << "Module" << actionName
+                  << "ModuleResponseText" << observationText
+                  << "StartTime" << bsoncxx::types::b_date(now) 
+                  << "ActionForExecutionId" << actionForExecuteId
+                  << "EndTime" << bsoncxx::types::b_date(now)
+                  << finalize;
+ 
+  MongoDB_Bridge::moduleResponseColllection.insert_one(doc_value.view());
+}
+
 std::map<std::string, bool> MongoDB_Bridge::WaitForActionResponse(bsoncxx::oid actionForExecuteId, std::string& actionTextObservation)
 {
 
@@ -131,16 +152,7 @@ std::map<std::string, bool> MongoDB_Bridge::WaitForActionResponse(bsoncxx::oid a
     for(auto doc : cursor) 
     {
       actionFinished = true;
-      actionTextObservation = doc["ModuleResponseText"].get_utf8().value.to_string();
-      // bsoncxx::document::element element2 = res["responseText"];
-      // auto s = element2.get_utf8().value;
-      // std::string str = s.to_string();
-
-      // MongoDB_Bridge::moduleResponseColllection.update_one(doc, document{} << "$set" << open_document <<
-      //                "wasRead" << true << close_document << finalize);
-
-      //return *(&doc);
-
+      actionTextObservation = doc["ModuleResponseText"].get_utf8().value.to_string(); 
     }
     if(actionFinished)
     {
@@ -165,23 +177,8 @@ bsoncxx::oid MongoDB_Bridge::SendActionToExecution(int actionId, std::string act
 {
   MongoDB_Bridge::Init(); 
   auto now = std::chrono::system_clock::now();
-  auto builder = bsoncxx::builder::stream::document{};
-  bsoncxx::document::value doc_value = !actionParameters.empty() ? (
-                                                                //        builder << "ActionID" << actionId 
-                                                                //                << "ActionName" << actionName
-                                                                //                << "ActionSequenceId" << MongoDB_Bridge::currentActionSequenceId
-                                                                //                << "RequestCreateTime" << bsoncxx::types::b_date(now)
-                                                                //                << "Parameters" << open_array
-                                                                //                << [&](bsoncxx::builder::stream::array_context<> arr)
-                                                                //        { arr << bsoncxx::from_json(actionParameters); }
-                                                                //                << close_array << finalize)
-                                                                //  : (
-                                                                //        builder << "ActionID" << actionId 
-                                                                //                << "ActionName" << actionName
-                                                                //                << "ActionSequenceId" << MongoDB_Bridge::currentActionSequenceId
-                                                                //                << "RequestCreateTime" << bsoncxx::types::b_date(now)
-                                                                //                 << "Parameters" << open_array
-                                                                //                << close_array << finalize);
+  auto builder = bsoncxx::builder::stream::document{}; 
+  bsoncxx::document::value doc_value = !actionParameters.empty() ? ( 
                                                                 builder << "ActionID" << actionId 
                                                                                << "ActionName" << actionName
                                                                                << "ActionSequenceId" << MongoDB_Bridge::currentActionSequenceId
@@ -202,13 +199,25 @@ bsoncxx::oid MongoDB_Bridge::SendActionToExecution(int actionId, std::string act
   return oid;
 }
 
+std::string MongoDB_Bridge::SampleFromBeliefState(int ActionSequnceId, int skipStates, int takeStates)
+{
+  MongoDB_Bridge::Init(); 
+  mongocxx::options::find opts{};
+  opts.projection(make_document(kvp("BeliefeState", make_document(kvp("$slice",make_array(skipStates, takeStates)))))); 
+  bool found = false;
+
+  auto doc = MongoDB_Bridge::beliefStatesColllection.find_one(make_document(kvp("ActionSequnceId", 1)), opts);
+  return bsoncxx::to_json(doc.value());
+
+}
+
 void MongoDB_Bridge::SaveBeliefState(std::string belief)
 {
-MongoDB_Bridge::Init(); 
+  MongoDB_Bridge::Init(); 
   auto builder = bsoncxx::builder::stream::document{};
   bsoncxx::document::value doc_value = bsoncxx::from_json(belief); 
-                                                                 
-MongoDB_Bridge::beliefStatesColllection.insert_one(doc_value.view());
+                                                    
+  MongoDB_Bridge::beliefStatesColllection.insert_one(doc_value.view());
 }
 
 void MongoDB_Bridge::RegisterAction(int actionId, std::string actionName, std::string actionParameters, std::string actionDescription)

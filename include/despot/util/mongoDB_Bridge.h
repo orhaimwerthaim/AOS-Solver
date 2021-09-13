@@ -25,6 +25,8 @@ namespace despot {
         static bsoncxx::oid SendActionToExecution(int actionId, std::string actionName, std::string actionParameters);
         static void RegisterAction(int actionId, std::string actionName, std::string actionParameters, std::string actionDescription);
         static void SaveBeliefState(std::string belief);
+        static std::string SampleFromBeliefState(int ActionSequnceId, int skipStates, int takeStates);
+        static std::map<std::string, bool> SaveInternalActionResponse(std::string actionName, bsoncxx::oid actionForExecuteId, std::string observationText);
         //     static void UpdateActionResponse(std::string actionName, std::string actionResponse);
 
         static bool isInit;
