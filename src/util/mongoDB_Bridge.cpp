@@ -40,7 +40,7 @@ namespace despot {
   mongocxx::collection MongoDB_Bridge::SolversCollection;
 
   mongocxx::collection MongoDB_Bridge::beliefStatesColllection;
-  int MongoDB_Bridge::currentActionSequenceId = 1;
+  int MongoDB_Bridge::currentActionSequenceId = 0;
   std::chrono::milliseconds MongoDB_Bridge::firstSolverIsAliveDateTime = std::chrono::milliseconds(0);
 
   void MongoDB_Bridge::Init()
@@ -119,7 +119,7 @@ if(isFirst)
   MongoDB_Bridge::SolversCollection.update_one(filter.view(), update.view()); 
 }
 
-std::map<std::string, bool> MongoDB_Bridge::SaveInternalActionResponse(std::string actionName, bsoncxx::oid actionForExecuteId, std::string observationText)
+void MongoDB_Bridge::SaveInternalActionResponse(std::string actionName, bsoncxx::oid actionForExecuteId, std::string observationText)
 {
 
  MongoDB_Bridge::Init(); 
@@ -199,25 +199,32 @@ bsoncxx::oid MongoDB_Bridge::SendActionToExecution(int actionId, std::string act
   return oid;
 }
 
-std::string MongoDB_Bridge::SampleFromBeliefState(int ActionSequnceId, int skipStates, int takeStates)
+std::string MongoDB_Bridge::SampleFromBeliefState(int skipStates, int takeStates)
 {
   MongoDB_Bridge::Init(); 
   mongocxx::options::find opts{};
   opts.projection(make_document(kvp("BeliefeState", make_document(kvp("$slice",make_array(skipStates, takeStates)))))); 
   bool found = false;
 
-  auto doc = MongoDB_Bridge::beliefStatesColllection.find_one(make_document(kvp("ActionSequnceId", 1)), opts);
+  auto doc = MongoDB_Bridge::beliefStatesColllection.find_one(make_document(kvp("ActionSequnceId", -1)), opts);
   return bsoncxx::to_json(doc.value());
 
 }
 
-void MongoDB_Bridge::SaveBeliefState(std::string belief)
+void MongoDB_Bridge::SaveBeliefState(std::string currentActionBelief, std::string currentBelief)
 {
   MongoDB_Bridge::Init(); 
   auto builder = bsoncxx::builder::stream::document{};
-  bsoncxx::document::value doc_value = bsoncxx::from_json(belief); 
+  bsoncxx::document::value doc_value = bsoncxx::from_json(currentActionBelief); 
                                                     
   MongoDB_Bridge::beliefStatesColllection.insert_one(doc_value.view());
+
+
+  auto filter = document{} << "ActionSequnceId" << -1 << finalize;
+  mongocxx::options::replace option;
+  option.upsert(true);
+  bsoncxx::document::value currentBeliefDocValue = bsoncxx::from_json(currentBelief); 
+  MongoDB_Bridge::beliefStatesColllection.replace_one(filter.view(), currentBeliefDocValue.view(), option);
 }
 
 void MongoDB_Bridge::RegisterAction(int actionId, std::string actionName, std::string actionParameters, std::string actionDescription)

@@ -22,7 +22,7 @@ namespace despot {
 
 class NavigateActionDescription: public ActionDescription
 {
-    public: 
+    public:
         tLocation oDesiredLocation;
         std::string strLink_oDesiredLocation;
         NavigateActionDescription(int _oDesiredLocation_Index);
@@ -32,10 +32,27 @@ class NavigateActionDescription: public ActionDescription
         NavigateActionDescription(){};
 };
 
+
+
 class ActionManager {
 public:
 	static std::vector<ActionDescription*> actions;
     static void Init(IcapsState* state);
+};
+
+
+class Prints
+{
+	public:
+    static std::string PrinttDiscreteLocation(tDiscreteLocation);
+
+	static std::string PrintActionDescription(ActionDescription*);
+	static std::string PrintActionType(ActionType);
+	static std::string PrintState(IcapsState state);
+	static std::string PrintObs(int action, int obs);
+    static void SaveBeliefParticles(vector<State *> particles);
+    static std::string GetStateJson(State &state);
+    static void GetStateFromJson(IcapsState &state, std::string jsonStr, int stateIndex);
 };
 }
 #endif //ACTION_MANAGER_H

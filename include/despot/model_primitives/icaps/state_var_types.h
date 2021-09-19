@@ -8,22 +8,30 @@ namespace despot
 {
 	typedef bool anyValue;
 
+
+
 	enum tDiscreteLocation
 	{
-		eCorridor,
 		eOutside_lab211,
-		eNear_elevator1,
 		eAuditorium,
+		eCorridor,
+		eNear_elevator1,
 		eUnknown
 	};
+
+
+
 
 	struct tLocation
 	{
 		tDiscreteLocation discrete_location;
 		anyValue actual_location;
-
+		inline bool operator==(const tLocation& other)const{return (*this).discrete_location == other.discrete_location && (*this).actual_location == other.actual_location;};
+		inline bool operator!=(const tLocation& other)const{return !(*this == other);};
 		tLocation(); 
 	};
+
+
 
  
 } // namespace despot

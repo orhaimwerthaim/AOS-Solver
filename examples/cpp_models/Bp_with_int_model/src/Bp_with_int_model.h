@@ -4,15 +4,15 @@
 #include <despot/solver/pomcp.h> 
 #include <random>
 #include <string>
-#include <despot/model_primitives/icaps/enum_map_icaps.h> 
-#include <despot/model_primitives/icaps/state.h> 
+#include <despot/model_primitives/Bp_with_int_model/enum_map_Bp_with_int_model.h> 
+#include <despot/model_primitives/Bp_with_int_model/state.h> 
 namespace despot {
 
 /* ==============================================================================
- * IcapsState class
+ * Bp_with_int_modelState class
  * ==============================================================================*/
 
-class IcapsState;
+class Bp_with_int_modelState;
 class AOSUtils
 {
 	public:
@@ -24,30 +24,28 @@ class AOSUtils
 
 
 /* ==============================================================================
- * Icaps and PocmanBelief class
+ * Bp_with_int_model and PocmanBelief class
  * ==============================================================================*/
-class Icaps;
-class IcapsBelief: public ParticleBelief {
+class Bp_with_int_model;
+class Bp_with_int_modelBelief: public ParticleBelief {
 protected:
-	const Icaps* icaps_;
+	const Bp_with_int_model* Bp_with_int_model_;
 public:
-	static std::string beliefFromDB;
-	static int currentInitParticleIndex;
 	static int num_particles; 
-	IcapsBelief(std::vector<State*> particles, const DSPOMDP* model, Belief* prior =
+	Bp_with_int_modelBelief(std::vector<State*> particles, const DSPOMDP* model, Belief* prior =
 		NULL);
 	void Update(int actionId, OBS_TYPE obs);
 	//void Update(int actionId, OBS_TYPE obs, std::map<std::string,bool> updates);
 };
 
 /* ==============================================================================
- * Icaps 
+ * Bp_with_int_model 
  * ==============================================================================*/
 /**
  * The implementation is adapted from that included in the POMCP software.
  */
 
-class Icaps: public DSPOMDP {
+class Bp_with_int_model: public DSPOMDP {
 public:
 	virtual std::string PrintObs(int action, OBS_TYPE obs) const;
 	virtual std::string PrintStateStr(const State &state) const;
@@ -86,30 +84,22 @@ public:
 	virtual State* Copy(const State* particle) const;
 	virtual void Free(State* particle) const;
 	int NumActiveParticles() const;
- 	static void CheckPreconditions(const IcapsState& state, double &reward, bool &meetPrecondition, int actionId);
-    static void ComputePreferredActionValue(const IcapsState& state, double &__heuristicValue, int actionId);
+ 	static void CheckPreconditions(const Bp_with_int_modelState& state, double &reward, bool &meetPrecondition, int actionId);
+    static void ComputePreferredActionValue(const Bp_with_int_modelState& state, double &__heuristicValue, int actionId);
      
  
-	Icaps(); 
+	Bp_with_int_model(); 
 
 private:
-	void SampleModuleExecutionTime(const IcapsState& state, double rand_num, int actionId, int &moduleExecutionTime) const;
-	void ExtrinsicChangesDynamicModel(const IcapsState& initState, IcapsState& afterExState, double rand_num, int actionId,
+	void SampleModuleExecutionTime(const Bp_with_int_modelState& state, double rand_num, int actionId, int &moduleExecutionTime) const;
+	void ExtrinsicChangesDynamicModel(const Bp_with_int_modelState& initState, Bp_with_int_modelState& afterExState, double rand_num, int actionId,
 		const int &moduleExecutionTime) const;
-	void ModuleDynamicModel(const IcapsState &initState, const IcapsState &afterExState, IcapsState &nextState, double rand_num, int actionId, double &reward,
+	void ModuleDynamicModel(const Bp_with_int_modelState &initState, const Bp_with_int_modelState &afterExState, Bp_with_int_modelState &nextState, double rand_num, int actionId, double &reward,
 								 OBS_TYPE &observation, const int &moduleExecutionTime, const bool &__meetPrecondition) const;
-	bool ProcessSpecialStates(IcapsState &state, double &reward) const;
+	bool ProcessSpecialStates(Bp_with_int_modelState &state, double &reward) const;
 
-	mutable MemoryPool<IcapsState> memory_pool_;
+	mutable MemoryPool<Bp_with_int_modelState> memory_pool_;
 	static std::default_random_engine generator;
-    static std::normal_distribution<> place_normal_dist1; //AOS.SampleNormal(30000,15000)
-    static std::normal_distribution<> observe_normal_dist2; //AOS.SampleNormal(15000,2000)
-    static std::normal_distribution<> pick_normal_dist3; //AOS.SampleNormal(40000,10000)
-    static std::normal_distribution<> navigate_normal_dist4; //AOS.SampleNormal(40000,10000)
-    static std::discrete_distribution<> place_discrete_dist1; //AOS.SampleDiscrete(enumRealCase,{0.8,0,0})
-    static std::discrete_distribution<> pick_discrete_dist2; //AOS.SampleDiscrete(enumRealCase,{0.8,0,0,0})
-    static std::discrete_distribution<> navigate_discrete_dist3; //AOS.SampleDiscrete(enumRealCase,{0.95,0.05})
-    static std::discrete_distribution<> Environment_discrete_dist4; //AOS.SampleDiscrete(tDiscreteLocation,{0.04,0,0.6})
 
 };
 } // namespace despot

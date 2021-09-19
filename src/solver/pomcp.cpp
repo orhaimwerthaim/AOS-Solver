@@ -30,8 +30,15 @@ const vector<int>& POMCPPrior::legal_actions() const {
 	return legal_actions_;
 }
 
+const vector<double>& POMCPPrior::weighted_preferred_actions() const {
+	return weighted_preferred_actions_;
+}
+
 int POMCPPrior::GetAction(const State& state) {
 	ComputePreference(state);
+
+	if (weighted_preferred_actions_.size() != 0)
+		return Random::RANDOM.NextCategory(weighted_preferred_actions_);
 
 	if (preferred_actions_.size() != 0)
 		return Random::RANDOM.NextElement(preferred_actions_);
@@ -87,12 +94,7 @@ ValuedAction POMCP::Search(double timeout) {
 	std::vector<int> actionSeq (actArr, actArr + sizeof(actArr) / sizeof(actArr[0]) );
 	 
 	std::vector<int>*	simulatedActionSequence = actionSeq.size() > 0 ? &actionSeq : NULL;	 
-	
-    if(Globals::config.saveBeliefToDB)
-	{
-		vector<State*> temp = belief_->Sample(0);
-		Prints::GetJsonForBelief(temp);
-	}
+	 
 
 	int hist_size = history_.Size();
 	bool done = false;

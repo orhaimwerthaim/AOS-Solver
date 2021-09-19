@@ -5,7 +5,7 @@
 namespace despot
 {
 	typedef bool anyValue;
-	struct tLocation;
+	//struct tLocation;
 	enum tDiscreteLocation
 	{
 		eCorridor,
@@ -20,7 +20,8 @@ namespace despot
 		tDiscreteLocation discrete_location;
 		anyValue actual_location;
 
-		tLocation(); 
+		tLocation();
+		std::string tLocationJsonStr();
 	};
 
  

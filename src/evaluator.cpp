@@ -1,8 +1,8 @@
 #include <despot/evaluator.h>
 #include <despot/util/mongoDB_Bridge.h>
-#include <despot/model_primitives/Bp/enum_map_Bp.h>
-#include <despot/model_primitives/Bp/actionManager.h>
-#include <despot/model_primitives/Bp/state.h>
+#include <despot/model_primitives/icaps/enum_map_icaps.h>
+#include <despot/model_primitives/icaps/actionManager.h>
+#include <despot/model_primitives/icaps/state.h>
 #include <nlohmann/json.hpp>
 using namespace std;
 
@@ -141,7 +141,30 @@ Evaluator::~Evaluator() {
 }
 
 
+void Evaluator::SaveBeliefToDB()
+{
+	if(Globals::config.saveBeliefToDB)
+	{
+		vector<State*> temp = solver_->belief()->Sample(5000);
+		Prints::SaveBeliefParticles(temp);
+	}
+}
+
 bool Evaluator::RunStep(int step, int round) {
+    bool shutDown = false;
+	bool isFirst = false;
+	int solverId = Globals::config.solverId;
+
+	MongoDB_Bridge::GetSolverDetails(shutDown, isFirst, solverId);
+	if(shutDown && !Globals::config.handsOnDebug)
+	{
+		return true;
+	}
+	else
+	{
+		MongoDB_Bridge::UpdateSolverDetails(isFirst, solverId);
+	}
+
 	if (target_finish_time_ != -1 && get_time_second() > target_finish_time_) {
 		if (!Globals::config.silence && out_)
 			*out_ << "Exit. (Total time "
@@ -195,11 +218,17 @@ bool Evaluator::RunStep(int step, int round) {
 		 << "Before:" << endl;
     model_->PrintState(*state_);
 	std::map<std::string, bool> updatesFromAction;
+
+	if(MongoDB_Bridge::currentActionSequenceId == 0)
+	{
+		Evaluator::SaveBeliefToDB();
+	}
+
 	bool terminal = ExecuteAction(action, reward, obs, updatesFromAction);
     logi << endl
 		 << "After:" << endl;
 	model_->PrintState(*state_);
-	logi << endl << "Reward:" << reward << endl <<  "Observation:" << enum_map_Bp::vecResponseEnumToString[(BpResponseModuleAndTempEnums)obs] << endl;
+	logi << endl << "Reward:" << reward << endl <<  "Observation:" << enum_map_icaps::vecResponseEnumToString[(IcapsResponseModuleAndTempEnums)obs] << endl;
 	end_t = get_time_second();
 	logi << "[RunStep] Time spent in ExecuteAction(): " << (end_t - start_t)
 		<< endl;
@@ -219,7 +248,8 @@ bool Evaluator::RunStep(int step, int round) {
 			<< endl;
 		if (!Globals::config.silence && out_)
 			*out_ << endl;
-		step_++;
+		step_++; 
+
 		return true;
 	}
 
@@ -230,6 +260,7 @@ bool Evaluator::RunStep(int step, int round) {
 	{
 		solver_->Update(action, obs);
 		//solver_->Update(action, obs, updatesFromAction);
+		Evaluator::SaveBeliefToDB();
 	}
 	end_t = get_time_second();
 	logi << "[RunStep] Time spent in Update(): " << (end_t - start_t) << endl;
@@ -358,37 +389,37 @@ double POMDPEvaluator::EndRound() {
 }
 
 bool POMDPEvaluator::ExecuteAction(int action, double& reward, OBS_TYPE& obs, std::map<std::string, bool>& updates) {
+	MongoDB_Bridge::currentActionSequenceId++;
 	ActionDescription &actDesc = *ActionManager::actions[action];
+    ActionType acType(actDesc.actionType);
+	std::string actionParameters = actDesc.GetActionParametersJson_ForActionExecution();
+		
+	std::string actionName = enum_map_icaps::vecActionTypeEnumToString[acType];
+	  
+	bsoncxx::oid actionId = MongoDB_Bridge::SendActionToExecution(actDesc.actionId, actionName, actionParameters);
+
 	double random_num = random_.NextDouble();
+    bool terminal = false;
 	if(Globals::IsInternalSimulation())
 	{
 		
-		bool terminal = model_->Step(*state_, random_num, action, reward, obs);
-
+		terminal = model_->Step(*state_, random_num, action, reward, obs);
+		std::string obsStr = enum_map_icaps::vecResponseEnumToString[(IcapsResponseModuleAndTempEnums)obs];
+		MongoDB_Bridge::SaveInternalActionResponse(actionName, actionId, obsStr);
 		reward_ = reward;
 		total_discounted_reward_ += Globals::Discount(step_) * reward;
 		total_undiscounted_reward_ += reward;
-
-        MongoDB_Bridge::currentActionSequenceId++;
+ 
 		return terminal;
 	}
 	else
-	{
-		ActionType acType(actDesc.actionType);
-		std::string actionParameters = actDesc.GetActionParametersJson_ForActionExecution();
-		
-		std::string actionName = enum_map_Bp::vecActionTypeEnumToString[acType];
-	  
-		bsoncxx::oid actionId = MongoDB_Bridge::SendActionToExecution(actDesc.actionId, actionName, actionParameters);
-
+	{ 
 		std::string obsStr = "";
 		updates = MongoDB_Bridge::WaitForActionResponse(actionId, obsStr);
 
-		obs = enum_map_Bp::vecStringToResponseEnum[obsStr];
-
-        MongoDB_Bridge::currentActionSequenceId++;
-		return false;
+		obs = enum_map_icaps::vecStringToResponseEnum[obsStr];
 	}
+    return terminal;
 }
 
 double POMDPEvaluator::End() {

@@ -4,7 +4,7 @@
 #include <despot/core/pomdp.h>
 #include <despot/core/node.h>
 #include <despot/core/globals.h> 
-#include <despot/model_primitives/Bp/actionManager.h> 
+#include <despot/model_primitives/icaps/actionManager.h>
 namespace despot {
 
 /* =============================================================================
@@ -17,6 +17,7 @@ protected:
 	const DSPOMDP* model_;
 	History history_;
 	double exploration_constant_;
+    std::vector<double> weighted_preferred_actions_;
 	std::vector<int> preferred_actions_;
 	std::vector<int> legal_actions_;
 
@@ -64,6 +65,7 @@ public:
 
 	const std::vector<int>& preferred_actions() const;
 	const std::vector<int>& legal_actions() const;
+    const std::vector<double>& weighted_preferred_actions() const;
 
 	int GetAction(const State& state);
 };

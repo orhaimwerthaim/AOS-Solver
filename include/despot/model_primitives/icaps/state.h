@@ -9,20 +9,19 @@ namespace despot
 
 class IcapsState : public State {
 public:
-	std::vector<tDiscreteLocation> tDiscreteLocationObjects;
-	std::map<std::string, tLocation> tLocationObjectsForActions;
+    bool OneTimeRewardUsed[1]={true};
+    std::vector<tDiscreteLocation> tDiscreteLocationObjects;
+    std::map<std::string, tLocation> tLocationObjectsForActions;
+    tDiscreteLocation cupDiscreteGeneralLocation;
+    anyValue cupAccurateLocation;
+    bool handEmpty;
+    tDiscreteLocation robotGenerallocation;
+    tLocation locationOutside_lab211;
+    tLocation locationAuditorium;
+    tLocation locationNear_elevator1;
+    tLocation locationCorridor;
+    std::map<std::string, anyValue*> anyValueUpdateDic;
 
-	tDiscreteLocation cupDiscreteGeneralLocation;
-	tDiscreteLocation robotGenerallocation;
-
-	tLocation locationOutside_lab211;
-	tLocation locationAuditorium;
-	tLocation locationNear_elevator1;
-	tLocation locationCorridor;
-
-	anyValue cupAccurateLocation;
-	std::map<std::string, anyValue*> anyValueUpdateDic;
-	bool handEmpty;
 
 	public:
 		static void SetAnyValueLinks(IcapsState *state);
