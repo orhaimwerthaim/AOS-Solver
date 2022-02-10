@@ -8,6 +8,8 @@
 #include <despot/model_primitives/Bp_with_int_model/state.h> 
 #include <algorithm>
 #include <cmath> 
+#include <despot/util/mongoDB_Bridge.h>
+#include <functional> //for std::hash
 
 using namespace std;
 
@@ -17,6 +19,7 @@ namespace despot {
 bool AOSUtils::Bernoulli(double p)
 {
 	/* generate secret number between 1 and 100: */
+    srand((unsigned int)time(NULL));
 	int randInt = rand() % 100 + 1;
 	return (p * 100) >= randInt;
 }
@@ -25,7 +28,8 @@ bool AOSUtils::Bernoulli(double p)
  *Bp_with_int_modelBelief class
  * ==============================================================================*/
 int Bp_with_int_modelBelief::num_particles = 5000;
-
+std::string Bp_with_int_modelBelief::beliefFromDB = "";
+int Bp_with_int_modelBelief::currentInitParticleIndex = -1;
 
 Bp_with_int_modelBelief::Bp_with_int_modelBelief(vector<State*> particles, const DSPOMDP* model,
 	Belief* prior) :
@@ -81,6 +85,7 @@ void Bp_with_int_modelBelief::Update(int actionId, OBS_TYPE obs) {
 
 	for (int i = 0; i < particles_.size(); i++)
 		particles_[i]->weight = 1.0 / particles_.size();
+ 
 }
 
 /* ==============================================================================
@@ -152,7 +157,7 @@ double Bp_with_int_model::ObsProb(OBS_TYPE obs, const State& state, int actionId
 std::default_random_engine Bp_with_int_model::generator;
 
 
-State* Bp_with_int_model::CreateStartState(string tyep) const {
+State* Bp_with_int_model::CreateStartState(string type) const {
     Bp_with_int_modelState* startState = memory_pool_.Allocate();
     Bp_with_int_modelState& state = *startState;
     startState->tPushTypeObjects.push_back(SingleAgentPush);
@@ -190,6 +195,12 @@ State* Bp_with_int_model::CreateStartState(string tyep) const {
     state.JointPushDirection = None;;
     state.MaxGridx = 2;;
     state.MaxGridy = 2;;
+    startState->tLocationObjects.push_back(&(state.bTwoLocGoal));
+    startState->tLocationObjects.push_back(&(state.bOneLocGoal));
+    startState->tLocationObjects.push_back(&(state.agentOneLoc));
+    startState->tLocationObjects.push_back(&(state.agentTwoLoc));
+    startState->tLocationObjects.push_back(&(state.bOneLoc));
+    startState->tLocationObjects.push_back(&(state.bTwoLoc));
     startState->tDirectionObjectsForActions["state.ParamUp"] = (state.ParamUp);
     startState->tDirectionObjectsForActions["state.ParamDown"] = (state.ParamDown);
     startState->tDirectionObjectsForActions["state.ParamLeft"] = (state.ParamLeft);
@@ -209,10 +220,11 @@ Belief* Bp_with_int_model::InitialBelief(const State* start, string type) const 
 	int N = Bp_with_int_modelBelief::num_particles;
 	vector<State*> particles(N);
 	for (int i = 0; i < N; i++) {
+        Bp_with_int_modelBelief::currentInitParticleIndex = i;
 		particles[i] = CreateStartState();
 		particles[i]->weight = 1.0 / N;
 	}
-
+    Bp_with_int_modelBelief::currentInitParticleIndex = -1;
 	return new Bp_with_int_modelBelief(particles, this);
 }
  
@@ -257,6 +269,15 @@ State* Bp_with_int_model::Copy(const State* particle) const {
 	Bp_with_int_modelState* state = memory_pool_.Allocate();
 	*state = *static_cast<const Bp_with_int_modelState*>(particle);
 	state->SetAllocated();
+
+    state->tLocationObjects[0] = &(state->bTwoLocGoal);
+    state->tLocationObjects[1] = &(state->bOneLocGoal);
+    state->tLocationObjects[2] = &(state->agentOneLoc);
+    state->tLocationObjects[3] = &(state->agentTwoLoc);
+    state->tLocationObjects[4] = &(state->bOneLoc);
+    state->tLocationObjects[5] = &(state->bTwoLoc);
+
+
 	return state;
 }
 
@@ -270,6 +291,7 @@ int Bp_with_int_model::NumActiveParticles() const {
 
 bool Bp_with_int_model::Step(State& s_state__, double rand_num, int actionId, double& reward,
 	OBS_TYPE& observation) const {
+    reward = 0;
 	bool isNextStateFinal = false;
 	Random random(rand_num);
 	int __moduleExecutionTime = -1;
@@ -301,9 +323,9 @@ bool Bp_with_int_model::Step(State& s_state__, double rand_num, int actionId, do
 
     if (!meetPrecondition)
 	{
-		__moduleExecutionTime = 0;
-		observation = illegalActionObs;
-		return false;
+		//__moduleExecutionTime = 0;
+		//observation = illegalActionObs;
+		//return false;
 	}
 	return finalState;
 }
@@ -398,14 +420,16 @@ void Bp_with_int_model::SampleModuleExecutionTime(const Bp_with_int_modelState& 
 void Bp_with_int_model::ExtrinsicChangesDynamicModel(const Bp_with_int_modelState& state, Bp_with_int_modelState& state_, double rand_num, int actionId, const int &__moduleExecutionTime)  const
 {
     ActionType &actType = ActionManager::actions[actionId]->actionType;
-    state_.isAgentOneTurn=!state.isAgentOneTurn;
+        state_.isAgentOneTurn=!state.isAgentOneTurn;
 }
 
 void Bp_with_int_model::ModuleDynamicModel(const Bp_with_int_modelState &state, const Bp_with_int_modelState &state_, Bp_with_int_modelState &state__, double rand_num, int actionId, double &__reward, OBS_TYPE &observation, const int &__moduleExecutionTime, const bool &__meetPrecondition) const
 {
+    std::hash<std::string> hasher;
     ActionType &actType = ActionManager::actions[actionId]->actionType;
     observation = -1;
     int startObs = observation;
+    std::string __moduleResponseStr = "NoStrResponse";
     OBS_TYPE &__moduleResponse = observation;
     if(actType == pushAction)
     {
@@ -450,6 +474,7 @@ void Bp_with_int_model::ModuleDynamicModel(const Bp_with_int_modelState &state, 
         __moduleResponse=navigate_eSuccess;
         __reward=-1;
     }
+    __moduleResponse = __moduleResponseStr == "NoStrResponse" ? __moduleResponse : (int)hasher(__moduleResponseStr);
     if(startObs == __moduleResponse)
     {
     stringstream ss;

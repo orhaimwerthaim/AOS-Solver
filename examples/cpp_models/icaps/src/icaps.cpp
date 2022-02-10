@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <cmath> 
 #include <despot/util/mongoDB_Bridge.h>
+#include <functional> //for std::hash
 
 using namespace std;
 
@@ -18,6 +19,7 @@ namespace despot {
 bool AOSUtils::Bernoulli(double p)
 {
 	/* generate secret number between 1 and 100: */
+    srand((unsigned int)time(NULL));
 	int randInt = rand() % 100 + 1;
 	return (p * 100) >= randInt;
 }
@@ -25,7 +27,7 @@ bool AOSUtils::Bernoulli(double p)
 /* ==============================================================================
  *IcapsBelief class
  * ==============================================================================*/
-int IcapsBelief::num_particles = 200;
+int IcapsBelief::num_particles = 5234;
 std::string IcapsBelief::beliefFromDB = "";
 int IcapsBelief::currentInitParticleIndex = -1;
 
@@ -171,19 +173,27 @@ State* Icaps::CreateStartState(string type) const {
     startState->tDiscreteLocationObjects.push_back(eCorridor);
     startState->tDiscreteLocationObjects.push_back(eNear_elevator1);
     startState->tDiscreteLocationObjects.push_back(eUnknown);
-
-    if(IcapsBelief::beliefFromDB == "")
-    {
-
-        IcapsBelief::beliefFromDB = MongoDB_Bridge::SampleFromBeliefState(0, IcapsBelief::num_particles);
-    }
-    int totalNumOfStatesInBelief = 5000;
-    int stateIndex = IcapsBelief::currentInitParticleIndex == -1 ? 0 : IcapsBelief::currentInitParticleIndex % totalNumOfStatesInBelief;
-    Prints::GetStateFromJson(state, IcapsBelief::beliefFromDB, stateIndex);
+    state.cupDiscreteGeneralLocation = eCorridor;
+    state.cupAccurateLocation = false;
+    state.handEmpty = true;
+    state.locationOutside_lab211 = tLocation();
+    state.locationOutside_lab211.discrete_location = eOutside_lab211;
+     state.locationOutside_lab211.actual_location = true;
+    state.locationAuditorium = tLocation();
+    state.locationAuditorium.discrete_location = eAuditorium;
+     state.locationAuditorium.actual_location = true;
+    state.locationNear_elevator1 = tLocation();
+    state.locationNear_elevator1.discrete_location = eNear_elevator1;
+     state.locationNear_elevator1.actual_location = true;
+    state.locationCorridor = tLocation();
+    state.locationCorridor.discrete_location = eCorridor;
+     state.locationCorridor.actual_location = true;
     startState->tLocationObjectsForActions["state.locationOutside_lab211"] = (state.locationOutside_lab211);
     startState->tLocationObjectsForActions["state.locationAuditorium"] = (state.locationAuditorium);
     startState->tLocationObjectsForActions["state.locationNear_elevator1"] = (state.locationNear_elevator1);
     startState->tLocationObjectsForActions["state.locationCorridor"] = (state.locationCorridor);
+    state.robotGenerallocation=state.locationNear_elevator1.discrete_location;
+    state.cupDiscreteGeneralLocation=state.tDiscreteLocationObjects[Environment_discrete_dist4(generator)];;
     if (ActionManager::actions.size() == 0)
     {
         ActionManager::Init(const_cast <IcapsState*> (startState));
@@ -246,6 +256,9 @@ State* Icaps::Copy(const State* particle) const {
 	IcapsState* state = memory_pool_.Allocate();
 	*state = *static_cast<const IcapsState*>(particle);
 	state->SetAllocated();
+
+
+
 	return state;
 }
 
@@ -259,6 +272,7 @@ int Icaps::NumActiveParticles() const {
 
 bool Icaps::Step(State& s_state__, double rand_num, int actionId, double& reward,
 	OBS_TYPE& observation) const {
+    reward = 0;
 	bool isNextStateFinal = false;
 	Random random(rand_num);
 	int __moduleExecutionTime = -1;
@@ -290,9 +304,9 @@ bool Icaps::Step(State& s_state__, double rand_num, int actionId, double& reward
 
     if (!meetPrecondition)
 	{
-		__moduleExecutionTime = 0;
-		observation = illegalActionObs;
-		return false;
+		//__moduleExecutionTime = 0;
+		//observation = illegalActionObs;
+		//return false;
 	}
 	return finalState;
 }
@@ -373,9 +387,11 @@ void Icaps::ExtrinsicChangesDynamicModel(const IcapsState& state, IcapsState& st
 
 void Icaps::ModuleDynamicModel(const IcapsState &state, const IcapsState &state_, IcapsState &state__, double rand_num, int actionId, double &__reward, OBS_TYPE &observation, const int &__moduleExecutionTime, const bool &__meetPrecondition) const
 {
+    std::hash<std::string> hasher;
     ActionType &actType = ActionManager::actions[actionId]->actionType;
     observation = -1;
     int startObs = observation;
+    std::string __moduleResponseStr = "NoStrResponse";
     OBS_TYPE &__moduleResponse = observation;
     if(actType == placeAction)
     {
@@ -429,6 +445,7 @@ void Icaps::ModuleDynamicModel(const IcapsState &state, const IcapsState &state_
         else __moduleResponse=navigate_eFailed;
         __reward=-100;
     }
+    __moduleResponse = __moduleResponseStr == "NoStrResponse" ? __moduleResponse : (int)hasher(__moduleResponseStr);
     if(startObs == __moduleResponse)
     {
     stringstream ss;

@@ -104,6 +104,8 @@ protected:
 	// For POMCP
 	int count_; // Number of visits on the node
 	double value_; // Value of the node
+	double expected_imm_reward_;
+	double expected_future_rewards_;
 
 public:
 	double default_value;
@@ -136,6 +138,12 @@ public:
 	int count() const;
 	void value(double v);
 	double value() const;
+	void expected_imm_reward_add(double v);
+	void expected_imm_reward(double v);
+	double expected_imm_reward() const;
+	void expected_future_rewards(double v);
+	double expected_future_rewards() const;
+	
 };
 
 } // namespace despot

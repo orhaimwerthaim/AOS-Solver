@@ -4,15 +4,15 @@
 #include <despot/solver/pomcp.h> 
 #include <random>
 #include <string>
-#include <despot/model_primitives/Bp_with_int_model/enum_map_Bp_with_int_model.h> 
-#include <despot/model_primitives/Bp_with_int_model/state.h> 
+#include <despot/model_primitives/turtleBotVisitLocationsPO_Noisy/enum_map_turtleBotVisitLocationsPO_Noisy.h> 
+#include <despot/model_primitives/turtleBotVisitLocationsPO_Noisy/state.h> 
 namespace despot {
 
 /* ==============================================================================
- * Bp_with_int_modelState class
+ * TurtleBotVisitLocationsPO_NoisyState class
  * ==============================================================================*/
 
-class Bp_with_int_modelState;
+class TurtleBotVisitLocationsPO_NoisyState;
 class AOSUtils
 {
 	public:
@@ -24,30 +24,30 @@ class AOSUtils
 
 
 /* ==============================================================================
- * Bp_with_int_model and PocmanBelief class
+ * TurtleBotVisitLocationsPO_Noisy and PocmanBelief class
  * ==============================================================================*/
-class Bp_with_int_model;
-class Bp_with_int_modelBelief: public ParticleBelief {
+class TurtleBotVisitLocationsPO_Noisy;
+class TurtleBotVisitLocationsPO_NoisyBelief: public ParticleBelief {
 protected:
-	const Bp_with_int_model* Bp_with_int_model_;
+	const TurtleBotVisitLocationsPO_Noisy* turtleBotVisitLocationsPO_Noisy_;
 public:
 	static std::string beliefFromDB;
 	static int currentInitParticleIndex;
 	static int num_particles; 
-	Bp_with_int_modelBelief(std::vector<State*> particles, const DSPOMDP* model, Belief* prior =
+	TurtleBotVisitLocationsPO_NoisyBelief(std::vector<State*> particles, const DSPOMDP* model, Belief* prior =
 		NULL);
 	void Update(int actionId, OBS_TYPE obs);
 	//void Update(int actionId, OBS_TYPE obs, std::map<std::string,bool> updates);
 };
 
 /* ==============================================================================
- * Bp_with_int_model 
+ * TurtleBotVisitLocationsPO_Noisy 
  * ==============================================================================*/
 /**
  * The implementation is adapted from that included in the POMCP software.
  */
 
-class Bp_with_int_model: public DSPOMDP {
+class TurtleBotVisitLocationsPO_Noisy: public DSPOMDP {
 public:
 	virtual std::string PrintObs(int action, OBS_TYPE obs) const;
 	virtual std::string PrintStateStr(const State &state) const;
@@ -86,22 +86,23 @@ public:
 	virtual State* Copy(const State* particle) const;
 	virtual void Free(State* particle) const;
 	int NumActiveParticles() const;
- 	static void CheckPreconditions(const Bp_with_int_modelState& state, double &reward, bool &meetPrecondition, int actionId);
-    static void ComputePreferredActionValue(const Bp_with_int_modelState& state, double &__heuristicValue, int actionId);
+ 	static void CheckPreconditions(const TurtleBotVisitLocationsPO_NoisyState& state, double &reward, bool &meetPrecondition, int actionId);
+    static void ComputePreferredActionValue(const TurtleBotVisitLocationsPO_NoisyState& state, double &__heuristicValue, int actionId);
      
  
-	Bp_with_int_model(); 
+	TurtleBotVisitLocationsPO_Noisy(); 
 
 private:
-	void SampleModuleExecutionTime(const Bp_with_int_modelState& state, double rand_num, int actionId, int &moduleExecutionTime) const;
-	void ExtrinsicChangesDynamicModel(const Bp_with_int_modelState& initState, Bp_with_int_modelState& afterExState, double rand_num, int actionId,
+	void SampleModuleExecutionTime(const TurtleBotVisitLocationsPO_NoisyState& state, double rand_num, int actionId, int &moduleExecutionTime) const;
+	void ExtrinsicChangesDynamicModel(const TurtleBotVisitLocationsPO_NoisyState& initState, TurtleBotVisitLocationsPO_NoisyState& afterExState, double rand_num, int actionId,
 		const int &moduleExecutionTime) const;
-	void ModuleDynamicModel(const Bp_with_int_modelState &initState, const Bp_with_int_modelState &afterExState, Bp_with_int_modelState &nextState, double rand_num, int actionId, double &reward,
+	void ModuleDynamicModel(const TurtleBotVisitLocationsPO_NoisyState &initState, const TurtleBotVisitLocationsPO_NoisyState &afterExState, TurtleBotVisitLocationsPO_NoisyState &nextState, double rand_num, int actionId, double &reward,
 								 OBS_TYPE &observation, const int &moduleExecutionTime, const bool &__meetPrecondition) const;
-	bool ProcessSpecialStates(Bp_with_int_modelState &state, double &reward) const;
+	bool ProcessSpecialStates(TurtleBotVisitLocationsPO_NoisyState &state, double &reward) const;
 
-	mutable MemoryPool<Bp_with_int_modelState> memory_pool_;
+	mutable MemoryPool<TurtleBotVisitLocationsPO_NoisyState> memory_pool_;
 	static std::default_random_engine generator;
+    static std::normal_distribution<> navigate_normal_dist1; //AOS.SampleNormal(40000,10000)
 
 };
 } // namespace despot

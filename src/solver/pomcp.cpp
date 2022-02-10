@@ -3,20 +3,30 @@
 #include <iostream>
 #include <fstream>
 
+#ifdef WITH_ROOT_EPSILON_GREEDY 
+#include <random>
+#endif
+
 using namespace std;
 
 using namespace std;
 
 namespace despot {
-
+#ifdef WITH_ROOT_EPSILON_GREEDY 
+std::default_random_engine POMCP::generator;
+std::uniform_int_distribution<int> POMCP::rand_action_distribution(0,6);
+#endif
 /* =============================================================================
  * POMCPPrior class
  * =============================================================================*/
 
 POMCPPrior::POMCPPrior(const DSPOMDP* model) :
 	model_(model) {
-	exploration_constant_ = (model->GetMaxReward()
-		- model->GetMinRewardAction().value);
+	double x = (40 / Globals::config.search_depth) > 1 ? (40 / Globals::config.search_depth) : 1;
+    #ifdef WITH_ROOT_EPSILON_GREEDY
+	x = 1;
+	#endif
+	exploration_constant_ = (model->GetMaxReward() - model->GetMinRewardAction().value) * x;
 }
 
 POMCPPrior::~POMCPPrior() {
@@ -70,7 +80,7 @@ void UniformPOMCPPrior::ComputePreference(const State& state) {
 POMCP::POMCP(const DSPOMDP* model, POMCPPrior* prior, Belief* belief) :
 	Solver(model, belief),
 	root_(NULL) {
-	reuse_ = false;
+	reuse_ = true;
 	prior_ = prior;
 	assert(prior_ != NULL);
 }
@@ -104,8 +114,12 @@ ValuedAction POMCP::Search(double timeout) {
 		for (int i = 0; i < particles.size(); i++) {
 			State* particle = particles[i];
 			logd << "[POMCP::Search] Starting simulation " << num_sims << endl;
-
+#ifdef WITH_ROOT_EPSILON_GREEDY
+            Simulate(particle, root_, model_, prior_, simulatedActionSequence,true);
+#else
 			Simulate(particle, root_, model_, prior_, simulatedActionSequence);
+ #endif
+			
  
 			num_sims++;
 			logd << "[POMCP::Search] " << num_sims << " simulations done" << endl;
@@ -149,9 +163,12 @@ ValuedAction POMCP::Search(double timeout) {
 	// 			<< " " << root_->Child(action)->value() << endl;
 	// 	}
 	// }
-
-	std::string dot = POMCP::GenerateDotGraph(root_,1, model_);
-	// delete root_;
+    if(2 > 0)
+    {
+	    //std::string dot = POMCP::GenerateDotGraph(root_,2, model_);
+        std::string dot = POMCP::GenerateDebugJson(root_,2, model_);
+	}
+    // delete root_;
 	return astar;
 }
 
@@ -202,7 +219,53 @@ void POMCP::Update(int action, OBS_TYPE obs)
 // 	std::map<std::string, bool> updatesFromAction;
 // 	POMCP::Update(action, obs, updatesFromAction);
 // }
+#ifdef WITH_ROOT_EPSILON_GREEDY
+        int POMCP::UpperBoundAction(const VNode* vnode, double explore_constant, bool is_root_node) {
+#ifdef WITH_FULL_EPSILON_GREEDY
+			is_root_node = true;
+#endif
+			const vector<QNode *> &qnodes = vnode->children();
+			double best_ub = Globals::NEG_INFTY;
+			int best_action = -1;
+			 
+			float rand_ = ((float)rand() / RAND_MAX);
+			bool random_action = is_root_node && (rand_ > 0.8);
+			bool take_max = is_root_node && !random_action;
+			if (random_action)
+			{
 
+				int rand_act = rand_action_distribution(generator);
+				while (qnodes[rand_act]->value() < -900000)
+				{
+					rand_act = rand_action_distribution(generator);
+				}
+				return rand_act;
+			}
+
+			for (int action = 0; action < qnodes.size(); action++)
+			{
+				if (qnodes[action]->count() == 0)
+					return action;
+
+				double ub = qnodes[action]->value() + explore_constant * sqrt(log(vnode->count() + 1) / qnodes[action]->count());
+
+				if (take_max)
+				{
+					ub = qnodes[action]->value();
+				}
+
+				if (ub > best_ub)
+				{
+					best_ub = ub;
+					best_action = action;
+				}
+			}
+
+			assert(best_action != -1);
+			return best_action;
+		}
+
+#endif
 int POMCP::UpperBoundAction(const VNode* vnode, double explore_constant)
 {
 	return UpperBoundAction(vnode, explore_constant, NULL, NULL);
@@ -361,7 +424,44 @@ double POMCP::Simulate(State* particle, RandomStreams& streams, VNode* vnode,
 
 	return reward;
 }
+#ifdef WITH_ROOT_EPSILON_GREEDY
+// static
+double POMCP::Simulate(State* particle, VNode* vnode, const DSPOMDP* model,
+	POMCPPrior* prior, std::vector<int>* simulateActionSequence, bool is_root_node) {
+	assert(vnode != NULL);
+	if (vnode->depth() >= Globals::config.search_depth)
+		return 0;
 
+	double explore_constant = prior->exploration_constant();
+
+	int action = simulateActionSequence && simulateActionSequence->size() > vnode->depth() ? (*simulateActionSequence)[vnode->depth()] : UpperBoundAction(vnode, explore_constant,is_root_node);
+			
+	double reward;
+	OBS_TYPE obs;
+	bool terminal = model->Step(*particle, action, reward, obs);
+
+	QNode* qnode = vnode->Child(action);
+	if (!terminal) {
+		prior->Add(action, obs);
+		map<OBS_TYPE, VNode*>& vnodes = qnode->children();
+		if (vnodes[obs] != NULL) {
+			reward += Globals::Discount()
+				* Simulate(particle, vnodes[obs], model, prior,simulateActionSequence, false);
+		} else { // Rollout upon encountering a node not in curren tree, then add the node
+			vnodes[obs] = CreateVNode(vnode->depth() + 1, particle, prior,
+				model);
+			reward += Globals::Discount()
+				* Rollout(particle, vnode->depth() + 1, model, prior,simulateActionSequence);
+		}
+		prior->PopLast();
+	}
+
+	qnode->Add(reward);
+	vnode->Add(reward);
+
+	return reward;
+}
+#endif
 // static
 double POMCP::Simulate(State* particle, VNode* vnode, const DSPOMDP* model,
 	POMCPPrior* prior, std::vector<int>* simulateActionSequence) {
@@ -598,7 +698,7 @@ void DPOMCP::Update(int action, OBS_TYPE obs) {
 		<< action << ", observation " << obs
 		<< " in " << (get_time_second() - start) << "s" << endl;
 }
-
+/*
 std::string POMCP::GenerateDotGraph(VNode* root, int depthLimit, const DSPOMDP* model)
 {
 	stringstream ssNodes;
@@ -635,7 +735,7 @@ void POMCP::GenerateDotGraphVnode(VNode* vnode, int& currentNodeID, stringstream
 	{ 
 		stateDesc = "";
 		
-		/* */ }
+		 }
 	// if(vnode->particles().size() == 0)
 	// 	stateDesc = "";
 	// else 
@@ -670,5 +770,79 @@ void POMCP::GenerateDotGraphVnode(VNode* vnode, int& currentNodeID, stringstream
 		}
 	}
 }
+*/
+
+std::string POMCP::GenerateDebugJson(VNode* root, int depthLimit, const DSPOMDP* model)
+{
+	stringstream ssNodes;
+	stringstream ssEdges; 
+	
+	ssNodes << "{\"observation\":\"root\"" << endl;
+	ssEdges << "";
+	int currentNodeID = 0;
+	POMCP::GenerateDebugJsonVnode(root, ssNodes, depthLimit, model_);
+
+	
+	ofstream MyFile("/home/or/Projects/debug.json");
+	MyFile << ssNodes.str();
+	MyFile.close();
+	//run: "dot -Tpdf  debug.dot > debug.pdf"
+	system("(cd /home/or/Projects;dot -Tpdf  debug.dot > debug.pdf)");
+	return ssNodes.str();
+}
+
+void POMCP::GenerateDebugJsonVnode(VNode* vnode, stringstream &ss, int depthLimit, const DSPOMDP* model)
+{
+	std::string stateDesc = "";
+	try 
+	{
+		if(vnode->belief() != NULL)
+			std::vector<State *> vs = vnode->belief()->Sample(1);
+		//stateDesc = model_->PrintStateStr(*());
+	} 
+	catch (std::exception& e)
+	{ 
+		stateDesc = "";
+		
+		 }
+	if(depthLimit >= 0 && vnode->depth() >= depthLimit)
+	{
+		ss << "}";
+		return;
+	}
+	ss << ",\"actions\":[";
+	for (int i = 0; i < vnode->children().size(); i++)
+	{
+		if(i > 0)ss << ",";
+		ss << "{";
+		QNode *child = vnode->children()[i];
+		int N = child->count();
+		double V = child->value();
+		int action = i;
+		
+		ss << "\"action\":"<< "\"" << model->GetActionDescription(action)<< "\","<< endl;
+		ss << "\"count\":"<< N << "," << "\"value\":"<< V << ","<< endl;
+
+		ss << "\"observations\":[";
+		int j = 0;
+		for (std::map<OBS_TYPE, VNode *>::iterator it = child->children().begin(); it != child->children().end(); ++it,j++)
+		{
+			OBS_TYPE obs = it->first;
+			if(j > 0)
+				ss << ",";
+			ss << "{\"observation\":"
+					<< "\"" << model_->PrintObs(action, obs) << "\"" << endl;
+
+			VNode *vnodeChild = it->second; 
+			POMCP::GenerateDebugJsonVnode(vnodeChild, ss, depthLimit, model);
+
+		}
+		ss << "]";
+		ss << "}";
+	}
+	ss << "]";
+	ss << "}";
+}
+
  
 } // namespace despot

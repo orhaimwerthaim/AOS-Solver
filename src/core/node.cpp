@@ -157,6 +157,7 @@ void VNode::Add(double val) {
 	count_++;
 }
 
+
 void VNode::count(int c) {
 	count_ = c;
 }
@@ -169,6 +170,7 @@ void VNode::value(double v) {
 double VNode::value() const {
 	return value_;
 }
+
 
 void VNode::Free(const DSPOMDP& model) {
 	for (int i = 0; i < particles_.size(); i++) {
@@ -374,5 +376,30 @@ void QNode::value(double v) {
 double QNode::value() const {
 	return value_;
 }
+
+void QNode::expected_imm_reward_add(double imm_reward)
+{
+	expected_imm_reward_ = (expected_imm_reward_ * count_ + imm_reward) / (count_ + 1);
+	count_++;
+}
+
+void QNode::expected_imm_reward(double imm_reward)
+{
+	expected_imm_reward_ = imm_reward;
+}
+
+	double QNode::expected_imm_reward() const
+	{
+		return expected_imm_reward_;
+	}
+
+void QNode::expected_future_rewards(double v)
+{
+	expected_future_rewards_ = v;
+}
+	double QNode::expected_future_rewards() const
+	{
+		return expected_future_rewards_;
+	}
 
 } // namespace despot

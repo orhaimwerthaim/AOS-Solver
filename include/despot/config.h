@@ -25,11 +25,11 @@ struct Config {
 
 	Config() :
         handsOnDebug(false),
-        solverId(57),
-		search_depth(15),
+        solverId(7),
+		search_depth(10),
 		discount(0.99),
 		root_seed(42),
-		time_per_move(2),
+		time_per_move(1),
 		num_scenarios(500),
 		pruning_constant(0),
 		xi(0.95),
@@ -37,7 +37,7 @@ struct Config {
 		default_action(""),
 		max_policy_sim_len(10),
 		noise(0.1),
-		silence(true),
+		silence(false),
 		internalSimulation(true),
         saveBeliefToDB(true)
 		{

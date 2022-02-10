@@ -1,10 +1,17 @@
 #ifndef POMCP_H
 #define POMCP_H
+//#define WITH_ROOT_EPSILON_GREEDY
+//#define WITH_FULL_EPSILON_GREEDY
+
+
+#ifdef WITH_FULL_EPSILON_GREEDY
+#define WITH_ROOT_EPSILON_GREEDY
+#endif
 
 #include <despot/core/pomdp.h>
 #include <despot/core/node.h>
 #include <despot/core/globals.h> 
-#include <despot/model_primitives/icaps/actionManager.h>
+#include <despot/model_primitives/iros/actionManager.h>
 namespace despot {
 
 /* =============================================================================
@@ -105,8 +112,6 @@ public:
 	//virtual void Update(int action, OBS_TYPE obs, std::map<std::string, bool> updatesFromAction);
 	static VNode* CreateVNode(int depth, const State*, POMCPPrior* prior,
 		const DSPOMDP* model);
-	static double Simulate(State* particle, VNode* root, const DSPOMDP* model,
-		POMCPPrior* prior, std::vector<int>* simulateActionSequence);
 	static double Simulate(State* particle, RandomStreams& streams,
 		VNode* vnode, const DSPOMDP* model, POMCPPrior* prior);
 	static double Rollout(State* particle, int depth, const DSPOMDP* model,
@@ -117,10 +122,23 @@ public:
 		RandomStreams& streams, const DSPOMDP* model, POMCPPrior* prior);
 	static int UpperBoundAction(const VNode* vnode, double explore_constant, const DSPOMDP* model, Belief* b);
 	static int UpperBoundAction(const VNode* vnode, double explore_constant);
+    static double Simulate(State* particle, VNode* root, const DSPOMDP* model,
+		POMCPPrior* prior, std::vector<int>* simulateActionSequence);
+
+#ifdef WITH_ROOT_EPSILON_GREEDY
+static std::default_random_engine generator;
+static std::uniform_int_distribution<int> rand_action_distribution;
+static int UpperBoundAction(const VNode* vnode, double explore_constant, bool is_root_node);
+static double Simulate(State* particle, VNode* root, const DSPOMDP* model,
+		POMCPPrior* prior, std::vector<int>* simulateActionSequence, bool is_root_node);
+#endif
+
 	static ValuedAction OptimalAction(const VNode* vnode);
 	static int Count(const VNode* vnode);
-	 std::string GenerateDotGraph(VNode *root, int depthLimit, const DSPOMDP* model);
-	 void GenerateDotGraphVnode(VNode *vnode, int &currentNodeID, std::stringstream &ssNodes, std::stringstream &ssEdges, int depthLimit, const DSPOMDP* model);
+	 //std::string GenerateDotGraph(VNode *root, int depthLimit, const DSPOMDP* model);
+	 //void GenerateDotGraphVnode(VNode *vnode, int &currentNodeID, std::stringstream &ssNodes, std::stringstream &ssEdges, int depthLimit, const DSPOMDP* model);
+	 void GenerateDebugJsonVnode(VNode *vnode, std::stringstream &ss, int depthLimit, const DSPOMDP* model);
+	 std::string GenerateDebugJson(VNode *root, int depthLimit, const DSPOMDP* model);
 };
 
 /* =============================================================================
