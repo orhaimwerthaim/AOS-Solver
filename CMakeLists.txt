@@ -27,7 +27,7 @@ include_directories(include)
 set(JSON_BuildTests OFF CACHE INTERNAL "")
 add_subdirectory(nlohmann_json) 
 #add_library("${PROJECT_NAME}" SHARED
-#src/model_primitives/icaps/actionManager.cpp #added
+#src/model_primitives/iros/actionManager.cpp #added
 #)
 #target_link_libraries("${PROJECT_NAME}" PRIVATE nlohmann_json::nlohmann_json)
 ##################################
@@ -35,9 +35,9 @@ add_subdirectory(nlohmann_json)
 
 
 add_library("${PROJECT_NAME}" SHARED
-  src/model_primitives/icaps/state.cpp
-  src/model_primitives/icaps/enum_map_icaps.cpp #added
-  src/model_primitives/icaps/actionManager.cpp #added
+  src/model_primitives/iros/state.cpp
+  src/model_primitives/iros/enum_map_iros.cpp #added
+  src/model_primitives/iros/actionManager.cpp #added
 
   src/core/belief.cpp
   src/core/globals.cpp
@@ -114,13 +114,10 @@ if(DESPOT_BUILD_EXAMPLES)
   # add_subdirectory(examples/cpp_models/tiger)
 
 
-  add_subdirectory(examples/cpp_models/icaps)
- # add_subdirectory(examples/cpp_models/icaps_working_toy)
+  add_subdirectory(examples/cpp_models/iros)
+ # add_subdirectory(examples/cpp_models/iros_working_toy)
 endif()
 
-if(DESPOT_BUILD_POMDPX)
-  add_subdirectory(examples/pomdpx_models)
-endif()
 
 install(TARGETS "${PROJECT_NAME}"
   EXPORT "DespotTargets"
