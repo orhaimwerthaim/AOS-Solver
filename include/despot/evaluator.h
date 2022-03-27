@@ -6,6 +6,7 @@
 #include <despot/pomdpx/pomdpx.h>
 #include <despot/util/util.h>
 #include <despot/model_primitives/iros/enum_map_iros.h>
+#include <unistd.h>
 namespace despot {
 
 /* =============================================================================
@@ -45,6 +46,84 @@ public:
 	double GetRemainingBudget(std::string instance) const;
 };
 
+struct policy{
+    std::string policyFile;
+    std::string currrentState;
+	std::map<std::string, std::string> obsStrToNum;
+	bool wasInit = false;
+	void init_policy()
+	{
+		if(wasInit)
+			return;
+		wasInit = true;
+
+		char tmp[256];
+		getcwd(tmp, 256);
+		std::string workingDirPath(tmp);
+		workingDirPath = workingDirPath.substr(0, workingDirPath.find("build"));
+		std::string policyFilePath(workingDirPath);
+		policyFilePath.append(Globals::config.fixedPolicyDotFilePath);
+		std::ifstream ifs(policyFilePath);
+		std::string content( (std::istreambuf_iterator<char>(ifs) ),
+                       (std::istreambuf_iterator<char>()    ) );
+        policyFile = content;
+        
+		currrentState = "root"; 
+        std::string pomdpFilePath(workingDirPath);
+		pomdpFilePath.append(Globals::config.pomdpFilePath);
+		std::ifstream pf(pomdpFilePath);
+		std::string pomContent( (std::istreambuf_iterator<char>(pf) ),
+                       (std::istreambuf_iterator<char>()    ) );
+
+		std::string t = "observations:  ";
+		int obsInd = pomContent.find(t) + t.size();
+		while(obsInd > t.size())
+		{
+			while(pomContent[obsInd] == ' ')
+				obsInd++;
+			if(pomContent[obsInd] == '\n')
+				break;
+			int endObs = pomContent.find(" ", obsInd);
+			obsStrToNum.insert({pomContent.substr(obsInd, endObs - obsInd), std::to_string(obsStrToNum.size())});
+			obsInd = endObs;
+		}
+	}
+
+	int getCurrentAction()
+    {
+        std::string temp = "\n" + currrentState;
+            int stateInd = policyFile.find(temp.append(" ["));
+            int actStart = policyFile.find("A (", stateInd) + 3;
+            int actEnd = policyFile.find(")", actStart);
+            return stoi(policyFile.substr(actStart, actEnd - actStart)); 
+    }
+
+    void updateStateByObs(std::string obs)
+    {
+		obs=obsStrToNum[obs];
+		std::string temp = "\n" + currrentState;
+		temp.append(" -> ");
+        bool found = false;
+        int stateInd=0;
+        while (stateInd >= 0)
+        {
+            stateInd = policyFile.find(temp,stateInd)+temp.size();
+            if(stateInd < temp.size())
+                throw std::runtime_error("ERROR: action that reach this State does not expect such an observation!");
+            int statrtObs = policyFile.find(" (", stateInd) + 2;
+            int endObs = policyFile.find(")", stateInd);
+
+            std::string curObs = policyFile.substr(statrtObs, endObs-statrtObs);
+            if(curObs == obs)
+            {
+                currrentState = policyFile.substr(stateInd, policyFile.find(" ", stateInd)-stateInd);
+                return;
+            }
+        }
+    } 
+};
+
+
 /* =============================================================================
  * Evaluator class
  * =============================================================================*/
@@ -57,6 +136,7 @@ class Evaluator {
 	std::vector<int> action_sequence_to_sim;
     void SaveBeliefToDB();
 protected:
+    policy fixedPolicy;
 	DSPOMDP* model_;
 	std::string belief_type_;
 	Solver* solver_;
@@ -120,7 +200,7 @@ public:
 	bool RunStep(int step, int round);
 
 	virtual double EndRound() = 0; // Return total undiscounted reward for this round.
-	virtual bool ExecuteAction(int action, double& reward, OBS_TYPE& obs, std::map<std::string, bool>& updates) = 0;
+	virtual bool ExecuteAction(int action, double& reward, OBS_TYPE& obs, std::map<std::string, bool>& updates, std::string& obsStr) = 0;
 	//IcapsResponseModuleAndTempEnums CalculateModuleResponse(std::string moduleName);
 	virtual void ReportStepReward();
 	virtual double End() = 0; // Free resources and return total reward collected
@@ -141,7 +221,7 @@ public:
 class POMDPEvaluator: public Evaluator {
 protected:
 	Random random_;
-
+    policy fixedPolicy;
 public:
 	POMDPEvaluator(DSPOMDP* model, std::string belief_type, Solver* solver,
 		clock_t start_clockt, std::ostream* out, double target_finish_time = -1,
@@ -155,7 +235,7 @@ public:
 	int Handshake(std::string instance);
 	void InitRound();
 	double EndRound();
-	bool ExecuteAction(int action, double& reward, OBS_TYPE& obs, std::map<std::string, bool>& updates);
+	bool ExecuteAction(int action, double& reward, OBS_TYPE& obs, std::map<std::string, bool>& updates, std::string& obsStr);
 	double End();
 	void UpdateTimePerMove(double step_time);
 };

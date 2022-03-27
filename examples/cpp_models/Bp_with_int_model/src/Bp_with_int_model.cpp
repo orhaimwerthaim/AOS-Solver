@@ -474,7 +474,13 @@ void Bp_with_int_model::ModuleDynamicModel(const Bp_with_int_modelState &state, 
         __moduleResponse=navigate_eSuccess;
         __reward=-1;
     }
-    __moduleResponse = __moduleResponseStr == "NoStrResponse" ? __moduleResponse : (int)hasher(__moduleResponseStr);
+    if(__moduleResponseStr != "NoStrResponse")
+    {
+        Bp_with_int_modelResponseModuleAndTempEnums responseHash = (Bp_with_int_modelResponseModuleAndTempEnums)hasher(__moduleResponseStr);
+        enum_map_Bp_with_int_model::vecResponseEnumToString[responseHash] = __moduleResponseStr;
+        enum_map_Bp_with_int_model::vecStringToResponseEnum[__moduleResponseStr] = responseHash;
+        __moduleResponse = responseHash;
+    }
     if(startObs == __moduleResponse)
     {
     stringstream ss;

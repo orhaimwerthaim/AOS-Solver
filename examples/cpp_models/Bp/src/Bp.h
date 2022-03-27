@@ -4,15 +4,15 @@
 #include <despot/solver/pomcp.h> 
 #include <random>
 #include <string>
-#include <despot/model_primitives/iros/enum_map_iros.h> 
-#include <despot/model_primitives/iros/state.h> 
+#include <despot/model_primitives/Bp/enum_map_Bp.h> 
+#include <despot/model_primitives/Bp/state.h> 
 namespace despot {
 
 /* ==============================================================================
- * IrosState class
+ * BpState class
  * ==============================================================================*/
 
-class IrosState;
+class BpState;
 class AOSUtils
 {
 	public:
@@ -24,43 +24,40 @@ class AOSUtils
 
 
 /* ==============================================================================
- * Iros and PocmanBelief class
+ * Bp and PocmanBelief class
  * ==============================================================================*/
-class Iros;
-class IrosBelief: public ParticleBelief {
-	
+class Bp;
+class BpBelief: public ParticleBelief {
+protected:
+	const Bp* Bp_;
 public:
-    const Iros* iros_;
 	static std::string beliefFromDB;
 	static int currentInitParticleIndex;
 	static int num_particles; 
-	IrosBelief(std::vector<State*> particles, const DSPOMDP* model, Belief* prior =
+	BpBelief(std::vector<State*> particles, const DSPOMDP* model, Belief* prior =
 		NULL);
 	void Update(int actionId, OBS_TYPE obs);
 	//void Update(int actionId, OBS_TYPE obs, std::map<std::string,bool> updates);
 };
 
 /* ==============================================================================
- * Iros 
+ * Bp 
  * ==============================================================================*/
 /**
  * The implementation is adapted from that included in the POMCP software.
  */
 
-class Iros: public DSPOMDP {
+class Bp: public DSPOMDP {
 public:
-    static std::hash<std::string> hasher;
 	virtual std::string PrintObs(int action, OBS_TYPE obs) const;
 	virtual std::string PrintStateStr(const State &state) const;
 	virtual std::string GetActionDescription(int) const;
 	void UpdateStateByRealModuleObservation(State &state, int actionId, OBS_TYPE &observation) const;
 	virtual bool Step(State &state, double rand_num, int actionId, double &reward,
 					  OBS_TYPE &observation) const;
-    void StepForModel(State& state, int actionId, double &reward,
-                                    OBS_TYPE &observation, int& state_hash, int& next_state_hash, bool &isTerminal) const;
 	int NumActions() const;
 	virtual double ObsProb(OBS_TYPE obs, const State& state, int actionId) const;
-    void CreateAndSolveModel() const;
+
 	virtual State* CreateStartState(std::string type = "DEFAULT") const;
 	virtual Belief* InitialBelief(const State* start,
 		std::string type = "PARTICLE") const;
@@ -89,24 +86,23 @@ public:
 	virtual State* Copy(const State* particle) const;
 	virtual void Free(State* particle) const;
 	int NumActiveParticles() const;
- 	static void CheckPreconditions(const IrosState& state, double &reward, bool &meetPrecondition, int actionId);
-    static void ComputePreferredActionValue(const IrosState& state, double &__heuristicValue, int actionId);
+ 	static void CheckPreconditions(const BpState& state, double &reward, bool &meetPrecondition, int actionId);
+    static void ComputePreferredActionValue(const BpState& state, double &__heuristicValue, int actionId);
      
  
-	Iros(); 
+	Bp(); 
 
 private:
-	void SampleModuleExecutionTime(const IrosState& state, double rand_num, int actionId, int &moduleExecutionTime) const;
-	void ExtrinsicChangesDynamicModel(const IrosState& initState, IrosState& afterExState, double rand_num, int actionId,
+	void SampleModuleExecutionTime(const BpState& state, double rand_num, int actionId, int &moduleExecutionTime) const;
+	void ExtrinsicChangesDynamicModel(const BpState& initState, BpState& afterExState, double rand_num, int actionId,
 		const int &moduleExecutionTime) const;
-	void ModuleDynamicModel(const IrosState &initState, const IrosState &afterExState, IrosState &nextState, double rand_num, int actionId, double &reward,
+	void ModuleDynamicModel(const BpState &initState, const BpState &afterExState, BpState &nextState, double rand_num, int actionId, double &reward,
 								 OBS_TYPE &observation, const int &moduleExecutionTime, const bool &__meetPrecondition) const;
-	bool ProcessSpecialStates(IrosState &state, double &reward) const;
+	bool ProcessSpecialStates(BpState &state, double &reward) const;
 
-	mutable MemoryPool<IrosState> memory_pool_;
+	mutable MemoryPool<BpState> memory_pool_;
 	static std::default_random_engine generator;
-    static std::discrete_distribution<> navigate_discrete_dist1; //AOS.SampleDiscrete(enumRealCase,{1.0,0.0})
-    static std::discrete_distribution<> basic_pick_discrete_dist2; //AOS.SampleDiscrete(enumRealCase,{0.5238,0.0952,0.0476,0.4285})
+    static std::discrete_distribution<> Environment_discrete_dist1; //AOS.SampleDiscrete(tCell,{0.5,0,0,0})
 
 };
 } // namespace despot

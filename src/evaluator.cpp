@@ -145,17 +145,24 @@ void Evaluator::SaveBeliefToDB()
 {
 	if(Globals::config.saveBeliefToDB)
 	{
-		vector<State*> temp = solver_->belief()->Sample(3);
+		vector<State*> temp = solver_->belief()->Sample(2);
 		Prints::SaveBeliefParticles(temp);
 	}
 }
 
 bool Evaluator::RunStep(int step, int round) {
+	bool byExternalPolicy = Globals::config.generatePOMDP_modelFile;
     bool shutDown = false;
 	bool isFirst = false;
 	int solverId = Globals::config.solverId;
 
 	MongoDB_Bridge::GetSolverDetails(shutDown, isFirst, solverId);
+
+	if(byExternalPolicy)
+	{
+		Evaluator::fixedPolicy.init_policy();
+	}
+
 	if(shutDown && !Globals::config.handsOnDebug)
 	{
 		return true;
@@ -183,7 +190,11 @@ bool Evaluator::RunStep(int step, int round) {
     double start_t = get_time_second();
 	int action = -1;
 
-	if(action_sequence_to_sim.size() == 0)
+    if(byExternalPolicy)
+    {
+            action = Evaluator::fixedPolicy.getCurrentAction();
+    }
+    else if(action_sequence_to_sim.size() == 0)
 	{
         action = solver_->Search().action;
 	}
@@ -223,8 +234,8 @@ bool Evaluator::RunStep(int step, int round) {
 	{
 		Evaluator::SaveBeliefToDB();
 	}
-
-	bool terminal = ExecuteAction(action, reward, obs, updatesFromAction);
+    std::string obsStr;
+	bool terminal = ExecuteAction(action, reward, obs, updatesFromAction, obsStr);
     logi << endl
 		 << "After:" << endl;
 	model_->PrintState(*state_);
@@ -256,7 +267,11 @@ bool Evaluator::RunStep(int step, int round) {
 	*out_<<endl;
 
 	start_t = get_time_second();
-	if(action_sequence_to_sim.size() == 0)
+	if(byExternalPolicy)
+	{
+		Evaluator::fixedPolicy.updateStateByObs(obsStr);
+	}
+	else if(action_sequence_to_sim.size() == 0)
 	{
 		solver_->Update(action, obs);
 		//solver_->Update(action, obs, updatesFromAction);
@@ -388,7 +403,7 @@ double POMDPEvaluator::EndRound() {
 	return total_undiscounted_reward_;
 }
 
-bool POMDPEvaluator::ExecuteAction(int action, double& reward, OBS_TYPE& obs, std::map<std::string, bool>& updates) {
+bool POMDPEvaluator::ExecuteAction(int action, double& reward, OBS_TYPE& obs, std::map<std::string, bool>& updates, std::string& obsStr) {
 	MongoDB_Bridge::currentActionSequenceId++;
 	ActionDescription &actDesc = *ActionManager::actions[action];
     ActionType acType(actDesc.actionType);
@@ -404,7 +419,7 @@ bool POMDPEvaluator::ExecuteAction(int action, double& reward, OBS_TYPE& obs, st
 	{
 		
 		terminal = model_->Step(*state_, random_num, action, reward, obs);
-		std::string obsStr = enum_map_iros::vecResponseEnumToString[(IrosResponseModuleAndTempEnums)obs];
+		obsStr = enum_map_iros::vecResponseEnumToString[(IrosResponseModuleAndTempEnums)obs];
 		MongoDB_Bridge::SaveInternalActionResponse(actionName, actionId, obsStr);
 		reward_ = reward;
 		total_discounted_reward_ += Globals::Discount(step_) * reward;
@@ -414,7 +429,7 @@ bool POMDPEvaluator::ExecuteAction(int action, double& reward, OBS_TYPE& obs, st
 	}
 	else
 	{ 
-		std::string obsStr = "";
+		obsStr = "";
 		updates = MongoDB_Bridge::WaitForActionResponse(actionId, obsStr);
 
 		obs = enum_map_iros::vecStringToResponseEnum[obsStr];

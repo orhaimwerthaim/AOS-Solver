@@ -22,10 +22,20 @@ struct Config {
 	bool silence;
     bool saveBeliefToDB;
     bool handsOnDebug;
+	bool generatePOMDP_modelFile;
+	std::string fixedPolicyDotFilePath;
+	std::string pomdpFilePath;
+	int numOfSamplesPerActionStateWhenLearningTheModel;
+	double sarsopTimeLimitInSeconds;// if sarsopTimeLimitInSeconds <= 0 there is no time limit.
 
-	Config() :
-        handsOnDebug(false),
-        solverId(7),
+	Config() : 
+        handsOnDebug(true),
+        sarsopTimeLimitInSeconds(0),
+        numOfSamplesPerActionStateWhenLearningTheModel(200),
+        fixedPolicyDotFilePath("sarsop/src/autoGen.dot"), //the path ../sarsop/src/autoGen.dot because working dir is /build/ so we need go one directory backwards.
+        pomdpFilePath("sarsop/examples/POMDP/auto_generate.pomdp"),
+        generatePOMDP_modelFile(true),
+        solverId(20),
 		search_depth(10),
 		discount(0.99),
 		root_seed(42),

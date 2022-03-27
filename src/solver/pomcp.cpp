@@ -80,7 +80,7 @@ void UniformPOMCPPrior::ComputePreference(const State& state) {
 POMCP::POMCP(const DSPOMDP* model, POMCPPrior* prior, Belief* belief) :
 	Solver(model, belief),
 	root_(NULL) {
-	reuse_ = true;
+	reuse_ = false;
 	prior_ = prior;
 	assert(prior_ != NULL);
 }
@@ -163,10 +163,10 @@ ValuedAction POMCP::Search(double timeout) {
 	// 			<< " " << root_->Child(action)->value() << endl;
 	// 	}
 	// }
-    if(2 > 0)
+    if(0 > 0)
     {
-	    //std::string dot = POMCP::GenerateDotGraph(root_,2, model_);
-        std::string dot = POMCP::GenerateDebugJson(root_,2, model_);
+	    //std::string dot = POMCP::GenerateDotGraph(root_,0, model_);
+        std::string dot = POMCP::GenerateDebugJson(root_,0, model_);
 	}
     // delete root_;
 	return astar;
