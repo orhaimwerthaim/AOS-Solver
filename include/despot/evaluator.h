@@ -5,7 +5,7 @@
 #include <despot/core/pomdp.h>
 #include <despot/pomdpx/pomdpx.h>
 #include <despot/util/util.h>
-#include <despot/model_primitives/iros/enum_map_iros.h>
+#include <despot/model_primitives/Bp_with_int_model/enum_map_Bp_with_int_model.h>
 #include <unistd.h>
 namespace despot {
 
@@ -75,14 +75,23 @@ struct policy{
 		std::string pomContent( (std::istreambuf_iterator<char>(pf) ),
                        (std::istreambuf_iterator<char>()    ) );
 
-		std::string t = "observations:  ";
+		std::string t = "observations:";
 		int obsInd = pomContent.find(t) + t.size();
 		while(obsInd > t.size())
 		{
+            //remove spaces
 			while(pomContent[obsInd] == ' ')
 				obsInd++;
+
+            //when we read all the observations, stop!
 			if(pomContent[obsInd] == '\n')
 				break;
+            
+            //to remove the observation prefix 'o<obs_num>_'
+            while(pomContent[obsInd] != '_')
+				obsInd++;
+            obsInd++;
+
 			int endObs = pomContent.find(" ", obsInd);
 			obsStrToNum.insert({pomContent.substr(obsInd, endObs - obsInd), std::to_string(obsStrToNum.size())});
 			obsInd = endObs;

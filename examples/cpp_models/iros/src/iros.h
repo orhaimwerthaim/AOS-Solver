@@ -57,7 +57,7 @@ public:
 	virtual bool Step(State &state, double rand_num, int actionId, double &reward,
 					  OBS_TYPE &observation) const;
     void StepForModel(State& state, int actionId, double &reward,
-                                    OBS_TYPE &observation, int& state_hash, int& next_state_hash, bool &isTerminal) const;
+                                    OBS_TYPE &observation, int& state_hash, int& next_state_hash, bool &isTerminal, double& precondition_reward, double& specialStateReward) const;
 	int NumActions() const;
 	virtual double ObsProb(OBS_TYPE obs, const State& state, int actionId) const;
     void CreateAndSolveModel() const;
@@ -106,7 +106,8 @@ private:
 	mutable MemoryPool<IrosState> memory_pool_;
 	static std::default_random_engine generator;
     static std::discrete_distribution<> navigate_discrete_dist1; //AOS.SampleDiscrete(enumRealCase,{1.0,0.0})
-    static std::discrete_distribution<> basic_pick_discrete_dist2; //AOS.SampleDiscrete(enumRealCase,{0.5238,0.0952,0.0476,0.4285})
+    static std::discrete_distribution<> enhanced_pick_discrete_dist2; //AOS.SampleDiscrete(enumRealCase,{0.727,0.181,0.09,0.0})
+    static std::discrete_distribution<> enhanced_pick_discrete_dist3; //AOS.SampleDiscrete(enumRealCase,{0.1,0.0,0.0,0.9})
 
 };
 } // namespace despot

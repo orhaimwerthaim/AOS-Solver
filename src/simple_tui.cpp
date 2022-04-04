@@ -1,6 +1,6 @@
 #include <despot/simple_tui.h>
-#include <despot/model_primitives/iros/enum_map_iros.h> 
-#include <despot/model_primitives/iros/actionManager.h> 
+#include <despot/model_primitives/Bp_with_int_model/enum_map_Bp_with_int_model.h> 
+#include <despot/model_primitives/Bp_with_int_model/actionManager.h> 
 using namespace std;
 
 namespace despot {
@@ -223,7 +223,7 @@ void SimpleTUI::OptionParse(option::Option *options, int &num_runs,
     solver_type = options[E_SOLVER].arg;
 
 //  int verbosity = 0;
-  int verbosity = 3;//TODO:: remove debug log
+  int verbosity = 0;//TODO:: remove debug log
   if (options[E_VERBOSITY])
     verbosity = atoi(options[E_VERBOSITY].arg);
   logging::level(verbosity);
@@ -368,7 +368,7 @@ void SimpleTUI::PrintResult(int num_runs, Evaluator *simulator,
 }
 
 int SimpleTUI::run(int argc, char *argv[]) {
-  enum_map_iros::Init();
+  enum_map_Bp_with_int_model::Init();
   
   clock_t main_clock_start = clock();
   EvalLog::curr_inst_start_time = get_time_second();

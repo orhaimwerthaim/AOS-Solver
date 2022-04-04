@@ -13,6 +13,7 @@
 #include <set>
 #include <unistd.h>
 #include <iomanip>
+#include <float.h>
 
 using namespace std;
 
@@ -30,7 +31,7 @@ std::hash<std::string> Iros::hasher;
 /* ==============================================================================
  *IrosBelief class
  * ==============================================================================*/
-int IrosBelief::num_particles = 40234;
+int IrosBelief::num_particles = 5000;
 std::string IrosBelief::beliefFromDB = "";
 int IrosBelief::currentInitParticleIndex = -1;
 
@@ -113,7 +114,7 @@ public:
         std::vector<double> weighted_preferred_actions_un_normalized;
 
         double heuristicValueTotal = 0;
-		for (int a = 0; a < 7; a++) {
+		for (int a = 0; a < 5; a++) {
             weighted_preferred_actions_un_normalized.push_back(0);
 			double reward = 0;
 			bool meetPrecondition = false; 
@@ -130,7 +131,7 @@ public:
 
         if(heuristicValueTotal > 0)
         {
-            for (int a = 0; a < 7; a++) 
+            for (int a = 0; a < 5; a++) 
             {
                 weighted_preferred_actions_.push_back(weighted_preferred_actions_un_normalized[a] / heuristicValueTotal);
             } 
@@ -160,7 +161,8 @@ double Iros::ObsProb(OBS_TYPE obs, const State& state, int actionId) const {
 std::default_random_engine Iros::generator;
 
 std::discrete_distribution<> Iros::navigate_discrete_dist1{1.0,0.0}; //AOS.SampleDiscrete(enumRealCase,{1.0,0.0})
-std::discrete_distribution<> Iros::basic_pick_discrete_dist2{0.5238,0.0952,0.0476,0.4285}; //AOS.SampleDiscrete(enumRealCase,{0.5238,0.0952,0.0476,0.4285})
+std::discrete_distribution<> Iros::enhanced_pick_discrete_dist2{0.727,0.181,0.09,0.0}; //AOS.SampleDiscrete(enumRealCase,{0.727,0.181,0.09,0.0})
+std::discrete_distribution<> Iros::enhanced_pick_discrete_dist3{0.1,0.0,0.0,0.9}; //AOS.SampleDiscrete(enumRealCase,{0.1,0.0,0.0,0.9})
 
 State* Iros::CreateStartState(string type) const {
     IrosState* startState = memory_pool_.Allocate();
@@ -199,7 +201,10 @@ State* Iros::CreateStartState(string type) const {
 
 
 struct state_tran
-{
+{		
+    bool hasSpecialStateReward = false;
+    double specialStateReward;
+    map<int, double> actionPreconditionReward;
     map<std::pair<int,int>,double> actionPrevStateReward;
     int state;
     map<int,int> total_samplesFromStateByAction;
@@ -217,10 +222,16 @@ struct state_tran
         actionNextStateProb.clear();
         //actionPrevStateReward.insert({std::pair<int,int>{_action, state}, 0});//inner loop 0 rewads for terminal state
     }
-    void addObservationTransitionRewardData(int _state, int _nextState, int _action, int _observation, double _reward, bool _isNextStateTerminal)
+
+    void addObservationTransitionRewardData(int _state, int _nextState, int _action, int _observation, double _reward, bool _isNextStateTerminal, double precondition_reward, double _specialStateReward)
     {
         if(_nextState == state)
         {
+            if(_specialStateReward != 0)
+            {
+                hasSpecialStateReward = true;
+                specialStateReward = _specialStateReward;
+            }
             addObservationAsNextStateSample(_nextState, _observation, _action);
             if(_isNextStateTerminal)
             {
@@ -228,6 +239,15 @@ struct state_tran
             }
             actionPrevStateReward.insert({std::pair<int,int>{_action, _state}, _reward});
         }
+
+        if(state == _state)
+        {
+            if(precondition_reward != 0)
+            {
+                actionPreconditionReward[_action]=precondition_reward;
+            }
+        }
+
         if(state == _state && !isTerminalState)
         {
             addNextStateTransition(_state, _nextState, _action);
@@ -283,15 +303,15 @@ struct model_data
           initialBStateParticle[_state] = initialBStateParticle.find(_state) == initialBStateParticle.end() ? 1 : initialBStateParticle[_state] + 1;
       }
       
-      void addSample(int state, int nextState, int action, int observation, double reward, bool isNextStateTerminal)
+      void addSample(int state, int nextState, int action, int observation, double reward, bool isNextStateTerminal, double precondition_reward, double specialStateReward)
       {
           
           state_tran *st = getStateModel(state);
           state_tran *n_st = getStateModel(nextState);
           n_st->isTerminalState = isNextStateTerminal;
           
-          st->addObservationTransitionRewardData(state, nextState, action, observation, reward, isNextStateTerminal);
-          n_st->addObservationTransitionRewardData(state, nextState, action, observation, reward, isNextStateTerminal);
+          st->addObservationTransitionRewardData(state, nextState, action, observation, reward, isNextStateTerminal, precondition_reward, specialStateReward);
+          n_st->addObservationTransitionRewardData(state, nextState, action, observation, reward, isNextStateTerminal, precondition_reward, specialStateReward);
       }
       state_tran * getStateModel(int state)
       {
@@ -301,8 +321,7 @@ struct model_data
           {
               st = new state_tran;
               st->state = state;
-              statesModel.insert({state, *st});
-              statesToPomdpFileStates[state] =  std::to_string(statesToPomdpFileStates.size()).insert(0,"s_");
+              statesModel.insert({state, *st}); 
           }
           else
           {
@@ -330,8 +349,7 @@ void Iros::CreateAndSolveModel() const
     std::map<int, State*> statesToProcessNext;
     std::map<int, State*> statesToProcessCurr;
     std::map<int, std::string> actionsToDesc;
-    std::map<int, std::string> observationsToDesc;
-    std::string invalidObsS = "o_invalidObs";
+    std::map<int, std::string> observationsToDesc; 
     
     for (int i = 0; i < ActionManager::actions.size();i++)
     {
@@ -357,6 +375,7 @@ void Iros::CreateAndSolveModel() const
         }
         modelD.addInitialBStateSample(hash);
     }
+    bool goalstateFound = false;
     for (int i = 0; i < horizon;i++)
     {
         for (auto & stateP : statesToProcessCurr)
@@ -365,24 +384,24 @@ void Iros::CreateAndSolveModel() const
                 {
                     for (int sampleCount = 0; sampleCount < numOfSamplesForEachActionFromState; sampleCount++)
                     {                
-                        double reward;
+                        double reward=0;
                         OBS_TYPE obs;
                         int state_hash;
                         int nextStateHash;
                         bool isNextStateTerminal;
                         State *next_state = Copy(stateP.second);
-                       
-                        StepForModel(*next_state, action, reward, obs, state_hash, nextStateHash, isNextStateTerminal);
-                         
-                        modelD.addSample(state_hash, nextStateHash, action, obs, reward, isNextStateTerminal);
-                        if(observations.insert(obs).second)
+                        double precondition_reward;
+                        double specialStateReward;
+                        StepForModel(*next_state, action, reward, obs, state_hash, nextStateHash, isNextStateTerminal, precondition_reward, specialStateReward);
+
+                        if(isNextStateTerminal && reward > 0 && !goalstateFound)
                         {
-                            //std::string s = std::to_string(observations.size()-1);
-                            
-                            std::string s = Prints::PrintObs(action, obs);
-                            //s.insert(0, "o_");
-                            observationsToDesc.insert({obs, s});
+                            goalstateFound = true;
+                            horizon = (Globals::config.limitClosedModelHorizon_stepsAfterGoalDetection < 0) ? horizon : i + Globals::config.limitClosedModelHorizon_stepsAfterGoalDetection; 
                         }
+
+                        modelD.addSample(state_hash, nextStateHash, action, obs, reward, isNextStateTerminal, precondition_reward, specialStateReward);
+                        if(observations.insert(obs).second);
 
                         auto it = modelD.statesModel.find(nextStateHash);
                         bool skip = false;
@@ -430,9 +449,12 @@ void Iros::CreateAndSolveModel() const
         fs << "values: reward" << endl;
         fs << endl;
         fs << "states:";
-        for (auto & stateN : modelD.statesToPomdpFileStates)
+        int count = 0;
+        for (auto &stateN : states)
         {
-            fs << " " << stateN.second ;
+            std::string stateName= std::to_string(count++).insert(0, "s_");
+            modelD.statesToPomdpFileStates[stateN] = stateName;
+            fs << " " << stateName;
         }
         fs << endl;
         fs << endl;
@@ -445,10 +467,15 @@ void Iros::CreateAndSolveModel() const
         fs << endl;
         
         fs << "observations: ";
-        for (int i = 0; i < observationsToDesc.size();i++)
+        count = 0;
+        for (int  obs : observations)
         {
-            fs << observationsToDesc[i] << " ";
+            std::string s = "o" + std::to_string(count++) + "_" + Prints::PrintObs(0, obs);
+                            //s.insert(0, "o_");
+                            observationsToDesc.insert({obs, s});
+            fs << s << " ";
         }
+        std::string invalidObsS = "o" + std::to_string(count++) + "_invalidObs";
             // for (auto &obsD : observationsToDesc)
             // {
             //     fs << obsD.second << " ";
@@ -465,8 +492,10 @@ void Iros::CreateAndSolveModel() const
             stream << std::fixed << std::setprecision(1) << prob;
             std::string s = stream.str();
             
-            fs << " " << prob;
+            fs << " " << s;
         }
+        fs << endl; 		
+        fs << endl;
 
 
         map<int, set<int>> actionStatesWithoutAnyTran;
@@ -475,29 +504,12 @@ void Iros::CreateAndSolveModel() const
             actionStatesWithoutAnyTran[act] = set<int>{states};
         }
         for (auto &stateT : modelD.statesModel)
-        {
-            if(stateT.second.isTerminalState)
-            {
-                int iooo = 1;
-            }
-            map<int,std::set<int>> allStatePerAction;
-            for (int act = 0; act < ActionManager::actions.size();act++)
-            {
-                allStatePerAction[act] = set<int>{states};
-            }
+        { 
             for (auto &actNStateProb : stateT.second.actionNextStateProb)
             {
-                actionStatesWithoutAnyTran[actNStateProb.first.first].erase(stateT.first);
-                allStatePerAction[actNStateProb.first.first].erase(actNStateProb.first.second);
+                actionStatesWithoutAnyTran[actNStateProb.first.first].erase(stateT.first); 
                 fs << "T: " << actionsToDesc[actNStateProb.first.first] << " : " << modelD.statesToPomdpFileStates[stateT.first] << " : " << modelD.statesToPomdpFileStates[actNStateProb.first.second] << " " << std::to_string(actNStateProb.second) << endl;
-            }
-            for(auto &missingTrans: allStatePerAction)
-            {
-                for(auto &missingState: missingTrans.second)
-                {
-                    fs << "T: " << actionsToDesc[missingTrans.first] << " : " << modelD.statesToPomdpFileStates[stateT.first] << " : " << modelD.statesToPomdpFileStates[missingState] << " 0.0" << endl;
-                }    
-            }
+            } 
         }
  
         for(auto &actionStateWithoutAnyTranision: actionStatesWithoutAnyTran)
@@ -511,19 +523,55 @@ void Iros::CreateAndSolveModel() const
         fs << endl;
         fs << endl;
         fs << endl;
-        //to make sure that all the stat-action pairs have observations defined.
-        map<int,std::set<int>> allStatePerAction;
+
+
+        //check actions that have the same observation from any state
+        map<int,std::string> actionWithSingleObservation;
         for (int act = 0; act < ActionManager::actions.size();act++)
         {
-            allStatePerAction[act] = set<int>{states};
+            actionWithSingleObservation[act] = invalidObsS;
         }
         for(auto & stateT : modelD.statesModel)
         {
             
             for (auto &actObsProb : stateT.second.actionObservationProb)
             {
-                allStatePerAction[actObsProb.first.first].erase(stateT.first);
-                fs << "O: " << actionsToDesc[actObsProb.first.first] << " : " << modelD.statesToPomdpFileStates[stateT.first] << " : " << observationsToDesc[actObsProb.first.second] << " " <<actObsProb.second << endl;
+                //change observation from default value to first seen value
+                if(actionWithSingleObservation.find(actObsProb.first.first) != actionWithSingleObservation.end())
+                {
+                    actionWithSingleObservation[actObsProb.first.first] = actionWithSingleObservation[actObsProb.first.first] == invalidObsS ? observationsToDesc[actObsProb.first.second] : actionWithSingleObservation[actObsProb.first.first];
+                    if(actionWithSingleObservation[actObsProb.first.first] != observationsToDesc[actObsProb.first.second])
+                    {
+                        actionWithSingleObservation.erase(actObsProb.first.first);
+                    }
+                }
+            }
+        }
+        for(auto &actSingleObs : actionWithSingleObservation)
+        {
+            fs << "O: " << actionsToDesc[actSingleObs.first] << " : * : " << actSingleObs.second << " 1.0" << endl;
+        }
+
+        //to make sure that all the stat-action pairs have observations defined.
+        map<int,std::set<int>> allStatePerAction;
+        for (int act = 0; act < ActionManager::actions.size();act++)
+        {
+            if(actionWithSingleObservation.find(act) == actionWithSingleObservation.end())
+            {
+                allStatePerAction[act] = set<int>{states};
+            }
+        }
+        for(auto & stateT : modelD.statesModel)
+        {
+            
+            for (auto &actObsProb : stateT.second.actionObservationProb)
+            {
+                if(actionWithSingleObservation.find(actObsProb.first.first) == actionWithSingleObservation.end())
+                {
+                    allStatePerAction[actObsProb.first.first].erase(stateT.first);
+                    fs << "O: " << actionsToDesc[actObsProb.first.first] << " : " << modelD.statesToPomdpFileStates[stateT.first] << " : " << observationsToDesc[actObsProb.first.second] << " " << std::to_string(actObsProb.second) << endl;
+                }
+
             }
         }
         //adding invalid observations to fill missing ones
@@ -537,11 +585,54 @@ void Iros::CreateAndSolveModel() const
         fs << endl;
         fs << endl;
         fs << endl;
+
+        map<int, double> actionSingleReward;//check if action has a cost not independent of next state (we dont check the precondition reward here)
+        for (int action = 0; action < NumActions(); action++)
+        {
+            actionSingleReward[action] = DBL_MAX;
+        }
+
         for (auto &stateR : modelD.statesModel)
         {
             for(auto & actPrevStateReward : stateR.second.actionPrevStateReward)
+            { 
+                if(actionSingleReward.find(actPrevStateReward.first.first) != actionSingleReward.end())
+                {
+                    actionSingleReward[actPrevStateReward.first.first] = (actionSingleReward[actPrevStateReward.first.first] == DBL_MAX) ? actPrevStateReward.second : actionSingleReward[actPrevStateReward.first.first];
+                    if (actionSingleReward[actPrevStateReward.first.first] != actPrevStateReward.second)
+                        actionSingleReward.erase(actPrevStateReward.first.first);
+                }
+            }
+        }
+        for (auto &actSingleReward : actionSingleReward)//rewards for action with same cost for each state
+        {
+            fs << "R: " << actionsToDesc[actSingleReward.first] << " : * : * : * " << std::to_string(actSingleReward.second) << endl;
+        }
+        for (auto &stateR : modelD.statesModel)//rewards for spesial states
+        {
+            if(stateR.second.hasSpecialStateReward)
+            {
+                 fs << "R: * : * : " + modelD.statesToPomdpFileStates[stateR.first] + " : * " << std::to_string(stateR.second.specialStateReward) << endl;
+            }
+        }
+        for (auto &stateR : modelD.statesModel)
+        {
+            //adding precondition penalty
+            for(auto & actPreconditionReward : stateR.second.actionPreconditionReward)
             {  
-                fs << "R: " << actionsToDesc[actPrevStateReward.first.first] << " : " << modelD.statesToPomdpFileStates[actPrevStateReward.first.second]  << " : " << modelD.statesToPomdpFileStates[stateR.first] << " : * " << actPrevStateReward.second << endl;
+                fs << "R: " << actionsToDesc[actPreconditionReward.first] << " : " << modelD.statesToPomdpFileStates[stateR.first]  << " : * : * " << std::to_string(actPreconditionReward.second) << endl;
+            }
+        }
+
+        for (auto &stateR : modelD.statesModel)
+        {
+            //adding action cost or reward when is depends on preconditions (regardless of preconditions)
+            for(auto & actPrevStateReward : stateR.second.actionPrevStateReward)
+            {  
+                if(actionSingleReward.find(actPrevStateReward.first.first) == actionSingleReward.end())
+                {
+                    fs << "R: " << actionsToDesc[actPrevStateReward.first.first] << " : " << modelD.statesToPomdpFileStates[actPrevStateReward.first.second]  << " : " << modelD.statesToPomdpFileStates[stateR.first] << " : * " << std::to_string(actPrevStateReward.second) << endl;
+                }
             }
         }
         
@@ -656,13 +747,28 @@ int Iros::NumActiveParticles() const {
 }
 
 void Iros::StepForModel(State& state, int actionId, double& reward,
-        OBS_TYPE& observation, int &state_hash, int &next_state_hash, bool& isTerminal) const
+        OBS_TYPE& observation, int &state_hash, int &next_state_hash, bool& isTerminal, double& precondition_reward, double& specialStateReward) const
     {
+        reward = 0;
         IrosState &ir_state = static_cast<IrosState &>(state);
         state_hash = hasher(Prints::PrintState(ir_state));
+
+        bool meetPrecondition;
+        precondition_reward = 0;
+        CheckPreconditions(ir_state, reward, meetPrecondition, actionId);
+        if(!meetPrecondition)
+        {
+            precondition_reward = reward;
+        }
+        
         isTerminal = Iros::Step(state, 0.1, actionId, reward,
                    observation);
         ir_state = static_cast<IrosState &>(state);
+
+        specialStateReward = 0;
+        ProcessSpecialStates(ir_state, specialStateReward);
+        reward -= (precondition_reward + specialStateReward);//so that it will not consider the precondition penalty and special states reward
+
         next_state_hash = hasher(Prints::PrintState(ir_state));
     }
 
@@ -723,15 +829,7 @@ void Iros::CheckPreconditions(const IrosState& state, double &reward, bool &__me
                 __meetPrecondition=state.robotGenerallocation!=eUnknown;
                 if(!__meetPrecondition) reward += -10;
             }
-            if(actType == observe_holding_canAction)
-            {
-                if(!__meetPrecondition) reward += 0;
-            }
-            if(actType == observe_arm_outstretchedAction)
-            {
-                if(!__meetPrecondition) reward += 0;
-            }
-            if(actType == basic_pickAction)
+            if(actType == enhanced_pickAction)
             {
                 __meetPrecondition=(state.cup1DiscreteLocation==state.robotGenerallocation||state.cup2DiscreteLocation==state.robotGenerallocation)&&!state.holding_can;
                 if(!__meetPrecondition) reward += -10;
@@ -750,13 +848,7 @@ void Iros::ComputePreferredActionValue(const IrosState& state, double &__heurist
                 NavigateActionDescription act = *(static_cast<NavigateActionDescription *>(ActionManager::actions[actionId]));
                 tLocation &oDesiredLocation = act.oDesiredLocation;
             }
-            if(actType == observe_holding_canAction)
-            {
-            }
-            if(actType == observe_arm_outstretchedAction)
-            {
-            }
-            if(actType == basic_pickAction)
+            if(actType == enhanced_pickAction)
             {
             }
         __heuristicValue = __heuristicValue < 0 ? 0 : __heuristicValue;
@@ -771,13 +863,7 @@ void Iros::SampleModuleExecutionTime(const IrosState& farstate, double rand_num,
     if(actType == navigateAction)
     {
     }
-    if(actType == observe_holding_canAction)
-    {
-    }
-    if(actType == observe_arm_outstretchedAction)
-    {
-    }
-    if(actType == basic_pickAction)
+    if(actType == enhanced_pickAction)
     {
     }
 }
@@ -813,31 +899,22 @@ void Iros::ModuleDynamicModel(const IrosState &state, const IrosState &state_, I
         if(realCase==navigate_action_success)state__.robotGenerallocation=oDesiredLocation.discrete_location;
         if(realCase==navigate_action_success)__moduleResponse=navigate_eSuccess;
         else __moduleResponse=navigate_eFailed;
-        __reward=-5;
+        __reward=-6;
     }
-    if(actType == observe_holding_canAction)
-    {
-        if(state.holding_can==true&&AOSUtils::Bernoulli(0.818))__moduleResponse=observe_holding_can_eHoldingCan;
-        else __moduleResponse=observe_holding_can_eNotHoldingCan;
-        __reward=-1;
-    }
-    if(actType == observe_arm_outstretchedAction)
-    {
-        __moduleResponse=state.armOutstretched==true?observe_arm_outstretched_eArmOutstretched:observe_arm_outstretched_eArmNotOutstretched;
-        __reward=-1;
-    }
-    if(actType == basic_pickAction)
+    if(actType == enhanced_pickAction)
     {
         IrosResponseModuleAndTempEnums  realCase;
-        realCase=!__meetPrecondition?basic_pick_actual_not_holding:(IrosResponseModuleAndTempEnums)(basic_pick_enumRealCase + 1 + Iros::basic_pick_discrete_dist2(Iros::generator));
-        state__.holding_can=(realCase==basic_pick_actual_pick_action_success||realCase==basic_pick_actual_arm_outstretched)?true:false;
-        if(state.cup1DiscreteLocation==state.robotGenerallocation){state__.cup1DiscreteLocation=(realCase==basic_pick_actual_pick_action_success||realCase==basic_pick_actual_arm_outstretched)?eRobotHand:(realCase==basic_pick_actual_not_holding?state.cup1DiscreteLocation:eUnknown);
+        realCase=!__meetPrecondition?enhanced_pick_actual_not_holding:(state.cup1DiscreteLocation==state.robotGenerallocation?(IrosResponseModuleAndTempEnums)(enhanced_pick_enumRealCase + 1 + Iros::enhanced_pick_discrete_dist2(Iros::generator)):(IrosResponseModuleAndTempEnums)(enhanced_pick_enumRealCase + 1 + Iros::enhanced_pick_discrete_dist3(Iros::generator)));
+        state__.holding_can=(realCase==enhanced_pick_actual_pick_action_success||realCase==enhanced_pick_actual_arm_outstretched_with_can);
+        if(state.cup1DiscreteLocation==state.robotGenerallocation){state__.cup1DiscreteLocation=(realCase==enhanced_pick_actual_pick_action_success||realCase==enhanced_pick_actual_arm_outstretched_with_can)?eRobotHand:(realCase==enhanced_pick_actual_not_holding?state.cup1DiscreteLocation:eUnknown);
         };
-        if(state.cup2DiscreteLocation==state.robotGenerallocation){state__.cup2DiscreteLocation=(realCase==basic_pick_actual_pick_action_success||realCase==basic_pick_actual_arm_outstretched)?eRobotHand:(realCase==basic_pick_actual_not_holding?state.cup2DiscreteLocation:eUnknown);
+        if(state.cup2DiscreteLocation==state.robotGenerallocation){state__.cup2DiscreteLocation=(realCase==enhanced_pick_actual_pick_action_success||realCase==enhanced_pick_actual_arm_outstretched_with_can)?eRobotHand:(realCase==enhanced_pick_actual_not_holding?state.cup2DiscreteLocation:eUnknown);
         };
-        state__.armOutstretched=realCase==basic_pick_actual_arm_outstretched;
-        if(realCase==basic_pick_actual_arm_outstretched)__moduleResponse=basic_pick_res_pick_action_failed;
-        else __moduleResponse=basic_pick_res_pick_action_success;
+        state__.armOutstretched=realCase==enhanced_pick_actual_arm_outstretched_with_can||realCase==enhanced_pick_actual_arm_outstretched_without_can;
+        if(realCase==enhanced_pick_actual_not_holding||realCase==enhanced_pick_actual_dropped_the_object)__moduleResponse=enhanced_pick_res_pick_not_holding;
+        if(realCase==enhanced_pick_actual_pick_action_success)__moduleResponse=enhanced_pick_res_pick_holding_can;
+        if(realCase==enhanced_pick_actual_arm_outstretched_with_can)__moduleResponse=AOSUtils::Bernoulli(0.818)?enhanced_pick_res_pick_arm_outstretched_holding_can:enhanced_pick_res_pick_without_can_arm_outstretched;
+        if(realCase==enhanced_pick_actual_arm_outstretched_without_can)__moduleResponse=enhanced_pick_res_pick_without_can_arm_outstretched;
         __reward=-2;
     }
     if(__moduleResponseStr != "NoStrResponse")
@@ -877,7 +954,7 @@ bool Iros::ProcessSpecialStates(IrosState &state, double &reward) const
     }
     if(state.OneTimeRewardUsed[2])
     {
-        if ((state.cup1DiscreteLocation == eUnknown && state.cup2DiscreteLocation == eUnknown) )
+        if (state.cup1DiscreteLocation == eUnknown && state.cup2DiscreteLocation == eUnknown)
         {
             reward += 0;
             isFinalState = true;

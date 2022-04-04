@@ -28,9 +28,9 @@ class AOSUtils
  * ==============================================================================*/
 class Bp_with_int_model;
 class Bp_with_int_modelBelief: public ParticleBelief {
-protected:
-	const Bp_with_int_model* Bp_with_int_model_;
+	
 public:
+    const Bp_with_int_model* Bp_with_int_model_;
 	static std::string beliefFromDB;
 	static int currentInitParticleIndex;
 	static int num_particles; 
@@ -49,15 +49,19 @@ public:
 
 class Bp_with_int_model: public DSPOMDP {
 public:
+    static std::hash<std::string> hasher;
+	std::string GetCellDesc(int x, int y, const Bp_with_int_modelState &state) const;
 	virtual std::string PrintObs(int action, OBS_TYPE obs) const;
 	virtual std::string PrintStateStr(const State &state) const;
 	virtual std::string GetActionDescription(int) const;
 	void UpdateStateByRealModuleObservation(State &state, int actionId, OBS_TYPE &observation) const;
 	virtual bool Step(State &state, double rand_num, int actionId, double &reward,
 					  OBS_TYPE &observation) const;
+    void StepForModel(State& state, int actionId, double &reward,
+                                    OBS_TYPE &observation, int& state_hash, int& next_state_hash, bool &isTerminal, double& precondition_reward, double& specialStateReward) const;
 	int NumActions() const;
 	virtual double ObsProb(OBS_TYPE obs, const State& state, int actionId) const;
-
+    void CreateAndSolveModel() const;
 	virtual State* CreateStartState(std::string type = "DEFAULT") const;
 	virtual Belief* InitialBelief(const State* start,
 		std::string type = "PARTICLE") const;
