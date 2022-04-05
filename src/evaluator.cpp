@@ -151,7 +151,7 @@ void Evaluator::SaveBeliefToDB()
 }
 
 bool Evaluator::RunStep(int step, int round) {
-	bool byExternalPolicy = Globals::config.generatePOMDP_modelFile;
+	bool byExternalPolicy = Globals::config.solveProblemWithClosedPomdpModel;
     bool shutDown = false;
 	bool isFirst = false;
 	int solverId = Globals::config.solverId;

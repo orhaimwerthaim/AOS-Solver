@@ -676,7 +676,7 @@ void Iros::CreateAndSolveModel() const
 }
 
 Belief* Iros::InitialBelief(const State* start, string type) const {
-    if(Globals::config.generatePOMDP_modelFile)
+    if(Globals::config.solveProblemWithClosedPomdpModel)
     {
         CreateAndSolveModel();
     }

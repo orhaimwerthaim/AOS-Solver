@@ -4,6 +4,7 @@ add_executable("${PROJECT_NAME}_Bp_with_int_model"
 #src/state_var_types.cpp   
 src/Bp_with_int_model.cpp
 src/main.cpp
+src/closed_model.cpp
 #src/mongoDB_Bridge.cpp
 )
 

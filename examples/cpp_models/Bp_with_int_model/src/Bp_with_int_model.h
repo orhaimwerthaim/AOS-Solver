@@ -1,4 +1,6 @@
 
+#ifndef BP_WITH_INT_MODEL_H
+#define BP_WITH_INT_MODEL_H
 #include "globals.h"
 #include <despot/core/pomdp.h>
 #include <despot/solver/pomcp.h> 
@@ -6,6 +8,7 @@
 #include <string>
 #include <despot/model_primitives/Bp_with_int_model/enum_map_Bp_with_int_model.h> 
 #include <despot/model_primitives/Bp_with_int_model/state.h> 
+#include "closed_model.h"
 namespace despot {
 
 /* ==============================================================================
@@ -49,8 +52,8 @@ public:
 
 class Bp_with_int_model: public DSPOMDP {
 public:
+    static Bp_with_int_model gen_model;
     static std::hash<std::string> hasher;
-	std::string GetCellDesc(int x, int y, const Bp_with_int_modelState &state) const;
 	virtual std::string PrintObs(int action, OBS_TYPE obs) const;
 	virtual std::string PrintStateStr(const State &state) const;
 	virtual std::string GetActionDescription(int) const;
@@ -109,4 +112,5 @@ private:
 
 };
 } // namespace despot
+#endif//BP_WITH_INT_MODEL_H
  

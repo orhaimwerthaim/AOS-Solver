@@ -60,7 +60,7 @@ add_library("${PROJECT_NAME}" SHARED
   src/solver/despot.cpp
   src/solver/pomcp.cpp
   src/util/coord.cpp
-  src/util/mongoDB_Bridge.cpp
+  src/util/mongoDB_Bridge.cpp 
   src/util/dirichlet.cpp
   src/util/exec_tracker.cpp
   src/util/floor.cpp
