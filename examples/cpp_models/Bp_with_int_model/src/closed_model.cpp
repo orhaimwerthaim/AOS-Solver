@@ -160,7 +160,11 @@ void POMDP_ClosedModel::addSample(int state, int nextState, int action, int obse
 void POMDP_ClosedModel::GenerateModelFile(std::set<int> states, std::map<int, std::string> actionsToDesc,
    std::set<int> observations, std::map<int, std::string> observationsToDesc)
 {
-
+     map<int, int> stateToPolicyIndex;
+     map<std::string, int> actionToPolicyIndex;
+     vector<double> initialBeliefState;
+     //map<std::string, map<int,map<int, double>>> obsActNState_ObservationModel;//map<observation, map<action,map<nextState, Probability>>>
+ 
         char tmp[256];
                 getcwd(tmp, 256);
                 std::string workinDirPath(tmp);
@@ -181,12 +185,15 @@ void POMDP_ClosedModel::GenerateModelFile(std::set<int> states, std::map<int, st
             std::string stateName= std::to_string(count++).insert(0, "s_");
             POMDP_ClosedModel::closedModel.statesToPomdpFileStates[stateN] = stateName;
             fs << " " << stateName;
+
+            stateToPolicyIndex[stateN] = count - 1;
         }
         fs << endl;
         fs << endl;
         fs << "actions: ";
         for (auto & actD : actionsToDesc)
         {
+            actionToPolicyIndex[actD.second] = actD.first;
             fs << actD.second << " ";
         }
         fs << endl;
@@ -196,12 +203,13 @@ void POMDP_ClosedModel::GenerateModelFile(std::set<int> states, std::map<int, st
         count = 0;
         for (int  obs : observations)
         {
-            std::string s = "o" + std::to_string(count++) + "_" + Prints::PrintObs(0, obs);
-                            //s.insert(0, "o_");
+            //std::string s = "o" + std::to_string(count++) + "_" + Prints::PrintObs(0, obs);
+            std::string s = Prints::PrintObs(0, obs); 
                             observationsToDesc.insert({obs, s});
             fs << s << " ";
         }
-        std::string invalidObsS = "o" + std::to_string(count++) + "_invalidObs";
+        //std::string invalidObsS = "o" + std::to_string(count++) + "_invalidObs";
+        std::string invalidObsS = "invalidObs";
             // for (auto &obsD : observationsToDesc)
             // {
             //     fs << obsD.second << " ";
@@ -214,6 +222,7 @@ void POMDP_ClosedModel::GenerateModelFile(std::set<int> states, std::map<int, st
         for (auto & stateN : POMDP_ClosedModel::closedModel.statesToPomdpFileStates)
         {  
             double prob = (double)POMDP_ClosedModel::closedModel.initialBStateParticle[stateN.first] / (double)POMDP_ClosedModel::closedModel.initialBStateSamplesCount;
+            initialBeliefState.push_back(prob);
             std::stringstream stream;
             stream << std::fixed << std::setprecision(1) << prob;
             std::string s = stream.str();
@@ -223,6 +232,7 @@ void POMDP_ClosedModel::GenerateModelFile(std::set<int> states, std::map<int, st
         fs << endl; 		
         fs << endl;
 
+        ClosedModelPolicy::loadInitialBeliefStateFromVector(initialBeliefState);
 
         map<int, set<int>> actionStatesWithoutAnyTran;
         for (int act = 0; act < ActionManager::actions.size();act++)
@@ -235,6 +245,11 @@ void POMDP_ClosedModel::GenerateModelFile(std::set<int> states, std::map<int, st
             {
                 actionStatesWithoutAnyTran[actNStateProb.first.first].erase(stateT.first); 
                 fs << "T: " << actionsToDesc[actNStateProb.first.first] << " : " << POMDP_ClosedModel::closedModel.statesToPomdpFileStates[stateT.first] << " : " << POMDP_ClosedModel::closedModel.statesToPomdpFileStates[actNStateProb.first.second] << " " << std::to_string(actNStateProb.second) << endl;
+
+                int actionPol = actionToPolicyIndex[actionsToDesc[actNStateProb.first.first]];
+                int nextStatePol = stateToPolicyIndex[actNStateProb.first.second];
+                int preStatePol = stateToPolicyIndex[stateT.first];
+                ClosedModelPolicy::nextStateActionPrevState_TransitionModel[nextStatePol][actionPol][preStatePol] = actNStateProb.second;
             } 
         }
  
@@ -275,7 +290,13 @@ void POMDP_ClosedModel::GenerateModelFile(std::set<int> states, std::map<int, st
         }
         for(auto &actSingleObs : actionWithSingleObservation)
         {
-            fs << "O: " << actionsToDesc[actSingleObs.first] << " : * : " << actSingleObs.second << " 1.0" << endl;
+            std::string actDesc = actionsToDesc[actSingleObs.first];
+            fs << "O: " << actDesc << " : * : " << actSingleObs.second << " 1.0" << endl;
+
+
+            int actionPol = actionToPolicyIndex[actDesc];
+            std::string observation = actSingleObs.second;
+            ClosedModelPolicy::obsActNState_ObservationModel[observation][actionPol][STATE_WILD_CARD] = 1.0;
         }
 
         //to make sure that all the stat-action pairs have observations defined.
@@ -296,6 +317,9 @@ void POMDP_ClosedModel::GenerateModelFile(std::set<int> states, std::map<int, st
                 {
                     allStatePerAction[actObsProb.first.first].erase(stateT.first);
                     fs << "O: " << actionsToDesc[actObsProb.first.first] << " : " << POMDP_ClosedModel::closedModel.statesToPomdpFileStates[stateT.first] << " : " << observationsToDesc[actObsProb.first.second] << " " << std::to_string(actObsProb.second) << endl;
+
+                    int actionPol = actionToPolicyIndex[actionsToDesc[actObsProb.first.first]];
+                    ClosedModelPolicy::obsActNState_ObservationModel[observationsToDesc[actObsProb.first.second]][actionPol][stateToPolicyIndex[stateT.first]] = actObsProb.second;
                 }
 
             }
@@ -306,6 +330,10 @@ void POMDP_ClosedModel::GenerateModelFile(std::set<int> states, std::map<int, st
                 for(auto &StateWithMissingObs: missingObss.second)
                 {
                     fs << "O: " << actionsToDesc[missingObss.first] << " : " << POMDP_ClosedModel::closedModel.statesToPomdpFileStates[StateWithMissingObs] << " : " << invalidObsS << " 1.0" << endl;
+                
+                    int actionPol = actionToPolicyIndex[actionsToDesc[missingObss.first]];
+
+                    ClosedModelPolicy::obsActNState_ObservationModel[invalidObsS][actionPol][stateToPolicyIndex[StateWithMissingObs]] = 1.0; 
                 }    
             }
         fs << endl;
@@ -388,12 +416,14 @@ void POMDP_ClosedModel::solveModel()
       cmd.append(" --timeout ");
       cmd.append(std::to_string(Globals::config.sarsopTimeLimitInSeconds));
   }//   ./pomdpsol /home/or/Projects/sarsop/examples/POMDP/auto_generate.pomdp
-  cmd.append(" ; ./polgraph --policy-file out.policy --policy-graph autoGen.dot ");
-  cmd.append(workinDirPath);
-  cmd.append("sarsop/examples/POMDP/auto_generate.pomdp");
-  
-  //cmd.append(" ; dot -Tpdf autoGen.dot -o outfile_autoGen.pdf"); //uncomment if you want to generate a pdf graph
-  
+  if(Globals::config.closedModelPolicyByGraph)
+  {
+    cmd.append(" ; ./polgraph --policy-file out.policy --policy-graph autoGen.dot ");
+    cmd.append(workinDirPath);
+    cmd.append("sarsop/examples/POMDP/auto_generate.pomdp");
+    
+    //cmd.append(" ; dot -Tpdf autoGen.dot -o outfile_autoGen.pdf"); //uncomment if you want to generate a pdf graph
+  }
   std::string policyFilePath(workinDirPath);
   policyFilePath.append("sarsop/src/out.policy");
   remove(policyFilePath.c_str());

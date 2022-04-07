@@ -62,7 +62,7 @@ struct policy{
 		std::string workingDirPath(tmp);
 		workingDirPath = workingDirPath.substr(0, workingDirPath.find("build"));
 		std::string policyFilePath(workingDirPath);
-		policyFilePath.append(Globals::config.fixedPolicyDotFilePath);
+		policyFilePath.append(Globals::config.fixedGraphPolicyDotFilePath);
 		std::ifstream ifs(policyFilePath);
 		std::string content( (std::istreambuf_iterator<char>(ifs) ),
                        (std::istreambuf_iterator<char>()    ) );
@@ -88,9 +88,9 @@ struct policy{
 				break;
             
             //to remove the observation prefix 'o<obs_num>_'
-            while(pomContent[obsInd] != '_')
-				obsInd++;
-            obsInd++;
+            // while(pomContent[obsInd] != '_')
+			// 	obsInd++;
+            // obsInd++;
 
 			int endObs = pomContent.find(" ", obsInd);
 			obsStrToNum.insert({pomContent.substr(obsInd, endObs - obsInd), std::to_string(obsStrToNum.size())});

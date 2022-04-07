@@ -38,6 +38,7 @@ add_library("${PROJECT_NAME}" SHARED
   src/model_primitives/Bp_with_int_model/state.cpp
   src/model_primitives/Bp_with_int_model/enum_map_Bp_with_int_model.cpp #added
   src/model_primitives/Bp_with_int_model/actionManager.cpp #added
+  src/model_primitives/Bp_with_int_model/closed_model_policy.cpp #added
 
   src/core/belief.cpp
   src/core/globals.cpp

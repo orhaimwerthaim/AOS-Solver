@@ -3,6 +3,7 @@
 #include <despot/model_primitives/Bp_with_int_model/enum_map_Bp_with_int_model.h>
 #include <despot/model_primitives/Bp_with_int_model/actionManager.h>
 #include <despot/model_primitives/Bp_with_int_model/state.h>
+#include <despot/model_primitives/Bp_with_int_model/closed_model_policy.h>
 #include <nlohmann/json.hpp>
 using namespace std;
 
@@ -160,7 +161,14 @@ bool Evaluator::RunStep(int step, int round) {
 
 	if(byExternalPolicy)
 	{
-		Evaluator::fixedPolicy.init_policy();
+		if(Globals::config.closedModelPolicyByGraph)
+		{
+			Evaluator::fixedPolicy.init_policy();
+		}
+		else
+		{
+			ClosedModelPolicy::loadAlphaVectorsFromPolicyFile();
+		}
 	}
 
 	if(shutDown && !Globals::config.handsOnDebug)
@@ -192,7 +200,7 @@ bool Evaluator::RunStep(int step, int round) {
 
     if(byExternalPolicy)
     {
-            action = Evaluator::fixedPolicy.getCurrentAction();
+           action = Globals::config.closedModelPolicyByGraph ? Evaluator::fixedPolicy.getCurrentAction() : ClosedModelPolicy::getBestAction();
     }
     else if(action_sequence_to_sim.size() == 0)
 	{
@@ -269,7 +277,15 @@ bool Evaluator::RunStep(int step, int round) {
 	start_t = get_time_second();
 	if(byExternalPolicy)
 	{
-		Evaluator::fixedPolicy.updateStateByObs(obsStr);
+		if(Globals::config.closedModelPolicyByGraph)
+		{
+			Evaluator::fixedPolicy.updateStateByObs(obsStr);
+		}
+		
+        else
+		{
+			ClosedModelPolicy::updateBelief(obsStr, action);
+		}
 	}
 	else if(action_sequence_to_sim.size() == 0)
 	{

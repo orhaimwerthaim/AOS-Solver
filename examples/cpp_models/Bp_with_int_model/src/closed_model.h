@@ -16,6 +16,7 @@
 #include <float.h>
 #include <iomanip>
 #include <despot/core/pomdp.h> 
+#include <despot/model_primitives/Bp_with_int_model/closed_model_policy.h>
 using namespace std;
 namespace despot {
     class POMDP_ClosedModelState

@@ -23,21 +23,24 @@ struct Config {
     bool saveBeliefToDB;
     bool handsOnDebug;
 	bool solveProblemWithClosedPomdpModel;
-	std::string fixedPolicyDotFilePath;
+	std::string fixedGraphPolicyDotFilePath;
+    std::string fixedPolicyFilePath;
 	std::string pomdpFilePath;
 	int numOfSamplesPerActionStateWhenLearningTheModel;
 	double sarsopTimeLimitInSeconds;// if sarsopTimeLimitInSeconds <= 0 there is no time limit.
 	int limitClosedModelHorizon_stepsAfterGoalDetection;
-
+    bool closedModelPolicyByGraph;
 	Config() : 
-        handsOnDebug(false),
+        handsOnDebug(true),
+        closedModelPolicyByGraph(true),
         limitClosedModelHorizon_stepsAfterGoalDetection(0),
         sarsopTimeLimitInSeconds(0),
         numOfSamplesPerActionStateWhenLearningTheModel(1),
-        fixedPolicyDotFilePath("sarsop/src/autoGen.dot"), //the path ../sarsop/src/autoGen.dot because working dir is /build/ so we need go one directory backwards.
-        pomdpFilePath("sarsop/examples/POMDP/auto_generate.pomdp"),
+        fixedGraphPolicyDotFilePath("sarsop/src/autoGen.dot"), //the path ../sarsop/src/autoGen.dot because working dir is /build/ so we need go one directory backwards.
+        fixedPolicyFilePath("sarsop/src/out.policy"),
+		pomdpFilePath("sarsop/examples/POMDP/auto_generate.pomdp"),
         solveProblemWithClosedPomdpModel(true),
-        solverId(61),
+        solverId(65),
 		search_depth(22),
 		discount(0.95),
 		root_seed(42),
@@ -49,7 +52,7 @@ struct Config {
 		default_action(""),
 		max_policy_sim_len(10),
 		noise(0.1),
-		silence(true),
+		silence(false),
 		internalSimulation(true),
         saveBeliefToDB(true)
 		{
