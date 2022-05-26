@@ -40,6 +40,7 @@ namespace despot {
   mongocxx::collection MongoDB_Bridge::SolversCollection;
 
   mongocxx::collection MongoDB_Bridge::beliefStatesColllection;
+  mongocxx::collection MongoDB_Bridge::closedModelBeliefStatesColllection;
   int MongoDB_Bridge::currentActionSequenceId = 0;
   std::chrono::milliseconds MongoDB_Bridge::firstSolverIsAliveDateTime = std::chrono::milliseconds(0);
 
@@ -61,6 +62,7 @@ namespace despot {
       MongoDB_Bridge::actionsCollection = MongoDB_Bridge::db["Actions"];
       MongoDB_Bridge::SolversCollection = MongoDB_Bridge::db["Solvers"];
       MongoDB_Bridge::beliefStatesColllection = MongoDB_Bridge::db["BeliefStates"];
+      MongoDB_Bridge::closedModelBeliefStatesColllection = MongoDB_Bridge::db["ClosedModelBeliefState"];
     }
 }
 
@@ -225,6 +227,23 @@ void MongoDB_Bridge::SaveBeliefState(std::string currentActionBelief, std::strin
   option.upsert(true);
   bsoncxx::document::value currentBeliefDocValue = bsoncxx::from_json(currentBelief); 
   MongoDB_Bridge::beliefStatesColllection.replace_one(filter.view(), currentBeliefDocValue.view(), option);
+}
+
+void MongoDB_Bridge::SaveClosedModelBeliefState(std::string currentBeliefStr)
+{
+  MongoDB_Bridge::Init(); 
+  auto builder = bsoncxx::builder::stream::document{};
+  bsoncxx::document::value doc_value = bsoncxx::from_json(currentBeliefStr);
+
+  auto filter1 = document{};
+  MongoDB_Bridge::closedModelBeliefStatesColllection.delete_many(filter1.view());
+  MongoDB_Bridge::closedModelBeliefStatesColllection.insert_one(doc_value.view());
+
+  // auto filter = document{} << "ActionSequnceId" << -1 << finalize;
+  // mongocxx::options::replace option;
+  // option.upsert(true);
+  // bsoncxx::document::value currentBeliefDocValue = bsoncxx::from_json(currentBelief); 
+  // MongoDB_Bridge::beliefStatesColllection.replace_one(filter.view(), currentBeliefDocValue.view(), option);
 }
 
 void MongoDB_Bridge::RegisterAction(int actionId, std::string actionName, std::string actionParameters, std::string actionDescription)

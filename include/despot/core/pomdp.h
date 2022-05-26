@@ -10,8 +10,11 @@
 #include <despot/core/upper_bound.h>
 #include <despot/util/memorypool.h>
 #include <despot/util/seeds.h>
-#include <despot/util/util.h>
-
+#include <despot/util/util.h> 
+#include <despot/model_primitives/iros/enum_map_iros.h> 
+#include <despot/model_primitives/iros/actionManager.h>  
+#include <despot/model_primitives/iros/state_var_types.h>
+#include <vector>
 namespace despot {
 
 /* =============================================================================
@@ -41,6 +44,34 @@ public:
 		this->weight = weight;
 		return this;
 	}
+
+    bool OneTimeRewardUsed[3]={true,true,true};
+    std::vector<tDiscreteLocation> tDiscreteLocationObjects;
+    std::map<std::string, tLocation> tLocationObjectsForActions;
+    tLocation locationCorridor;
+    tLocation locationAuditorium_toCan1;
+    tLocation locationAuditorium_toCan2;
+    tDiscreteLocation cup1DiscreteLocation;
+    tDiscreteLocation cup2DiscreteLocation;
+    tDiscreteLocation robotGenerallocation;
+    bool holding_can;
+    bool drinkServed;
+    bool drinkServedOpenHand;
+    bool armOutstretched;
+    bool person_injured;
+    std::map<std::string, anyValue*> anyValueUpdateDic;
+
+
+	public:
+		static void SetAnyValueLinks(State *state);
+};
+typedef State IrosState;
+/* =============================================================================
+ * BeliefStateVariables class
+ * =============================================================================*/
+class BeliefStateVariables{
+	public:
+		float mean_isTerminal;
 };
 
 /* =============================================================================

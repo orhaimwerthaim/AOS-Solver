@@ -31,20 +31,20 @@ struct Config {
 	int limitClosedModelHorizon_stepsAfterGoalDetection;
     bool closedModelPolicyByGraph;
 	Config() : 
-        handsOnDebug(true),
-        closedModelPolicyByGraph(true),
-        limitClosedModelHorizon_stepsAfterGoalDetection(0),
+        handsOnDebug(false),
+        closedModelPolicyByGraph(false),
+        limitClosedModelHorizon_stepsAfterGoalDetection(-1),
         sarsopTimeLimitInSeconds(0),
-        numOfSamplesPerActionStateWhenLearningTheModel(1),
+        numOfSamplesPerActionStateWhenLearningTheModel(200),
         fixedGraphPolicyDotFilePath("sarsop/src/autoGen.dot"), //the path ../sarsop/src/autoGen.dot because working dir is /build/ so we need go one directory backwards.
         fixedPolicyFilePath("sarsop/src/out.policy"),
 		pomdpFilePath("sarsop/examples/POMDP/auto_generate.pomdp"),
-        solveProblemWithClosedPomdpModel(true),
-        solverId(65),
-		search_depth(22),
+        solveProblemWithClosedPomdpModel(false),
+        solverId(25),
+		search_depth(6),
 		discount(0.95),
 		root_seed(42),
-		time_per_move(2),
+		time_per_move(1),
 		num_scenarios(500),
 		pruning_constant(0),
 		xi(0.95),

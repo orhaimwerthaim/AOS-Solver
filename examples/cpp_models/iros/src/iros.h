@@ -1,18 +1,19 @@
 
+#ifndef IROS_H
+#define IROS_H
 #include "globals.h"
 #include <despot/core/pomdp.h>
 #include <despot/solver/pomcp.h> 
 #include <random>
 #include <string>
-#include <despot/model_primitives/iros/enum_map_iros.h> 
-#include <despot/model_primitives/iros/state.h> 
+#include <despot/model_primitives/iros/enum_map_iros.h>  
+#include "closed_model.h"
 namespace despot {
 
 /* ==============================================================================
  * IrosState class
  * ==============================================================================*/
 
-class IrosState;
 class AOSUtils
 {
 	public:
@@ -49,6 +50,7 @@ public:
 
 class Iros: public DSPOMDP {
 public:
+    static Iros gen_model;
     static std::hash<std::string> hasher;
 	virtual std::string PrintObs(int action, OBS_TYPE obs) const;
 	virtual std::string PrintStateStr(const State &state) const;
@@ -105,10 +107,10 @@ private:
 
 	mutable MemoryPool<IrosState> memory_pool_;
 	static std::default_random_engine generator;
-    static std::discrete_distribution<> navigate_discrete_dist1; //AOS.SampleDiscrete(enumRealCase,{1.0,0.0})
-    static std::discrete_distribution<> enhanced_pick_discrete_dist2; //AOS.SampleDiscrete(enumRealCase,{0.727,0.181,0.09,0.0})
-    static std::discrete_distribution<> enhanced_pick_discrete_dist3; //AOS.SampleDiscrete(enumRealCase,{0.1,0.0,0.0,0.9})
+    static std::discrete_distribution<> navigate_discrete_dist1; //AOS.SampleDiscrete(enumRealCase,{0.8,0.2})
+    static std::discrete_distribution<> enhanced_pick_discrete_dist2; //AOS.SampleDiscrete(enumRealCase,{0.5238,0.0952,0,0.0476,0.4285})
 
 };
 } // namespace despot
+#endif//IROS_H
  

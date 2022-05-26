@@ -182,7 +182,7 @@ void POMDP_ClosedModel::GenerateModelFile(std::set<int> states, std::map<int, st
         fs << "values: reward" << endl;
         fs << endl;
         fs << "states:";
-        int count = 0; 
+        int count = 0;
         for (auto &stateN : states)
         {
             std::string stateName= std::to_string(count++).insert(0, "s_");
@@ -198,9 +198,6 @@ void POMDP_ClosedModel::GenerateModelFile(std::set<int> states, std::map<int, st
         {
             actionToPolicyIndex[actD.second] = actD.first;
             fs << actD.second << " ";
-
-            ClosedModelPolicy::smStateTransitionModel[actD.first] = new SparseMatrix::SparseMatrix<float>(states.size(), states.size());;
-            
         }
         fs << endl;
         fs << endl;
@@ -256,33 +253,14 @@ void POMDP_ClosedModel::GenerateModelFile(std::set<int> states, std::map<int, st
                 int nextStatePol = stateToPolicyIndex[actNStateProb.first.second];
                 int preStatePol = stateToPolicyIndex[stateT.first];
                 ClosedModelPolicy::nextStateActionPrevState_TransitionModel[nextStatePol][actionPol][preStatePol] = actNStateProb.second;
-
-                int a = -1;
-                int b = -1;
-                int c = -1;
-                if (actNStateProb.second > 0)
-                {
-                    a = preStatePol + 1;
-                    b = nextStatePol + 1;
-                    c = actNStateProb.second;
-                    ClosedModelPolicy::smStateTransitionModel[actionPol]->set(actNStateProb.second, preStatePol + 1, nextStatePol + 1); // (value, prevState,NextState)
-                } 
-                if(a>-1)
-                {
-                    int aa = ClosedModelPolicy::smStateTransitionModel[actionPol]->get(a, b); // (value, prevState,NextState)
-                    int yy = 0;
-                }
-            }
+            } 
         }
  
         for(auto &actionStateWithoutAnyTranision: actionStatesWithoutAnyTran)
                 {
-                     
-
                     for (auto &state:actionStateWithoutAnyTranision.second)
                     {
                         fs << "T: " << actionsToDesc[actionStateWithoutAnyTranision.first] << " : " << POMDP_ClosedModel::closedModel.statesToPomdpFileStates[state] << " : " << POMDP_ClosedModel::closedModel.statesToPomdpFileStates[state] << " 1.0" << endl;
-                       // ClosedModelPolicy::smStateTransitionModel[actionStateWithoutAnyTranision.first]->set(1.0, preStatePol + 1, nextStatePol + 1); // (value, prevState,NextState)
                     }  
                 }
         
@@ -468,7 +446,7 @@ void POMDP_ClosedModel::solveModel()
 POMDP_ClosedModel POMDP_ClosedModel::closedModel;
 
 
-//Bp_with_int_model
+//Iros
 void POMDP_ClosedModel::CreateAndSolveModel() const
 { 
     int horizon = Globals::config.search_depth;
@@ -492,16 +470,16 @@ void POMDP_ClosedModel::CreateAndSolveModel() const
     }
     for (int i = 0; i < 1000; i++)
     {
-        State *state = Bp_with_int_model::gen_model.CreateStartState();
-        Bp_with_int_modelState &ir_state = static_cast<Bp_with_int_modelState &>(*state);
-        int hash = Bp_with_int_model::gen_model.hasher(Prints::PrintState(ir_state));
+        State *state = Iros::gen_model.CreateStartState();
+        IrosState &ir_state = static_cast<IrosState &>(*state);
+        int hash = Iros::gen_model.hasher(Prints::PrintState(ir_state));
         if (states.insert(hash).second)
         {
             statesToProcessCurr.insert({hash, state});
         }
         else
         {
-                   Bp_with_int_model::gen_model.Free(state);
+                   Iros::gen_model.Free(state);
         }
         POMDP_ClosedModel::closedModel.addInitialBStateSample(hash);
     }
@@ -510,7 +488,7 @@ void POMDP_ClosedModel::CreateAndSolveModel() const
     {
         for (auto & stateP : statesToProcessCurr)
             {
-                for (int action = 0; action < Bp_with_int_model::gen_model.NumActions(); action++)
+                for (int action = 0; action < Iros::gen_model.NumActions(); action++)
                 {
                     for (int sampleCount = 0; sampleCount < numOfSamplesForEachActionFromState; sampleCount++)
                     {
@@ -519,10 +497,10 @@ void POMDP_ClosedModel::CreateAndSolveModel() const
                         int state_hash;
                         int nextStateHash;
                         bool isNextStateTerminal;
-                        State *next_state = Bp_with_int_model::gen_model.Copy(stateP.second);
+                        State *next_state = Iros::gen_model.Copy(stateP.second);
                         double precondition_reward;
                         double specialStateReward;
-                        Bp_with_int_model::gen_model.StepForModel(*next_state, action, reward, obs, state_hash, nextStateHash, isNextStateTerminal, precondition_reward, specialStateReward);
+                        Iros::gen_model.StepForModel(*next_state, action, reward, obs, state_hash, nextStateHash, isNextStateTerminal, precondition_reward, specialStateReward);
 
                         if(isNextStateTerminal && specialStateReward > 0 && !goalstateFound)
                         {
@@ -548,12 +526,12 @@ void POMDP_ClosedModel::CreateAndSolveModel() const
                             }
                             else
                             {
-                                Bp_with_int_model::gen_model.Free(next_state);
+                                Iros::gen_model.Free(next_state);
                             }
                         }
                         else
                         {
-                            Bp_with_int_model::gen_model.Free(next_state);
+                            Iros::gen_model.Free(next_state);
                         }
                     }
                 }

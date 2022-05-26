@@ -4,6 +4,7 @@ add_executable("${PROJECT_NAME}_iros"
 #src/state_var_types.cpp   
 src/iros.cpp
 src/main.cpp
+src/closed_model.cpp
 #src/mongoDB_Bridge.cpp
 )
 

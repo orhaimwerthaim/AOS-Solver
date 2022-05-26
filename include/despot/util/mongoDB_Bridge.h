@@ -1,5 +1,6 @@
   
-
+#ifndef MONGO_BRIDGE_H
+#define MONGO_BRIDGE_H
 
 
 #include <cstdint>
@@ -13,7 +14,7 @@
 #include <bsoncxx/builder/stream/helpers.hpp>
 #include <bsoncxx/builder/stream/document.hpp>
 #include <bsoncxx/builder/stream/array.hpp>
-namespace despot {
+namespace despot { 
     class MongoDB_Bridge
     {
 	public:
@@ -25,6 +26,7 @@ namespace despot {
         static bsoncxx::oid SendActionToExecution(int actionId, std::string actionName, std::string actionParameters);
         static void RegisterAction(int actionId, std::string actionName, std::string actionParameters, std::string actionDescription);
         static void SaveBeliefState(std::string belief, std::string currentBelief);
+        static void SaveClosedModelBeliefState(std::string currentBeliefStr);
         static std::string SampleFromBeliefState(int skipStates, int takeStates);
         static void SaveInternalActionResponse(std::string actionName, bsoncxx::oid actionForExecuteId, std::string observationText);
         //     static void UpdateActionResponse(std::string actionName, std::string actionResponse);
@@ -42,7 +44,9 @@ namespace despot {
         static mongocxx::collection localVariableColllection;
         static mongocxx::collection globalVariablesAssignmentsColllection;
         static mongocxx::collection beliefStatesColllection;
+        static mongocxx::collection closedModelBeliefStatesColllection;
         static int currentActionSequenceId;
         static std::chrono::milliseconds firstSolverIsAliveDateTime;
     };
 }
+#endif

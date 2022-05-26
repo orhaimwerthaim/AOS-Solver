@@ -5,19 +5,18 @@
 #ifndef	NULL
 #define NULL 0
 #endif
-#include "Bp_with_int_model.h"
+#include "iros.h"
 #include <vector>
 #include <map>
 #include <set>
 #include <string> 
 #include <unistd.h>
 #include <despot/core/globals.h>
-#include <despot/model_primitives/Bp_with_int_model/actionManager.h> 
+#include <despot/model_primitives/iros/actionManager.h> 
 #include <float.h>
 #include <iomanip>
 #include <despot/core/pomdp.h> 
-#include <despot/model_primitives/Bp_with_int_model/closed_model_policy.h>
-#include <despot/model_primitives/Bp_with_int_model/SparseMatrix.h>
+#include <despot/model_primitives/iros/closed_model_policy.h>
 using namespace std;
 namespace despot {
     class POMDP_ClosedModelState

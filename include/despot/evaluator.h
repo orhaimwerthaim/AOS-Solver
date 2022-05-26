@@ -5,7 +5,7 @@
 #include <despot/core/pomdp.h>
 #include <despot/pomdpx/pomdpx.h>
 #include <despot/util/util.h>
-#include <despot/model_primitives/Bp_with_int_model/enum_map_Bp_with_int_model.h>
+#include <despot/model_primitives/iros/enum_map_iros.h>
 #include <unistd.h>
 namespace despot {
 

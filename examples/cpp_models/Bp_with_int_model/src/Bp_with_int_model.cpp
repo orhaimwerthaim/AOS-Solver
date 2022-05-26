@@ -23,8 +23,7 @@ Bp_with_int_model Bp_with_int_model::gen_model;
 
 bool AOSUtils::Bernoulli(double p)
 {
-	/* generate secret number between 1 and 100: */
-    srand((unsigned int)time(NULL));
+	/* generate secret number between 1 and 100: */ 
 	int randInt = rand() % 100 + 1;
 	return (p * 100) >= randInt;
 }
@@ -145,7 +144,7 @@ public:
  * ==============================================================================*/
 
 Bp_with_int_model::Bp_with_int_model(){
-	
+	srand((unsigned int)time(NULL));
 }
 
 int Bp_with_int_model::NumActions() const {
@@ -183,7 +182,7 @@ State* Bp_with_int_model::CreateStartState(string type) const {
     state.agentOneLoc.y=1;
     state.agentTwoLoc = tLocation();
     state.agentTwoLoc.x=1;
-    state.agentTwoLoc.y=0;
+    state.agentTwoLoc.y=1;
     state.bOneLoc = tLocation();
     state.bOneLoc.x=0;
     state.bOneLoc.y=0;
@@ -198,8 +197,8 @@ State* Bp_with_int_model::CreateStartState(string type) const {
     state.ParamSingleAgentPush = SingleAgentPush;;
     state.ParamJointPush = JointPush;;
     state.JointPushDirection = None;;
-    state.MaxGridx = 1;;
-    state.MaxGridy = 1;;
+    state.MaxGridx = 2;;
+    state.MaxGridy = 2;;
     startState->tLocationObjects.push_back(&(state.bTwoLocGoal));
     startState->tLocationObjects.push_back(&(state.bOneLocGoal));
     startState->tLocationObjects.push_back(&(state.agentOneLoc));
@@ -245,11 +244,71 @@ POMCPPrior* Bp_with_int_model::CreatePOMCPPrior(string name) const {
 		return new Bp_with_int_modelPOMCPPrior(this);
 }
 
-void Bp_with_int_model::PrintState(const State& state, ostream& ostr) const {
-	const Bp_with_int_modelState& farstate = static_cast<const Bp_with_int_modelState&>(state);
-	if (ostr)
-		ostr << Prints::PrintState(farstate);
+std::string Bp_with_int_model::GetCellDesc(int x, int y, const Bp_with_int_modelState& state) const
+{
+	std::string res = "";
+	
+	if(state.agentOneLoc.x == x && state.agentOneLoc.y == y)
+	{
+		res += (state.isAgentOneTurn ? "A1*" : "A1");
+		if(state.JointPushDirection != None)
+		{
+			res += state.JointPushDirection == Up ? "^J" : state.JointPushDirection == Down ? "vJ"
+													  : state.JointPushDirection == Left   ? "<J"
+																						   : ">J";
+		}
+	}
+	
+	if(state.agentTwoLoc.x == x && state.agentTwoLoc.y == y)
+	{
+		res += res.length() > 0 ? "," : "";
+		res += (state.isAgentOneTurn ? "A2" : "A2*");
+	} 
+	if(state.bOneLoc.x == x && state.bOneLoc.y == y)
+	{
+		res += res.length() > 0 ? ",B1" : "B1";
+	}
+	if(state.bTwoLoc.x == x && state.bTwoLoc.y == y)
+	{
+		res += res.length() > 0 ? ",B2" : "B2";
+	}
+	int gapsNeeded = 11 - res.length();
+	std::string start(int(ceil(gapsNeeded / 2)), ' ');
+	std::string end(int(floor(gapsNeeded / 2)), ' ');
+
+	res = start + res + end;
+	return res;
 }
+
+ 
+
+
+void Bp_with_int_model::PrintState(const State& _state, ostream& ostr) const {
+	const Bp_with_int_modelState& state = static_cast<const Bp_with_int_modelState&>(_state);
+	try
+	{
+	if (ostr)
+		{
+		std::string line((12*(state.MaxGridx+1)), '-');
+		for(int y=state.MaxGridx; y >=0; y--)
+		{
+			ostr << line << endl;
+			for (int x = 0; x <= state.MaxGridx; x++)
+			{
+				ostr << "|" << GetCellDesc(x, y, state);
+			}
+			ostr << "|" << endl;
+		}
+		ostr << line << endl;
+		} 
+	}
+	catch(const std::exception& e)
+	{
+
+	}
+}
+
+
 
 void Bp_with_int_model::PrintObs(const State& state, OBS_TYPE observation,
 	ostream& ostr) const {

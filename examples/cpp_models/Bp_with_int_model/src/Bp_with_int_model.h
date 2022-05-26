@@ -7,6 +7,7 @@
 #include <random>
 #include <string>
 #include <despot/model_primitives/Bp_with_int_model/enum_map_Bp_with_int_model.h> 
+#include <despot/model_primitives/Bp_with_int_model/SparseMatrix.h>
 #include <despot/model_primitives/Bp_with_int_model/state.h> 
 #include "closed_model.h"
 namespace despot {
@@ -81,9 +82,8 @@ public:
 	POMCPPrior* CreatePOMCPPrior(std::string name = "DEFAULT") const;
 
 	virtual void PrintState(const State& state, std::ostream& out = std::cout) const;
-	
+	std::string GetCellDesc(int x, int y, const Bp_with_int_modelState &state) const;
 
-	
 	virtual void PrintObs(const State& state, OBS_TYPE observation,
 		std::ostream& out = std::cout) const;
 	void PrintBelief(const Belief& belief, std::ostream& out = std::cout) const;
