@@ -8,22 +8,50 @@ using namespace std;
 
 namespace despot {
 
+BeliefStateVariables::BeliefStateVariables(vector<State *> bs)
+   {
+	   int numOfSamples = bs.size();
+	   __isTermianl_mean = 0;
+	   __isTermianl_variance = 0;
+	   __isTermianl_std = 0;
+	   
+	   //first loop
+	   for (State *s : bs)
+	   {
+		   State &state = *s;
+		   __isTermianl_mean += (float)state.__isTermianl / numOfSamples;
+	   }
+
+		//second loop
+	   for (State *s : bs)
+	   {
+		   State &state = *s;
+		   __isTermianl_variance += pow((float)state.__isTermianl - __isTermianl_mean,2)/numOfSamples;
+	   }
+
+	   __isTermianl_std = sqrt(__isTermianl_variance);
+   }
 
     tLocation::tLocation()
     {
-        discrete_location = eUnknown;
-        actual_location = false;
+        x = 0.0;
+        y = 0.0;
+        z = 0.0;
+        desc = eL1;
+    }
+
+    tVisitedLocation::tVisitedLocation()
+    {
+        visited = false;
+        desc = eL1;
     }
 
 
 
 
 
-		void IrosState::SetAnyValueLinks(IrosState *state)
+		void TurtleBotVisitLocationsState::SetAnyValueLinks(TurtleBotVisitLocationsState *state)
 		{
-            state->anyValueUpdateDic["state.locationCorridor.actual_location"] = &(state->locationCorridor.actual_location);
-            state->anyValueUpdateDic["state.locationAuditorium_toCan1.actual_location"] = &(state->locationAuditorium_toCan1.actual_location);
-            state->anyValueUpdateDic["state.locationAuditorium_toCan2.actual_location"] = &(state->locationAuditorium_toCan2.actual_location);
 
 		}
 

@@ -5,7 +5,7 @@
 #include <despot/core/pomdp.h>
 #include <despot/pomdpx/pomdpx.h>
 #include <despot/util/util.h>
-#include <despot/model_primitives/iros/enum_map_iros.h>
+#include <despot/model_primitives/turtleBotVisitLocations/enum_map_turtleBotVisitLocations.h>
 #include <unistd.h>
 namespace despot {
 

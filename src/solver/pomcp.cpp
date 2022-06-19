@@ -14,7 +14,7 @@ using namespace std;
 namespace despot {
 #ifdef WITH_ROOT_EPSILON_GREEDY 
 std::default_random_engine POMCP::generator;
-std::uniform_int_distribution<int> POMCP::rand_action_distribution(0,5);
+std::uniform_int_distribution<int> POMCP::rand_action_distribution(0,6);
 #endif
 /* =============================================================================
  * POMCPPrior class

@@ -194,6 +194,8 @@ State* Iros::CreateStartState(string type) const {
     {
         ActionManager::Init(const_cast <IrosState*> (startState));
     }
+    double r;
+    state.__isTermianl = ProcessSpecialStates(state, r);
     return startState;
 }
 
@@ -328,9 +330,9 @@ bool Iros::Step(State& s_state__, double rand_num, int actionId, double& reward,
 	Free(s_state);
 	Free(s_state_);
 	bool finalState = ProcessSpecialStates(state__, reward);
-
+    state__.__isTermianl = state__.__isTermianl || finalState;
     if (!meetPrecondition)
-	{
+    {
 		//__moduleExecutionTime = 0;
 		//observation = illegalActionObs;
 		//return false;

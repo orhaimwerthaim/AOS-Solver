@@ -1,8 +1,8 @@
 #include <despot/evaluator.h>
 #include <despot/util/mongoDB_Bridge.h>
-#include <despot/model_primitives/iros/enum_map_iros.h>
-#include <despot/model_primitives/iros/actionManager.h> 
-#include <despot/model_primitives/iros/closed_model_policy.h>
+#include <despot/model_primitives/turtleBotVisitLocations/enum_map_turtleBotVisitLocations.h>
+#include <despot/model_primitives/turtleBotVisitLocations/actionManager.h> 
+#include <despot/model_primitives/turtleBotVisitLocations/closed_model_policy.h>
 #include <nlohmann/json.hpp>
 using namespace std;
 
@@ -246,7 +246,7 @@ bool Evaluator::RunStep(int step, int round) {
     logi << endl
 		 << "After:" << endl;
 	model_->PrintState(*state_);
-	logi << endl << "Reward:" << reward << endl <<  "Observation:" << enum_map_iros::vecResponseEnumToString[(IrosResponseModuleAndTempEnums)obs] << endl;
+	logi << endl << "Reward:" << reward << endl <<  "Observation:" << enum_map_turtleBotVisitLocations::vecResponseEnumToString[(TurtleBotVisitLocationsResponseModuleAndTempEnums)obs] << endl;
 	end_t = get_time_second();
 	logi << "[RunStep] Time spent in ExecuteAction(): " << (end_t - start_t)
 		<< endl;
@@ -256,20 +256,23 @@ bool Evaluator::RunStep(int step, int round) {
 	
 
 	ReportStepReward();
+
+ 
+
 	end_t = get_time_second();
 
-	double step_end_t;
-	if (terminal) {
-		step_end_t = get_time_second();
-		logi << "[RunStep] Time for step: actual / allocated = "
-			<< (step_end_t - step_start_t) << " / " << EvalLog::allocated_time
-			<< endl;
-		if (!Globals::config.silence && out_)
-			*out_ << endl;
-		step_++; 
+	// double step_end_t;
+	// if (terminal) {
+	// 	step_end_t = get_time_second();
+	// 	logi << "[RunStep] Time for step: actual / allocated = "
+	// 		<< (step_end_t - step_start_t) << " / " << EvalLog::allocated_time
+	// 		<< endl;
+	// 	if (!Globals::config.silence && out_)
+	// 		*out_ << endl;
+	// 	step_++; 
 
-		return true;
-	}
+	// 	return true;
+	// }
 
 	*out_<<endl;
 
@@ -296,6 +299,12 @@ bool Evaluator::RunStep(int step, int round) {
 	logi << "[RunStep] Time spent in Update(): " << (end_t - start_t) << endl;
 
 	step_++;
+
+    BeliefStateVariables bv = BeliefStateVariables(solver_->belief()->Sample(1000));
+	if(bv.__isTermianl_mean > 0.9 && bv.__isTermianl_std < 0.10)
+	{
+		return true;
+	}
 	return false;
 }
 
@@ -424,7 +433,7 @@ bool POMDPEvaluator::ExecuteAction(int action, double& reward, OBS_TYPE& obs, st
     ActionType acType(actDesc.actionType);
 	std::string actionParameters = actDesc.GetActionParametersJson_ForActionExecution();
 		
-	std::string actionName = enum_map_iros::vecActionTypeEnumToString[acType];
+	std::string actionName = enum_map_turtleBotVisitLocations::vecActionTypeEnumToString[acType];
 	  
 	bsoncxx::oid actionId = MongoDB_Bridge::SendActionToExecution(actDesc.actionId, actionName, actionParameters);
 
@@ -434,7 +443,7 @@ bool POMDPEvaluator::ExecuteAction(int action, double& reward, OBS_TYPE& obs, st
 	{
 		
 		terminal = model_->Step(*state_, random_num, action, reward, obs);
-		obsStr = enum_map_iros::vecResponseEnumToString[(IrosResponseModuleAndTempEnums)obs];
+		obsStr = enum_map_turtleBotVisitLocations::vecResponseEnumToString[(TurtleBotVisitLocationsResponseModuleAndTempEnums)obs];
 		MongoDB_Bridge::SaveInternalActionResponse(actionName, actionId, obsStr);
 		reward_ = reward;
 		total_discounted_reward_ += Globals::Discount(step_) * reward;
@@ -447,7 +456,7 @@ bool POMDPEvaluator::ExecuteAction(int action, double& reward, OBS_TYPE& obs, st
 		obsStr = "";
 		updates = MongoDB_Bridge::WaitForActionResponse(actionId, obsStr);
 
-		obs = enum_map_iros::vecStringToResponseEnum[obsStr];
+		obs = enum_map_turtleBotVisitLocations::vecStringToResponseEnum[obsStr];
 	}
     return terminal;
 }

@@ -4,30 +4,33 @@
 #include <despot/solver/pomcp.h>
 #include <sstream>
 #include <despot/model_primitives/turtleBotVisitLocations/actionManager.h> 
-#include <despot/model_primitives/turtleBotVisitLocations/enum_map_turtleBotVisitLocations.h> 
-#include <despot/model_primitives/turtleBotVisitLocations/state.h> 
+#include <despot/model_primitives/turtleBotVisitLocations/enum_map_turtleBotVisitLocations.h>  
 #include <algorithm>
 #include <cmath> 
 #include <despot/util/mongoDB_Bridge.h>
 #include <functional> //for std::hash
+#include <set>
+#include <unistd.h>
+#include <iomanip>
+#include <float.h>
 
 using namespace std;
 
 namespace despot {
 
+TurtleBotVisitLocations TurtleBotVisitLocations::gen_model;
 
 bool AOSUtils::Bernoulli(double p)
 {
-	/* generate secret number between 1 and 100: */
-    srand((unsigned int)time(NULL));
+	/* generate secret number between 1 and 100: */ 
 	int randInt = rand() % 100 + 1;
 	return (p * 100) >= randInt;
 }
-
+std::hash<std::string> TurtleBotVisitLocations::hasher;
 /* ==============================================================================
  *TurtleBotVisitLocationsBelief class
  * ==============================================================================*/
-int TurtleBotVisitLocationsBelief::num_particles = 5000;
+int TurtleBotVisitLocationsBelief::num_particles = 40234;
 std::string TurtleBotVisitLocationsBelief::beliefFromDB = "";
 int TurtleBotVisitLocationsBelief::currentInitParticleIndex = -1;
 
@@ -56,7 +59,8 @@ void TurtleBotVisitLocationsBelief::Update(int actionId, OBS_TYPE obs) {
 		bool terminal = turtleBotVisitLocations_->Step(*particle, Random::RANDOM.NextDouble(),
 			actionId, reward, o);
  
-		if (!terminal && o == obs) 
+		//if (!terminal && o == obs)
+        if (o == obs) 
 			{
 				TurtleBotVisitLocationsState &turtleBotVisitLocations_particle = static_cast<TurtleBotVisitLocationsState &>(*particle);
 				//if(!Globals::IsInternalSimulation() && updates.size() > 0)
@@ -140,7 +144,7 @@ public:
  * ==============================================================================*/
 
 TurtleBotVisitLocations::TurtleBotVisitLocations(){
-	
+	srand((unsigned int)time(NULL));
 }
 
 int TurtleBotVisitLocations::NumActions() const {
@@ -244,12 +248,19 @@ State* TurtleBotVisitLocations::CreateStartState(string type) const {
     {
         ActionManager::Init(const_cast <TurtleBotVisitLocationsState*> (startState));
     }
+    double r;
+    state.__isTermianl = ProcessSpecialStates(state, r);
     return startState;
 }
 
 
 
+
 Belief* TurtleBotVisitLocations::InitialBelief(const State* start, string type) const {
+    if(Globals::config.solveProblemWithClosedPomdpModel)
+    {
+        POMDP_ClosedModel::closedModel.CreateAndSolveModel();
+    }
 	int N = TurtleBotVisitLocationsBelief::num_particles;
 	vector<State*> particles(N);
 	for (int i = 0; i < N; i++) {
@@ -325,6 +336,32 @@ int TurtleBotVisitLocations::NumActiveParticles() const {
 	return memory_pool_.num_allocated();
 }
 
+void TurtleBotVisitLocations::StepForModel(State& state, int actionId, double& reward,
+        OBS_TYPE& observation, int &state_hash, int &next_state_hash, bool& isTerminal, double& precondition_reward, double& specialStateReward) const
+    {
+        reward = 0;
+        TurtleBotVisitLocationsState &ir_state = static_cast<TurtleBotVisitLocationsState &>(state);
+        state_hash = hasher(Prints::PrintState(ir_state));
+
+        bool meetPrecondition;
+        precondition_reward = 0;
+        CheckPreconditions(ir_state, reward, meetPrecondition, actionId);
+        if(!meetPrecondition)
+        {
+            precondition_reward = reward;
+        }
+        
+        isTerminal = TurtleBotVisitLocations::Step(state, 0.1, actionId, reward,
+                   observation);
+        ir_state = static_cast<TurtleBotVisitLocationsState &>(state);
+
+        specialStateReward = 0;
+        ProcessSpecialStates(ir_state, specialStateReward);
+        reward -= (precondition_reward + specialStateReward);//so that it will not consider the precondition penalty and special states reward
+
+        next_state_hash = hasher(Prints::PrintState(ir_state));
+    }
+
 bool TurtleBotVisitLocations::Step(State& s_state__, double rand_num, int actionId, double& reward,
 	OBS_TYPE& observation) const {
     reward = 0;
@@ -356,6 +393,7 @@ bool TurtleBotVisitLocations::Step(State& s_state__, double rand_num, int action
 	Free(s_state);
 	Free(s_state_);
 	bool finalState = ProcessSpecialStates(state__, reward);
+    state__.__isTermianl = state__.__isTermianl || finalState;
 
     if (!meetPrecondition)
 	{

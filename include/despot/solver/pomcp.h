@@ -11,7 +11,7 @@
 #include <despot/core/pomdp.h>
 #include <despot/core/node.h>
 #include <despot/core/globals.h> 
-#include <despot/model_primitives/iros/actionManager.h>
+#include <despot/model_primitives/turtleBotVisitLocations/actionManager.h>
 namespace despot {
 
 /* =============================================================================

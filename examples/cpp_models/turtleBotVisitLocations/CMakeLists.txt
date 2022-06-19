@@ -4,6 +4,7 @@ add_executable("${PROJECT_NAME}_turtleBotVisitLocations"
 #src/state_var_types.cpp   
 src/turtleBotVisitLocations.cpp
 src/main.cpp
+src/closed_model.cpp
 #src/mongoDB_Bridge.cpp
 )
 

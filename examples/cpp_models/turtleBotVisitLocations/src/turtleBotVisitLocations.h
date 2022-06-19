@@ -1,18 +1,19 @@
 
+#ifndef TURTLEBOTVISITLOCATIONS_H
+#define TURTLEBOTVISITLOCATIONS_H
 #include "globals.h"
 #include <despot/core/pomdp.h>
 #include <despot/solver/pomcp.h> 
 #include <random>
 #include <string>
-#include <despot/model_primitives/turtleBotVisitLocations/enum_map_turtleBotVisitLocations.h> 
-#include <despot/model_primitives/turtleBotVisitLocations/state.h> 
+#include <despot/model_primitives/turtleBotVisitLocations/enum_map_turtleBotVisitLocations.h>  
+#include "closed_model.h"
 namespace despot {
 
 /* ==============================================================================
  * TurtleBotVisitLocationsState class
  * ==============================================================================*/
 
-class TurtleBotVisitLocationsState;
 class AOSUtils
 {
 	public:
@@ -28,9 +29,9 @@ class AOSUtils
  * ==============================================================================*/
 class TurtleBotVisitLocations;
 class TurtleBotVisitLocationsBelief: public ParticleBelief {
-protected:
-	const TurtleBotVisitLocations* turtleBotVisitLocations_;
+	
 public:
+    const TurtleBotVisitLocations* turtleBotVisitLocations_;
 	static std::string beliefFromDB;
 	static int currentInitParticleIndex;
 	static int num_particles; 
@@ -49,15 +50,19 @@ public:
 
 class TurtleBotVisitLocations: public DSPOMDP {
 public:
+    static TurtleBotVisitLocations gen_model;
+    static std::hash<std::string> hasher;
 	virtual std::string PrintObs(int action, OBS_TYPE obs) const;
 	virtual std::string PrintStateStr(const State &state) const;
 	virtual std::string GetActionDescription(int) const;
 	void UpdateStateByRealModuleObservation(State &state, int actionId, OBS_TYPE &observation) const;
 	virtual bool Step(State &state, double rand_num, int actionId, double &reward,
 					  OBS_TYPE &observation) const;
+    void StepForModel(State& state, int actionId, double &reward,
+                                    OBS_TYPE &observation, int& state_hash, int& next_state_hash, bool &isTerminal, double& precondition_reward, double& specialStateReward) const;
 	int NumActions() const;
 	virtual double ObsProb(OBS_TYPE obs, const State& state, int actionId) const;
-
+    void CreateAndSolveModel() const;
 	virtual State* CreateStartState(std::string type = "DEFAULT") const;
 	virtual Belief* InitialBelief(const State* start,
 		std::string type = "PARTICLE") const;
@@ -105,4 +110,5 @@ private:
 
 };
 } // namespace despot
+#endif//TURTLEBOTVISITLOCATIONS_H
  

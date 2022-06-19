@@ -1,5 +1,5 @@
 
-     #include <despot/model_primitives/iros/closed_model_policy.h>
+     #include <despot/model_primitives/turtleBotVisitLocations/closed_model_policy.h>
 namespace despot { 
 
 vector<double> ClosedModelPolicy::_currentBelief;
