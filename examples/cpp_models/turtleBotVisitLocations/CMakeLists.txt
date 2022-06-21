@@ -1,5 +1,11 @@
 cmake_minimum_required(VERSION 2.8.3)
 
+##################################
+#adding json
+set(JSON_BuildTests OFF CACHE INTERNAL "")
+include_directories("/home/or/Projects/AOS-Solver/nlohmann_json")  
+##################################
+
 add_executable("${PROJECT_NAME}_turtleBotVisitLocations"
 #src/state_var_types.cpp   
 src/turtleBotVisitLocations.cpp
@@ -8,6 +14,10 @@ src/closed_model.cpp
 #src/mongoDB_Bridge.cpp
 )
 
+ target_link_libraries("${PROJECT_NAME}_turtleBotVisitLocations"
+   ${TinyXML_LIBRARIES}
+   PRIVATE nlohmann_json::nlohmann_json #adding json
+ )
 
 
 ##############

@@ -59,7 +59,7 @@ public:
 	 * Update current belief, history, and any other internal states that is
 	 * needed for Search() to function correctly.
 	 */
-	virtual void Update(int action, OBS_TYPE obs);
+	virtual void Update(int action, OBS_TYPE obs, std::map<std::string, std::string> localVariablesFromAction);
 	//virtual void Update(int action, OBS_TYPE obs, std::map<std::string, bool> updatesFromAction) { throw 770; };
 
 	/**

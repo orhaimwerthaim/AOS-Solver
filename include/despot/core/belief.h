@@ -28,7 +28,7 @@ public:
 
 	virtual std::vector<State*> Sample(int num) const = 0;
 	virtual void Update(int action, OBS_TYPE obs) = 0;
-	virtual void Update(int action, OBS_TYPE obs, std::map<std::string, bool> updatesFromAction){};
+	virtual void Update(int action, OBS_TYPE obs, std::map<std::string, std::string> localVariablesFromAction){};
 	virtual std::string text() const;
 	friend std::ostream& operator<<(std::ostream& os, const Belief& belief);
 	virtual Belief* MakeCopy() const = 0;

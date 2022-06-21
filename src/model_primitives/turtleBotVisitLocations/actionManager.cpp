@@ -16,7 +16,7 @@ namespace despot {
 
 void NavigateActionDescription::SetActionParametersByState(TurtleBotVisitLocationsState *state, std::vector<std::string> indexes)
 {
-    strLink_oDesiredLocation = indexes[0]; 
+    strLink_oDesiredLocation = indexes[0];
     oDesiredLocation = (state->tLocationObjectsForActions[indexes[0]]);
 }
 std::string NavigateActionDescription::GetActionParametersJson_ForActionExecution()
@@ -247,7 +247,7 @@ std::string Prints::GetStateJson(State& _state)
         json j = json::parse(jsonStr);
         j = j["BeliefeState"];
 
-        state.v1.visited = j[stateIndex]["v1"]["visited"]; 
+        state.v1.visited = j[stateIndex]["v1"]["visited"];
         state.v1.desc = j[stateIndex]["v1"]["desc"];
         state.v2.visited = j[stateIndex]["v2"]["visited"];
         state.v2.desc = j[stateIndex]["v2"]["desc"];

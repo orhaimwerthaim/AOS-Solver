@@ -235,14 +235,14 @@ bool Evaluator::RunStep(int step, int round) {
     logi << endl
 		 << "Before:" << endl;
     model_->PrintState(*state_);
-	std::map<std::string, bool> updatesFromAction;
+	std::map<std::string, std::string> localVariablesFromAction;
 
 	if(MongoDB_Bridge::currentActionSequenceId == 0)
 	{
 		Evaluator::SaveBeliefToDB();
 	}
     std::string obsStr;
-	bool terminal = ExecuteAction(action, reward, obs, updatesFromAction, obsStr);
+	bool terminal = ExecuteAction(action, reward, obs, localVariablesFromAction, obsStr);
     logi << endl
 		 << "After:" << endl;
 	model_->PrintState(*state_);
@@ -291,8 +291,7 @@ bool Evaluator::RunStep(int step, int round) {
 	}
 	else if(action_sequence_to_sim.size() == 0)
 	{
-		solver_->Update(action, obs);
-		//solver_->Update(action, obs, updatesFromAction);
+		solver_->Update(action, obs, localVariablesFromAction);
 		Evaluator::SaveBeliefToDB();
 	}
 	end_t = get_time_second();
@@ -427,7 +426,7 @@ double POMDPEvaluator::EndRound() {
 	return total_undiscounted_reward_;
 }
 
-bool POMDPEvaluator::ExecuteAction(int action, double& reward, OBS_TYPE& obs, std::map<std::string, bool>& updates, std::string& obsStr) {
+bool POMDPEvaluator::ExecuteAction(int action, double& reward, OBS_TYPE& obs, std::map<std::string, std::string>& localVariablesFromAction, std::string& obsStr) {
 	MongoDB_Bridge::currentActionSequenceId++;
 	ActionDescription &actDesc = *ActionManager::actions[action];
     ActionType acType(actDesc.actionType);
@@ -454,7 +453,7 @@ bool POMDPEvaluator::ExecuteAction(int action, double& reward, OBS_TYPE& obs, st
 	else
 	{ 
 		obsStr = "";
-		updates = MongoDB_Bridge::WaitForActionResponse(actionId, obsStr);
+		localVariablesFromAction = MongoDB_Bridge::WaitForActionResponse(actionId, obsStr);
 
 		obs = enum_map_turtleBotVisitLocations::vecStringToResponseEnum[obsStr];
 	}

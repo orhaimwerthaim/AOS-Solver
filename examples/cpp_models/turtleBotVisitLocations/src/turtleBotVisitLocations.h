@@ -37,8 +37,8 @@ public:
 	static int num_particles; 
 	TurtleBotVisitLocationsBelief(std::vector<State*> particles, const DSPOMDP* model, Belief* prior =
 		NULL);
-	void Update(int actionId, OBS_TYPE obs);
-	//void Update(int actionId, OBS_TYPE obs, std::map<std::string,bool> updates);
+	//void Update(int actionId, OBS_TYPE obs);
+	void Update(int actionId, OBS_TYPE obs, std::map<std::string,std::string> localVariablesFromAction);
 };
 
 /* ==============================================================================

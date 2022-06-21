@@ -2,20 +2,13 @@
 #include <despot/util/logging.h>
 #include <iostream>
 #include <fstream>
-
-#ifdef WITH_ROOT_EPSILON_GREEDY 
-#include <random>
-#endif
+ 
 
 using namespace std;
 
 using namespace std;
 
 namespace despot {
-#ifdef WITH_ROOT_EPSILON_GREEDY 
-std::default_random_engine POMCP::generator;
-std::uniform_int_distribution<int> POMCP::rand_action_distribution(0,6);
-#endif
 /* =============================================================================
  * POMCPPrior class
  * =============================================================================*/
@@ -23,9 +16,6 @@ std::uniform_int_distribution<int> POMCP::rand_action_distribution(0,6);
 POMCPPrior::POMCPPrior(const DSPOMDP* model) :
 	model_(model) {
 	double x = (40 / Globals::config.search_depth) > 1 ? (40 / Globals::config.search_depth) : 1;
-    #ifdef WITH_ROOT_EPSILON_GREEDY
-	x = 1;
-	#endif
 	exploration_constant_ = (model->GetMaxReward() - model->GetMinRewardAction().value) * x;
 }
 
@@ -114,11 +104,8 @@ ValuedAction POMCP::Search(double timeout) {
 		for (int i = 0; i < particles.size(); i++) {
 			State* particle = particles[i];
 			logd << "[POMCP::Search] Starting simulation " << num_sims << endl;
-#ifdef WITH_ROOT_EPSILON_GREEDY
-            Simulate(particle, root_, model_, prior_, simulatedActionSequence,true);
-#else
 			Simulate(particle, root_, model_, prior_, simulatedActionSequence);
- #endif
+ 
 			
  
 			num_sims++;
@@ -187,8 +174,7 @@ void POMCP::belief(Belief* b) {
 }
 
 
-//void POMCP::Update(int action, OBS_TYPE obs, std::map<std::string, bool> updatesFromAction)
-void POMCP::Update(int action, OBS_TYPE obs)
+void POMCP::Update(int action, OBS_TYPE obs, std::map<std::string, std::string> localVariablesFromAction)
 {
 	double start = get_time_second();
 
@@ -208,67 +194,22 @@ void POMCP::Update(int action, OBS_TYPE obs)
 
 	prior_->Add(action, obs);
 	history_.Add(action, obs);
-	//belief_->Update(action, obs, updatesFromAction);
-	belief_->Update(action, obs);
+	belief_->Update(action, obs, localVariablesFromAction);
 
 	logi << "[POMCP::Update] Updated belief, history and root with action "
 		<< action << ", observation " << obs
 		<< " in " << (get_time_second() - start) << "s" << endl;
 }
-// void POMCP::Update(int action, OBS_TYPE obs) {
-// 	std::map<std::string, bool> updatesFromAction;
-// 	POMCP::Update(action, obs, updatesFromAction);
-// }
-#ifdef WITH_ROOT_EPSILON_GREEDY
-        int POMCP::UpperBoundAction(const VNode* vnode, double explore_constant, bool is_root_node) {
-#ifdef WITH_FULL_EPSILON_GREEDY
-			is_root_node = true;
-#endif
-			const vector<QNode *> &qnodes = vnode->children();
-			double best_ub = Globals::NEG_INFTY;
-			int best_action = -1;
-			 
-			float rand_ = ((float)rand() / RAND_MAX);
-			bool random_action = is_root_node && (rand_ > 0.8);
-			bool take_max = is_root_node && !random_action;
-			if (random_action)
-			{
 
-				int rand_act = rand_action_distribution(generator);
-				while (qnodes[rand_act]->value() < -900000)
-				{
-					rand_act = rand_action_distribution(generator);
-				}
-				return rand_act;
-			}
-
-			for (int action = 0; action < qnodes.size(); action++)
-			{
-				if (qnodes[action]->count() == 0)
-					return action;
-
-				double ub = qnodes[action]->value() + explore_constant * sqrt(log(vnode->count() + 1) / qnodes[action]->count());
-
-				if (take_max)
-				{
-					ub = qnodes[action]->value();
-				}
-
-				if (ub > best_ub)
-				{
-					best_ub = ub;
-					best_action = action;
-				}
-			}
-
-			assert(best_action != -1);
-			return best_action;
-		}
-
-#endif
 int POMCP::UpperBoundAction(const VNode* vnode, double explore_constant)
 {
 	return UpperBoundAction(vnode, explore_constant, NULL, NULL);
+}
+
+void POMCP::Update(int action, OBS_TYPE obs) 
+{
+	std::map<std::string, std::string> updatesFromAction;
+	POMCP::Update(action, obs, updatesFromAction);
 }
 
 int POMCP::UpperBoundAction(const VNode* vnode, double explore_constant, const DSPOMDP* model, Belief* belief) {
@@ -424,44 +365,7 @@ double POMCP::Simulate(State* particle, RandomStreams& streams, VNode* vnode,
 
 	return reward;
 }
-#ifdef WITH_ROOT_EPSILON_GREEDY
-// static
-double POMCP::Simulate(State* particle, VNode* vnode, const DSPOMDP* model,
-	POMCPPrior* prior, std::vector<int>* simulateActionSequence, bool is_root_node) {
-	assert(vnode != NULL);
-	if (vnode->depth() >= Globals::config.search_depth)
-		return 0;
 
-	double explore_constant = prior->exploration_constant();
-
-	int action = simulateActionSequence && simulateActionSequence->size() > vnode->depth() ? (*simulateActionSequence)[vnode->depth()] : UpperBoundAction(vnode, explore_constant,is_root_node);
-			
-	double reward;
-	OBS_TYPE obs;
-	bool terminal = model->Step(*particle, action, reward, obs);
-
-	QNode* qnode = vnode->Child(action);
-	if (!terminal) {
-		prior->Add(action, obs);
-		map<OBS_TYPE, VNode*>& vnodes = qnode->children();
-		if (vnodes[obs] != NULL) {
-			reward += Globals::Discount()
-				* Simulate(particle, vnodes[obs], model, prior,simulateActionSequence, false);
-		} else { // Rollout upon encountering a node not in curren tree, then add the node
-			vnodes[obs] = CreateVNode(vnode->depth() + 1, particle, prior,
-				model);
-			reward += Globals::Discount()
-				* Rollout(particle, vnode->depth() + 1, model, prior,simulateActionSequence);
-		}
-		prior->PopLast();
-	}
-
-	qnode->Add(reward);
-	vnode->Add(reward);
-
-	return reward;
-}
-#endif
 // static
 double POMCP::Simulate(State* particle, VNode* vnode, const DSPOMDP* model,
 	POMCPPrior* prior, std::vector<int>* simulateActionSequence) {
@@ -688,11 +592,11 @@ VNode* DPOMCP::ConstructTree(vector<State*>& particles, RandomStreams& streams,
 	return root;
 }
 
-void DPOMCP::Update(int action, OBS_TYPE obs) {
+void DPOMCP::Update(int action, OBS_TYPE obs, std::map<std::string, std::string> localVariablesFromAction) {
 	double start = get_time_second();
 
 	history_.Add(action, obs);
-	belief_->Update(action, obs);
+	belief_->Update(action, obs, localVariablesFromAction);;
 
 	logi << "[DPOMCP::Update] Updated belief, history and root with action "
 		<< action << ", observation " << obs

@@ -1,12 +1,5 @@
 #ifndef POMCP_H
-#define POMCP_H
-//#define WITH_ROOT_EPSILON_GREEDY
-//#define WITH_FULL_EPSILON_GREEDY
-
-
-#ifdef WITH_FULL_EPSILON_GREEDY
-#define WITH_ROOT_EPSILON_GREEDY
-#endif
+#define POMCP_H 
 
 #include <despot/core/pomdp.h>
 #include <despot/core/node.h>
@@ -108,8 +101,8 @@ public:
 
 	void reuse(bool r);
 	virtual void belief(Belief* b);
-	virtual void Update(int action, OBS_TYPE obs);
-	//virtual void Update(int action, OBS_TYPE obs, std::map<std::string, bool> updatesFromAction);
+	void Update(int action, OBS_TYPE obs);
+	virtual void Update(int action, OBS_TYPE obs, std::map<std::string, std::string> localVariablesFromAction);
 	static VNode* CreateVNode(int depth, const State*, POMCPPrior* prior,
 		const DSPOMDP* model);
 	static double Simulate(State* particle, RandomStreams& streams,
@@ -125,13 +118,7 @@ public:
     static double Simulate(State* particle, VNode* root, const DSPOMDP* model,
 		POMCPPrior* prior, std::vector<int>* simulateActionSequence);
 
-#ifdef WITH_ROOT_EPSILON_GREEDY
-static std::default_random_engine generator;
-static std::uniform_int_distribution<int> rand_action_distribution;
-static int UpperBoundAction(const VNode* vnode, double explore_constant, bool is_root_node);
-static double Simulate(State* particle, VNode* root, const DSPOMDP* model,
-		POMCPPrior* prior, std::vector<int>* simulateActionSequence, bool is_root_node);
-#endif
+ 
 
 	static ValuedAction OptimalAction(const VNode* vnode);
 	static int Count(const VNode* vnode);
@@ -155,7 +142,7 @@ public:
 		History& history, double timeout);
 
 	virtual void belief(Belief* b);
-	virtual void Update(int action, OBS_TYPE obs);
+	virtual void Update(int action, OBS_TYPE obs, std::map<std::string, std::string> localVariablesFromAction);
 	
 };
 

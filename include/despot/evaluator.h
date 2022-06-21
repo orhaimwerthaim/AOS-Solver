@@ -208,8 +208,8 @@ public:
 
 	bool RunStep(int step, int round);
 
-	virtual double EndRound() = 0; // Return total undiscounted reward for this round.
-	virtual bool ExecuteAction(int action, double& reward, OBS_TYPE& obs, std::map<std::string, bool>& updates, std::string& obsStr) = 0;
+	virtual double EndRound() = 0; // Return total undiscounted reward for this round. 
+    virtual bool ExecuteAction(int action, double& reward, OBS_TYPE& obs, std::map<std::string, std::string>& localVariablesFromAction, std::string& obsStr) = 0;
 	//IcapsResponseModuleAndTempEnums CalculateModuleResponse(std::string moduleName);
 	virtual void ReportStepReward();
 	virtual double End() = 0; // Free resources and return total reward collected
@@ -244,7 +244,7 @@ public:
 	int Handshake(std::string instance);
 	void InitRound();
 	double EndRound();
-	bool ExecuteAction(int action, double& reward, OBS_TYPE& obs, std::map<std::string, bool>& updates, std::string& obsStr);
+	bool ExecuteAction(int action, double& reward, OBS_TYPE& obs, std::map<std::string, std::string>& localVariablesFromAction, std::string& obsStr);
 	double End();
 	void UpdateTimePerMove(double step_time);
 };

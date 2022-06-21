@@ -64,10 +64,10 @@ Solver::Solver(const DSPOMDP* model, Belief* belief) :
 Solver::~Solver() {
 }
 
-void Solver::Update(int action, OBS_TYPE obs) {
+void Solver::Update(int action, OBS_TYPE obs, std::map<std::string, std::string> localVariablesFromAction) {
 	double start = get_time_second();
 
-	belief_->Update(action, obs);
+	belief_->Update(action, obs, localVariablesFromAction);
 	history_.Add(action, obs);
 
 	logi << "[Solver::Update] Updated belief, history and root with action "

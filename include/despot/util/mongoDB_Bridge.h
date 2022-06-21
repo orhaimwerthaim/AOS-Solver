@@ -20,7 +20,7 @@ namespace despot {
 	public:
         static void Init();
 
-        static std::map<std::string, bool> WaitForActionResponse(bsoncxx::oid actionForExecuteId, std::string &actionTextObservation);
+        static std::map<std::string, std::string> WaitForActionResponse(bsoncxx::oid actionForExecuteId, std::string &actionTextObservation);
         static void UpdateSolverDetails(bool isFirst, int solverId);
         static void GetSolverDetails(bool& shutDown, bool& isFirst, int solverId);
         static bsoncxx::oid SendActionToExecution(int actionId, std::string actionName, std::string actionParameters);
@@ -29,6 +29,8 @@ namespace despot {
         static void SaveClosedModelBeliefState(std::string currentBeliefStr);
         static std::string SampleFromBeliefState(int skipStates, int takeStates);
         static void SaveInternalActionResponse(std::string actionName, bsoncxx::oid actionForExecuteId, std::string observationText);
+        static void AddLog(std::string logMsg);
+        static void AddError(std::string errorMsg, std::string trace="");
         //     static void UpdateActionResponse(std::string actionName, std::string actionResponse);
 
         static bool isInit;
@@ -38,6 +40,8 @@ namespace despot {
 
         static mongocxx::database db;
         static mongocxx::collection SolversCollection;
+        static mongocxx::collection errorsCollection;
+        static mongocxx::collection logsCollection;
         static mongocxx::collection actionToExecuteCollection;
         static mongocxx::collection actionsCollection;
         static mongocxx::collection moduleResponseColllection;

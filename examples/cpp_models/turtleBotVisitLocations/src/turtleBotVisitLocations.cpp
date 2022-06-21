@@ -46,9 +46,50 @@ TurtleBotVisitLocationsBelief::TurtleBotVisitLocationsBelief(vector<State*> part
 		 return Prints::PrintActionDescription(ActionManager::actions[actionId]);
 	 }
 
-//void TurtleBotVisitLocationsBelief::Update(int actionId, OBS_TYPE obs, std::map<std::string,bool> updates) {
-void TurtleBotVisitLocationsBelief::Update(int actionId, OBS_TYPE obs) {
+void TurtleBotVisitLocationsBelief::Update(int actionId, OBS_TYPE obs, map<std::string, std::string> localVariables) {
 	history_.Add(actionId, obs);
+
+    ActionType &actType = ActionManager::actions[actionId]->actionType;
+    float nav_to_x;
+    float nav_to_y;
+    float nav_to_z;
+    bool goal_reached;
+    bool last_value_goal_reached;
+
+
+
+    try
+    {
+        if(actType == navigateAction)
+        {
+            if(localVariables.find("nav_to_x") != localVariables.end())
+            {
+                nav_to_x = std::stod(localVariables["nav_to_x"]);
+            }
+            if(localVariables.find("nav_to_y") != localVariables.end())
+            {
+                nav_to_y = std::stod(localVariables["nav_to_y"]);
+            }
+            if(localVariables.find("nav_to_z") != localVariables.end())
+            {
+                nav_to_z = std::stod(localVariables["nav_to_z"]);
+            }
+            if(localVariables.find("goal_reached") != localVariables.end())
+            {
+                goal_reached = localVariables["goal_reached"] == "true";
+            }
+            if(localVariables.find("last_value_goal_reached") != localVariables.end())
+            {
+                last_value_goal_reached = localVariables["last_value_goal_reached"] == "true";
+            }
+        }
+
+    }
+    catch(const std::exception& e)
+    {
+        std::string s ="Error: problem loading LocalVariables data for belief state update. ";
+        MongoDB_Bridge::AddError(s + e.what());
+    }
 
 	vector<State*> updated;
 	double reward;
@@ -62,7 +103,22 @@ void TurtleBotVisitLocationsBelief::Update(int actionId, OBS_TYPE obs) {
 		//if (!terminal && o == obs)
         if (o == obs) 
 			{
-				TurtleBotVisitLocationsState &turtleBotVisitLocations_particle = static_cast<TurtleBotVisitLocationsState &>(*particle);
+                if(!Globals::IsInternalSimulation())
+                {
+				TurtleBotVisitLocationsState &state__ = static_cast<TurtleBotVisitLocationsState &>(*particles_[cur]);
+                TurtleBotVisitLocationsState &state___ = static_cast<TurtleBotVisitLocationsState &>(*particle);
+                    if(actType == navigateAction)
+                    {
+                        NavigateActionDescription act = *(static_cast<NavigateActionDescription *>(ActionManager::actions[actionId]));
+                        tLocation &oDesiredLocation = act.oDesiredLocation;
+                        if(goal_reached){state___.robotL.x=oDesiredLocation.x;
+                        state___.robotL.y=oDesiredLocation.y;
+                        state___.robotL.z=oDesiredLocation.z;
+                        };
+                    }
+
+
+
 				//if(!Globals::IsInternalSimulation() && updates.size() > 0)
 				//{
 				//	TurtleBotVisitLocationsState::SetAnyValueLinks(&turtleBotVisitLocations_particle);
@@ -72,6 +128,8 @@ void TurtleBotVisitLocationsBelief::Update(int actionId, OBS_TYPE obs) {
 				//		*(turtleBotVisitLocations_particle.anyValueUpdateDic[it->first]) = it->second; 
 				//	} 
 				//}
+
+                }
 				updated.push_back(particle);
 		} else {
 			turtleBotVisitLocations_->Free(particle);
@@ -462,17 +520,19 @@ void TurtleBotVisitLocations::ModuleDynamicModel(const TurtleBotVisitLocationsSt
     {
         NavigateActionDescription act = *(static_cast<NavigateActionDescription *>(ActionManager::actions[actionId]));
         tLocation &oDesiredLocation = act.oDesiredLocation;
+        bool success=AOSUtils::Bernoulli(0.7);
         for (int ind0 = 0; ind0 < state.tVisitedLocationObjects.size(); ind0++)
         {
             tVisitedLocation &loc = *(state__.tVisitedLocationObjects[ind0]);
             if (loc.desc== oDesiredLocation.desc)
             {
-                loc.visited = true;
+                loc.visited = true && success;
             }
         }
-        state__.robotL.x=oDesiredLocation.x;
+        if(success){state__.robotL.x=oDesiredLocation.x;
         state__.robotL.y=oDesiredLocation.y;
         state__.robotL.z=oDesiredLocation.z;
+        };
         __moduleResponse=navigate_eSuccess;
         __reward=100-sqrt(pow(state.robotL.x-oDesiredLocation.x,2.0)+pow(state.robotL.y-oDesiredLocation.y,2.0))*10;
     }
