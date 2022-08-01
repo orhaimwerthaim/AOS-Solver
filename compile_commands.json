@@ -1,0 +1,197 @@
+[
+{
+  "directory": "/home/or/Projects/AOS-Solver/build",
+  "command": "/usr/bin/c++ -DJSON_DIAGNOSTICS=0 -DJSON_USE_IMPLICIT_CONVERSIONS=1 -Ddespot_EXPORTS -I/home/or/Projects/AOS-Solver/include -I/usr/local/include/mongocxx/v_noabi -I/usr/local/include/bsoncxx/v_noabi -I/usr/local/include/libmongoc-1.0 -I/usr/local/include/libbson-1.0 -I/usr/local/lib -I/home/or/Projects/AOS-Solver/nlohmann_json/single_include  -msse2 -mfpmath=sse -g -fPIC -std=c++1z -o CMakeFiles/despot.dir/src/model_primitives/turtleBotExplore/enum_map_turtleBotExplore.cpp.o -c /home/or/Projects/AOS-Solver/src/model_primitives/turtleBotExplore/enum_map_turtleBotExplore.cpp",
+  "file": "/home/or/Projects/AOS-Solver/src/model_primitives/turtleBotExplore/enum_map_turtleBotExplore.cpp"
+},
+{
+  "directory": "/home/or/Projects/AOS-Solver/build",
+  "command": "/usr/bin/c++ -DJSON_DIAGNOSTICS=0 -DJSON_USE_IMPLICIT_CONVERSIONS=1 -Ddespot_EXPORTS -I/home/or/Projects/AOS-Solver/include -I/usr/local/include/mongocxx/v_noabi -I/usr/local/include/bsoncxx/v_noabi -I/usr/local/include/libmongoc-1.0 -I/usr/local/include/libbson-1.0 -I/usr/local/lib -I/home/or/Projects/AOS-Solver/nlohmann_json/single_include  -msse2 -mfpmath=sse -g -fPIC -std=c++1z -o CMakeFiles/despot.dir/src/model_primitives/turtleBotExplore/actionManager.cpp.o -c /home/or/Projects/AOS-Solver/src/model_primitives/turtleBotExplore/actionManager.cpp",
+  "file": "/home/or/Projects/AOS-Solver/src/model_primitives/turtleBotExplore/actionManager.cpp"
+},
+{
+  "directory": "/home/or/Projects/AOS-Solver/build",
+  "command": "/usr/bin/c++ -DJSON_DIAGNOSTICS=0 -DJSON_USE_IMPLICIT_CONVERSIONS=1 -Ddespot_EXPORTS -I/home/or/Projects/AOS-Solver/include -I/usr/local/include/mongocxx/v_noabi -I/usr/local/include/bsoncxx/v_noabi -I/usr/local/include/libmongoc-1.0 -I/usr/local/include/libbson-1.0 -I/usr/local/lib -I/home/or/Projects/AOS-Solver/nlohmann_json/single_include  -msse2 -mfpmath=sse -g -fPIC -std=c++1z -o CMakeFiles/despot.dir/src/model_primitives/turtleBotExplore/closed_model_policy.cpp.o -c /home/or/Projects/AOS-Solver/src/model_primitives/turtleBotExplore/closed_model_policy.cpp",
+  "file": "/home/or/Projects/AOS-Solver/src/model_primitives/turtleBotExplore/closed_model_policy.cpp"
+},
+{
+  "directory": "/home/or/Projects/AOS-Solver/build",
+  "command": "/usr/bin/c++ -DJSON_DIAGNOSTICS=0 -DJSON_USE_IMPLICIT_CONVERSIONS=1 -Ddespot_EXPORTS -I/home/or/Projects/AOS-Solver/include -I/usr/local/include/mongocxx/v_noabi -I/usr/local/include/bsoncxx/v_noabi -I/usr/local/include/libmongoc-1.0 -I/usr/local/include/libbson-1.0 -I/usr/local/lib -I/home/or/Projects/AOS-Solver/nlohmann_json/single_include  -msse2 -mfpmath=sse -g -fPIC -std=c++1z -o CMakeFiles/despot.dir/src/core/belief.cpp.o -c /home/or/Projects/AOS-Solver/src/core/belief.cpp",
+  "file": "/home/or/Projects/AOS-Solver/src/core/belief.cpp"
+},
+{
+  "directory": "/home/or/Projects/AOS-Solver/build",
+  "command": "/usr/bin/c++ -DJSON_DIAGNOSTICS=0 -DJSON_USE_IMPLICIT_CONVERSIONS=1 -Ddespot_EXPORTS -I/home/or/Projects/AOS-Solver/include -I/usr/local/include/mongocxx/v_noabi -I/usr/local/include/bsoncxx/v_noabi -I/usr/local/include/libmongoc-1.0 -I/usr/local/include/libbson-1.0 -I/usr/local/lib -I/home/or/Projects/AOS-Solver/nlohmann_json/single_include  -msse2 -mfpmath=sse -g -fPIC -std=c++1z -o CMakeFiles/despot.dir/src/core/globals.cpp.o -c /home/or/Projects/AOS-Solver/src/core/globals.cpp",
+  "file": "/home/or/Projects/AOS-Solver/src/core/globals.cpp"
+},
+{
+  "directory": "/home/or/Projects/AOS-Solver/build",
+  "command": "/usr/bin/c++ -DJSON_DIAGNOSTICS=0 -DJSON_USE_IMPLICIT_CONVERSIONS=1 -Ddespot_EXPORTS -I/home/or/Projects/AOS-Solver/include -I/usr/local/include/mongocxx/v_noabi -I/usr/local/include/bsoncxx/v_noabi -I/usr/local/include/libmongoc-1.0 -I/usr/local/include/libbson-1.0 -I/usr/local/lib -I/home/or/Projects/AOS-Solver/nlohmann_json/single_include  -msse2 -mfpmath=sse -g -fPIC -std=c++1z -o CMakeFiles/despot.dir/src/core/lower_bound.cpp.o -c /home/or/Projects/AOS-Solver/src/core/lower_bound.cpp",
+  "file": "/home/or/Projects/AOS-Solver/src/core/lower_bound.cpp"
+},
+{
+  "directory": "/home/or/Projects/AOS-Solver/build",
+  "command": "/usr/bin/c++ -DJSON_DIAGNOSTICS=0 -DJSON_USE_IMPLICIT_CONVERSIONS=1 -Ddespot_EXPORTS -I/home/or/Projects/AOS-Solver/include -I/usr/local/include/mongocxx/v_noabi -I/usr/local/include/bsoncxx/v_noabi -I/usr/local/include/libmongoc-1.0 -I/usr/local/include/libbson-1.0 -I/usr/local/lib -I/home/or/Projects/AOS-Solver/nlohmann_json/single_include  -msse2 -mfpmath=sse -g -fPIC -std=c++1z -o CMakeFiles/despot.dir/src/core/mdp.cpp.o -c /home/or/Projects/AOS-Solver/src/core/mdp.cpp",
+  "file": "/home/or/Projects/AOS-Solver/src/core/mdp.cpp"
+},
+{
+  "directory": "/home/or/Projects/AOS-Solver/build",
+  "command": "/usr/bin/c++ -DJSON_DIAGNOSTICS=0 -DJSON_USE_IMPLICIT_CONVERSIONS=1 -Ddespot_EXPORTS -I/home/or/Projects/AOS-Solver/include -I/usr/local/include/mongocxx/v_noabi -I/usr/local/include/bsoncxx/v_noabi -I/usr/local/include/libmongoc-1.0 -I/usr/local/include/libbson-1.0 -I/usr/local/lib -I/home/or/Projects/AOS-Solver/nlohmann_json/single_include  -msse2 -mfpmath=sse -g -fPIC -std=c++1z -o CMakeFiles/despot.dir/src/core/node.cpp.o -c /home/or/Projects/AOS-Solver/src/core/node.cpp",
+  "file": "/home/or/Projects/AOS-Solver/src/core/node.cpp"
+},
+{
+  "directory": "/home/or/Projects/AOS-Solver/build",
+  "command": "/usr/bin/c++ -DJSON_DIAGNOSTICS=0 -DJSON_USE_IMPLICIT_CONVERSIONS=1 -Ddespot_EXPORTS -I/home/or/Projects/AOS-Solver/include -I/usr/local/include/mongocxx/v_noabi -I/usr/local/include/bsoncxx/v_noabi -I/usr/local/include/libmongoc-1.0 -I/usr/local/include/libbson-1.0 -I/usr/local/lib -I/home/or/Projects/AOS-Solver/nlohmann_json/single_include  -msse2 -mfpmath=sse -g -fPIC -std=c++1z -o CMakeFiles/despot.dir/src/core/policy.cpp.o -c /home/or/Projects/AOS-Solver/src/core/policy.cpp",
+  "file": "/home/or/Projects/AOS-Solver/src/core/policy.cpp"
+},
+{
+  "directory": "/home/or/Projects/AOS-Solver/build",
+  "command": "/usr/bin/c++ -DJSON_DIAGNOSTICS=0 -DJSON_USE_IMPLICIT_CONVERSIONS=1 -Ddespot_EXPORTS -I/home/or/Projects/AOS-Solver/include -I/usr/local/include/mongocxx/v_noabi -I/usr/local/include/bsoncxx/v_noabi -I/usr/local/include/libmongoc-1.0 -I/usr/local/include/libbson-1.0 -I/usr/local/lib -I/home/or/Projects/AOS-Solver/nlohmann_json/single_include  -msse2 -mfpmath=sse -g -fPIC -std=c++1z -o CMakeFiles/despot.dir/src/core/pomdp.cpp.o -c /home/or/Projects/AOS-Solver/src/core/pomdp.cpp",
+  "file": "/home/or/Projects/AOS-Solver/src/core/pomdp.cpp"
+},
+{
+  "directory": "/home/or/Projects/AOS-Solver/build",
+  "command": "/usr/bin/c++ -DJSON_DIAGNOSTICS=0 -DJSON_USE_IMPLICIT_CONVERSIONS=1 -Ddespot_EXPORTS -I/home/or/Projects/AOS-Solver/include -I/usr/local/include/mongocxx/v_noabi -I/usr/local/include/bsoncxx/v_noabi -I/usr/local/include/libmongoc-1.0 -I/usr/local/include/libbson-1.0 -I/usr/local/lib -I/home/or/Projects/AOS-Solver/nlohmann_json/single_include  -msse2 -mfpmath=sse -g -fPIC -std=c++1z -o CMakeFiles/despot.dir/src/core/solver.cpp.o -c /home/or/Projects/AOS-Solver/src/core/solver.cpp",
+  "file": "/home/or/Projects/AOS-Solver/src/core/solver.cpp"
+},
+{
+  "directory": "/home/or/Projects/AOS-Solver/build",
+  "command": "/usr/bin/c++ -DJSON_DIAGNOSTICS=0 -DJSON_USE_IMPLICIT_CONVERSIONS=1 -Ddespot_EXPORTS -I/home/or/Projects/AOS-Solver/include -I/usr/local/include/mongocxx/v_noabi -I/usr/local/include/bsoncxx/v_noabi -I/usr/local/include/libmongoc-1.0 -I/usr/local/include/libbson-1.0 -I/usr/local/lib -I/home/or/Projects/AOS-Solver/nlohmann_json/single_include  -msse2 -mfpmath=sse -g -fPIC -std=c++1z -o CMakeFiles/despot.dir/src/core/upper_bound.cpp.o -c /home/or/Projects/AOS-Solver/src/core/upper_bound.cpp",
+  "file": "/home/or/Projects/AOS-Solver/src/core/upper_bound.cpp"
+},
+{
+  "directory": "/home/or/Projects/AOS-Solver/build",
+  "command": "/usr/bin/c++ -DJSON_DIAGNOSTICS=0 -DJSON_USE_IMPLICIT_CONVERSIONS=1 -Ddespot_EXPORTS -I/home/or/Projects/AOS-Solver/include -I/usr/local/include/mongocxx/v_noabi -I/usr/local/include/bsoncxx/v_noabi -I/usr/local/include/libmongoc-1.0 -I/usr/local/include/libbson-1.0 -I/usr/local/lib -I/home/or/Projects/AOS-Solver/nlohmann_json/single_include  -msse2 -mfpmath=sse -g -fPIC -std=c++1z -o CMakeFiles/despot.dir/src/evaluator.cpp.o -c /home/or/Projects/AOS-Solver/src/evaluator.cpp",
+  "file": "/home/or/Projects/AOS-Solver/src/evaluator.cpp"
+},
+{
+  "directory": "/home/or/Projects/AOS-Solver/build",
+  "command": "/usr/bin/c++ -DJSON_DIAGNOSTICS=0 -DJSON_USE_IMPLICIT_CONVERSIONS=1 -Ddespot_EXPORTS -I/home/or/Projects/AOS-Solver/include -I/usr/local/include/mongocxx/v_noabi -I/usr/local/include/bsoncxx/v_noabi -I/usr/local/include/libmongoc-1.0 -I/usr/local/include/libbson-1.0 -I/usr/local/lib -I/home/or/Projects/AOS-Solver/nlohmann_json/single_include  -msse2 -mfpmath=sse -g -fPIC -std=c++1z -o CMakeFiles/despot.dir/src/pomdpx/parser/function.cpp.o -c /home/or/Projects/AOS-Solver/src/pomdpx/parser/function.cpp",
+  "file": "/home/or/Projects/AOS-Solver/src/pomdpx/parser/function.cpp"
+},
+{
+  "directory": "/home/or/Projects/AOS-Solver/build",
+  "command": "/usr/bin/c++ -DJSON_DIAGNOSTICS=0 -DJSON_USE_IMPLICIT_CONVERSIONS=1 -Ddespot_EXPORTS -I/home/or/Projects/AOS-Solver/include -I/usr/local/include/mongocxx/v_noabi -I/usr/local/include/bsoncxx/v_noabi -I/usr/local/include/libmongoc-1.0 -I/usr/local/include/libbson-1.0 -I/usr/local/lib -I/home/or/Projects/AOS-Solver/nlohmann_json/single_include  -msse2 -mfpmath=sse -g -fPIC -std=c++1z -o CMakeFiles/despot.dir/src/pomdpx/parser/parser.cpp.o -c /home/or/Projects/AOS-Solver/src/pomdpx/parser/parser.cpp",
+  "file": "/home/or/Projects/AOS-Solver/src/pomdpx/parser/parser.cpp"
+},
+{
+  "directory": "/home/or/Projects/AOS-Solver/build",
+  "command": "/usr/bin/c++ -DJSON_DIAGNOSTICS=0 -DJSON_USE_IMPLICIT_CONVERSIONS=1 -Ddespot_EXPORTS -I/home/or/Projects/AOS-Solver/include -I/usr/local/include/mongocxx/v_noabi -I/usr/local/include/bsoncxx/v_noabi -I/usr/local/include/libmongoc-1.0 -I/usr/local/include/libbson-1.0 -I/usr/local/lib -I/home/or/Projects/AOS-Solver/nlohmann_json/single_include  -msse2 -mfpmath=sse -g -fPIC -std=c++1z -o CMakeFiles/despot.dir/src/pomdpx/parser/variable.cpp.o -c /home/or/Projects/AOS-Solver/src/pomdpx/parser/variable.cpp",
+  "file": "/home/or/Projects/AOS-Solver/src/pomdpx/parser/variable.cpp"
+},
+{
+  "directory": "/home/or/Projects/AOS-Solver/build",
+  "command": "/usr/bin/c++ -DJSON_DIAGNOSTICS=0 -DJSON_USE_IMPLICIT_CONVERSIONS=1 -Ddespot_EXPORTS -I/home/or/Projects/AOS-Solver/include -I/usr/local/include/mongocxx/v_noabi -I/usr/local/include/bsoncxx/v_noabi -I/usr/local/include/libmongoc-1.0 -I/usr/local/include/libbson-1.0 -I/usr/local/lib -I/home/or/Projects/AOS-Solver/nlohmann_json/single_include  -msse2 -mfpmath=sse -g -fPIC -std=c++1z -o CMakeFiles/despot.dir/src/pomdpx/pomdpx.cpp.o -c /home/or/Projects/AOS-Solver/src/pomdpx/pomdpx.cpp",
+  "file": "/home/or/Projects/AOS-Solver/src/pomdpx/pomdpx.cpp"
+},
+{
+  "directory": "/home/or/Projects/AOS-Solver/build",
+  "command": "/usr/bin/c++ -DJSON_DIAGNOSTICS=0 -DJSON_USE_IMPLICIT_CONVERSIONS=1 -Ddespot_EXPORTS -I/home/or/Projects/AOS-Solver/include -I/usr/local/include/mongocxx/v_noabi -I/usr/local/include/bsoncxx/v_noabi -I/usr/local/include/libmongoc-1.0 -I/usr/local/include/libbson-1.0 -I/usr/local/lib -I/home/or/Projects/AOS-Solver/nlohmann_json/single_include  -msse2 -mfpmath=sse -g -fPIC -std=c++1z -o CMakeFiles/despot.dir/src/random_streams.cpp.o -c /home/or/Projects/AOS-Solver/src/random_streams.cpp",
+  "file": "/home/or/Projects/AOS-Solver/src/random_streams.cpp"
+},
+{
+  "directory": "/home/or/Projects/AOS-Solver/build",
+  "command": "/usr/bin/c++ -DJSON_DIAGNOSTICS=0 -DJSON_USE_IMPLICIT_CONVERSIONS=1 -Ddespot_EXPORTS -I/home/or/Projects/AOS-Solver/include -I/usr/local/include/mongocxx/v_noabi -I/usr/local/include/bsoncxx/v_noabi -I/usr/local/include/libmongoc-1.0 -I/usr/local/include/libbson-1.0 -I/usr/local/lib -I/home/or/Projects/AOS-Solver/nlohmann_json/single_include  -msse2 -mfpmath=sse -g -fPIC -std=c++1z -o CMakeFiles/despot.dir/src/simple_tui.cpp.o -c /home/or/Projects/AOS-Solver/src/simple_tui.cpp",
+  "file": "/home/or/Projects/AOS-Solver/src/simple_tui.cpp"
+},
+{
+  "directory": "/home/or/Projects/AOS-Solver/build",
+  "command": "/usr/bin/c++ -DJSON_DIAGNOSTICS=0 -DJSON_USE_IMPLICIT_CONVERSIONS=1 -Ddespot_EXPORTS -I/home/or/Projects/AOS-Solver/include -I/usr/local/include/mongocxx/v_noabi -I/usr/local/include/bsoncxx/v_noabi -I/usr/local/include/libmongoc-1.0 -I/usr/local/include/libbson-1.0 -I/usr/local/lib -I/home/or/Projects/AOS-Solver/nlohmann_json/single_include  -msse2 -mfpmath=sse -g -fPIC -std=c++1z -o CMakeFiles/despot.dir/src/solver/aems.cpp.o -c /home/or/Projects/AOS-Solver/src/solver/aems.cpp",
+  "file": "/home/or/Projects/AOS-Solver/src/solver/aems.cpp"
+},
+{
+  "directory": "/home/or/Projects/AOS-Solver/build",
+  "command": "/usr/bin/c++ -DJSON_DIAGNOSTICS=0 -DJSON_USE_IMPLICIT_CONVERSIONS=1 -Ddespot_EXPORTS -I/home/or/Projects/AOS-Solver/include -I/usr/local/include/mongocxx/v_noabi -I/usr/local/include/bsoncxx/v_noabi -I/usr/local/include/libmongoc-1.0 -I/usr/local/include/libbson-1.0 -I/usr/local/lib -I/home/or/Projects/AOS-Solver/nlohmann_json/single_include  -msse2 -mfpmath=sse -g -fPIC -std=c++1z -o CMakeFiles/despot.dir/src/solver/despot.cpp.o -c /home/or/Projects/AOS-Solver/src/solver/despot.cpp",
+  "file": "/home/or/Projects/AOS-Solver/src/solver/despot.cpp"
+},
+{
+  "directory": "/home/or/Projects/AOS-Solver/build",
+  "command": "/usr/bin/c++ -DJSON_DIAGNOSTICS=0 -DJSON_USE_IMPLICIT_CONVERSIONS=1 -Ddespot_EXPORTS -I/home/or/Projects/AOS-Solver/include -I/usr/local/include/mongocxx/v_noabi -I/usr/local/include/bsoncxx/v_noabi -I/usr/local/include/libmongoc-1.0 -I/usr/local/include/libbson-1.0 -I/usr/local/lib -I/home/or/Projects/AOS-Solver/nlohmann_json/single_include  -msse2 -mfpmath=sse -g -fPIC -std=c++1z -o CMakeFiles/despot.dir/src/solver/pomcp.cpp.o -c /home/or/Projects/AOS-Solver/src/solver/pomcp.cpp",
+  "file": "/home/or/Projects/AOS-Solver/src/solver/pomcp.cpp"
+},
+{
+  "directory": "/home/or/Projects/AOS-Solver/build",
+  "command": "/usr/bin/c++ -DJSON_DIAGNOSTICS=0 -DJSON_USE_IMPLICIT_CONVERSIONS=1 -Ddespot_EXPORTS -I/home/or/Projects/AOS-Solver/include -I/usr/local/include/mongocxx/v_noabi -I/usr/local/include/bsoncxx/v_noabi -I/usr/local/include/libmongoc-1.0 -I/usr/local/include/libbson-1.0 -I/usr/local/lib -I/home/or/Projects/AOS-Solver/nlohmann_json/single_include  -msse2 -mfpmath=sse -g -fPIC -std=c++1z -o CMakeFiles/despot.dir/src/util/coord.cpp.o -c /home/or/Projects/AOS-Solver/src/util/coord.cpp",
+  "file": "/home/or/Projects/AOS-Solver/src/util/coord.cpp"
+},
+{
+  "directory": "/home/or/Projects/AOS-Solver/build",
+  "command": "/usr/bin/c++ -DJSON_DIAGNOSTICS=0 -DJSON_USE_IMPLICIT_CONVERSIONS=1 -Ddespot_EXPORTS -I/home/or/Projects/AOS-Solver/include -I/usr/local/include/mongocxx/v_noabi -I/usr/local/include/bsoncxx/v_noabi -I/usr/local/include/libmongoc-1.0 -I/usr/local/include/libbson-1.0 -I/usr/local/lib -I/home/or/Projects/AOS-Solver/nlohmann_json/single_include  -msse2 -mfpmath=sse -g -fPIC -std=c++1z -o CMakeFiles/despot.dir/src/util/mongoDB_Bridge.cpp.o -c /home/or/Projects/AOS-Solver/src/util/mongoDB_Bridge.cpp",
+  "file": "/home/or/Projects/AOS-Solver/src/util/mongoDB_Bridge.cpp"
+},
+{
+  "directory": "/home/or/Projects/AOS-Solver/build",
+  "command": "/usr/bin/c++ -DJSON_DIAGNOSTICS=0 -DJSON_USE_IMPLICIT_CONVERSIONS=1 -Ddespot_EXPORTS -I/home/or/Projects/AOS-Solver/include -I/usr/local/include/mongocxx/v_noabi -I/usr/local/include/bsoncxx/v_noabi -I/usr/local/include/libmongoc-1.0 -I/usr/local/include/libbson-1.0 -I/usr/local/lib -I/home/or/Projects/AOS-Solver/nlohmann_json/single_include  -msse2 -mfpmath=sse -g -fPIC -std=c++1z -o CMakeFiles/despot.dir/src/util/dirichlet.cpp.o -c /home/or/Projects/AOS-Solver/src/util/dirichlet.cpp",
+  "file": "/home/or/Projects/AOS-Solver/src/util/dirichlet.cpp"
+},
+{
+  "directory": "/home/or/Projects/AOS-Solver/build",
+  "command": "/usr/bin/c++ -DJSON_DIAGNOSTICS=0 -DJSON_USE_IMPLICIT_CONVERSIONS=1 -Ddespot_EXPORTS -I/home/or/Projects/AOS-Solver/include -I/usr/local/include/mongocxx/v_noabi -I/usr/local/include/bsoncxx/v_noabi -I/usr/local/include/libmongoc-1.0 -I/usr/local/include/libbson-1.0 -I/usr/local/lib -I/home/or/Projects/AOS-Solver/nlohmann_json/single_include  -msse2 -mfpmath=sse -g -fPIC -std=c++1z -o CMakeFiles/despot.dir/src/util/exec_tracker.cpp.o -c /home/or/Projects/AOS-Solver/src/util/exec_tracker.cpp",
+  "file": "/home/or/Projects/AOS-Solver/src/util/exec_tracker.cpp"
+},
+{
+  "directory": "/home/or/Projects/AOS-Solver/build",
+  "command": "/usr/bin/c++ -DJSON_DIAGNOSTICS=0 -DJSON_USE_IMPLICIT_CONVERSIONS=1 -Ddespot_EXPORTS -I/home/or/Projects/AOS-Solver/include -I/usr/local/include/mongocxx/v_noabi -I/usr/local/include/bsoncxx/v_noabi -I/usr/local/include/libmongoc-1.0 -I/usr/local/include/libbson-1.0 -I/usr/local/lib -I/home/or/Projects/AOS-Solver/nlohmann_json/single_include  -msse2 -mfpmath=sse -g -fPIC -std=c++1z -o CMakeFiles/despot.dir/src/util/floor.cpp.o -c /home/or/Projects/AOS-Solver/src/util/floor.cpp",
+  "file": "/home/or/Projects/AOS-Solver/src/util/floor.cpp"
+},
+{
+  "directory": "/home/or/Projects/AOS-Solver/build",
+  "command": "/usr/bin/c++ -DJSON_DIAGNOSTICS=0 -DJSON_USE_IMPLICIT_CONVERSIONS=1 -Ddespot_EXPORTS -I/home/or/Projects/AOS-Solver/include -I/usr/local/include/mongocxx/v_noabi -I/usr/local/include/bsoncxx/v_noabi -I/usr/local/include/libmongoc-1.0 -I/usr/local/include/libbson-1.0 -I/usr/local/lib -I/home/or/Projects/AOS-Solver/nlohmann_json/single_include  -msse2 -mfpmath=sse -g -fPIC -std=c++1z -o CMakeFiles/despot.dir/src/util/gamma.cpp.o -c /home/or/Projects/AOS-Solver/src/util/gamma.cpp",
+  "file": "/home/or/Projects/AOS-Solver/src/util/gamma.cpp"
+},
+{
+  "directory": "/home/or/Projects/AOS-Solver/build",
+  "command": "/usr/bin/c++ -DJSON_DIAGNOSTICS=0 -DJSON_USE_IMPLICIT_CONVERSIONS=1 -Ddespot_EXPORTS -I/home/or/Projects/AOS-Solver/include -I/usr/local/include/mongocxx/v_noabi -I/usr/local/include/bsoncxx/v_noabi -I/usr/local/include/libmongoc-1.0 -I/usr/local/include/libbson-1.0 -I/usr/local/lib -I/home/or/Projects/AOS-Solver/nlohmann_json/single_include  -msse2 -mfpmath=sse -g -fPIC -std=c++1z -o CMakeFiles/despot.dir/src/util/logging.cpp.o -c /home/or/Projects/AOS-Solver/src/util/logging.cpp",
+  "file": "/home/or/Projects/AOS-Solver/src/util/logging.cpp"
+},
+{
+  "directory": "/home/or/Projects/AOS-Solver/build",
+  "command": "/usr/bin/c++ -DJSON_DIAGNOSTICS=0 -DJSON_USE_IMPLICIT_CONVERSIONS=1 -Ddespot_EXPORTS -I/home/or/Projects/AOS-Solver/include -I/usr/local/include/mongocxx/v_noabi -I/usr/local/include/bsoncxx/v_noabi -I/usr/local/include/libmongoc-1.0 -I/usr/local/include/libbson-1.0 -I/usr/local/lib -I/home/or/Projects/AOS-Solver/nlohmann_json/single_include  -msse2 -mfpmath=sse -g -fPIC -std=c++1z -o CMakeFiles/despot.dir/src/util/random.cpp.o -c /home/or/Projects/AOS-Solver/src/util/random.cpp",
+  "file": "/home/or/Projects/AOS-Solver/src/util/random.cpp"
+},
+{
+  "directory": "/home/or/Projects/AOS-Solver/build",
+  "command": "/usr/bin/c++ -DJSON_DIAGNOSTICS=0 -DJSON_USE_IMPLICIT_CONVERSIONS=1 -Ddespot_EXPORTS -I/home/or/Projects/AOS-Solver/include -I/usr/local/include/mongocxx/v_noabi -I/usr/local/include/bsoncxx/v_noabi -I/usr/local/include/libmongoc-1.0 -I/usr/local/include/libbson-1.0 -I/usr/local/lib -I/home/or/Projects/AOS-Solver/nlohmann_json/single_include  -msse2 -mfpmath=sse -g -fPIC -std=c++1z -o CMakeFiles/despot.dir/src/util/seeds.cpp.o -c /home/or/Projects/AOS-Solver/src/util/seeds.cpp",
+  "file": "/home/or/Projects/AOS-Solver/src/util/seeds.cpp"
+},
+{
+  "directory": "/home/or/Projects/AOS-Solver/build",
+  "command": "/usr/bin/c++ -DJSON_DIAGNOSTICS=0 -DJSON_USE_IMPLICIT_CONVERSIONS=1 -Ddespot_EXPORTS -I/home/or/Projects/AOS-Solver/include -I/usr/local/include/mongocxx/v_noabi -I/usr/local/include/bsoncxx/v_noabi -I/usr/local/include/libmongoc-1.0 -I/usr/local/include/libbson-1.0 -I/usr/local/lib -I/home/or/Projects/AOS-Solver/nlohmann_json/single_include  -msse2 -mfpmath=sse -g -fPIC -std=c++1z -o CMakeFiles/despot.dir/src/util/util.cpp.o -c /home/or/Projects/AOS-Solver/src/util/util.cpp",
+  "file": "/home/or/Projects/AOS-Solver/src/util/util.cpp"
+},
+{
+  "directory": "/home/or/Projects/AOS-Solver/build",
+  "command": "/usr/bin/c++ -DJSON_DIAGNOSTICS=0 -DJSON_USE_IMPLICIT_CONVERSIONS=1 -Ddespot_EXPORTS -I/home/or/Projects/AOS-Solver/include -I/usr/local/include/mongocxx/v_noabi -I/usr/local/include/bsoncxx/v_noabi -I/usr/local/include/libmongoc-1.0 -I/usr/local/include/libbson-1.0 -I/usr/local/lib -I/home/or/Projects/AOS-Solver/nlohmann_json/single_include  -msse2 -mfpmath=sse -g -fPIC -std=c++1z -o CMakeFiles/despot.dir/src/util/tinyxml/tinystr.cpp.o -c /home/or/Projects/AOS-Solver/src/util/tinyxml/tinystr.cpp",
+  "file": "/home/or/Projects/AOS-Solver/src/util/tinyxml/tinystr.cpp"
+},
+{
+  "directory": "/home/or/Projects/AOS-Solver/build",
+  "command": "/usr/bin/c++ -DJSON_DIAGNOSTICS=0 -DJSON_USE_IMPLICIT_CONVERSIONS=1 -Ddespot_EXPORTS -I/home/or/Projects/AOS-Solver/include -I/usr/local/include/mongocxx/v_noabi -I/usr/local/include/bsoncxx/v_noabi -I/usr/local/include/libmongoc-1.0 -I/usr/local/include/libbson-1.0 -I/usr/local/lib -I/home/or/Projects/AOS-Solver/nlohmann_json/single_include  -msse2 -mfpmath=sse -g -fPIC -std=c++1z -o CMakeFiles/despot.dir/src/util/tinyxml/tinyxml.cpp.o -c /home/or/Projects/AOS-Solver/src/util/tinyxml/tinyxml.cpp",
+  "file": "/home/or/Projects/AOS-Solver/src/util/tinyxml/tinyxml.cpp"
+},
+{
+  "directory": "/home/or/Projects/AOS-Solver/build",
+  "command": "/usr/bin/c++ -DJSON_DIAGNOSTICS=0 -DJSON_USE_IMPLICIT_CONVERSIONS=1 -Ddespot_EXPORTS -I/home/or/Projects/AOS-Solver/include -I/usr/local/include/mongocxx/v_noabi -I/usr/local/include/bsoncxx/v_noabi -I/usr/local/include/libmongoc-1.0 -I/usr/local/include/libbson-1.0 -I/usr/local/lib -I/home/or/Projects/AOS-Solver/nlohmann_json/single_include  -msse2 -mfpmath=sse -g -fPIC -std=c++1z -o CMakeFiles/despot.dir/src/util/tinyxml/tinyxmlerror.cpp.o -c /home/or/Projects/AOS-Solver/src/util/tinyxml/tinyxmlerror.cpp",
+  "file": "/home/or/Projects/AOS-Solver/src/util/tinyxml/tinyxmlerror.cpp"
+},
+{
+  "directory": "/home/or/Projects/AOS-Solver/build",
+  "command": "/usr/bin/c++ -DJSON_DIAGNOSTICS=0 -DJSON_USE_IMPLICIT_CONVERSIONS=1 -Ddespot_EXPORTS -I/home/or/Projects/AOS-Solver/include -I/usr/local/include/mongocxx/v_noabi -I/usr/local/include/bsoncxx/v_noabi -I/usr/local/include/libmongoc-1.0 -I/usr/local/include/libbson-1.0 -I/usr/local/lib -I/home/or/Projects/AOS-Solver/nlohmann_json/single_include  -msse2 -mfpmath=sse -g -fPIC -std=c++1z -o CMakeFiles/despot.dir/src/util/tinyxml/tinyxmlparser.cpp.o -c /home/or/Projects/AOS-Solver/src/util/tinyxml/tinyxmlparser.cpp",
+  "file": "/home/or/Projects/AOS-Solver/src/util/tinyxml/tinyxmlparser.cpp"
+},
+{
+  "directory": "/home/or/Projects/AOS-Solver/build/examples/cpp_models/turtleBotExplore",
+  "command": "/usr/bin/c++ -DJSON_DIAGNOSTICS=0 -DJSON_USE_IMPLICIT_CONVERSIONS=1 -I/home/or/Projects/AOS-Solver/include -I/usr/local/include/mongocxx/v_noabi -I/usr/local/include/bsoncxx/v_noabi -I/usr/local/include/libmongoc-1.0 -I/usr/local/include/libbson-1.0 -I/usr/local/lib -I/home/or/Projects/AOS-Solver/nlohmann_json -I/home/or/Projects/AOS-Solver/nlohmann_json/single_include  -msse2 -mfpmath=sse -g -std=c++1z -o CMakeFiles/despot_turtleBotExplore.dir/src/turtleBotExplore.cpp.o -c /home/or/Projects/AOS-Solver/examples/cpp_models/turtleBotExplore/src/turtleBotExplore.cpp",
+  "file": "/home/or/Projects/AOS-Solver/examples/cpp_models/turtleBotExplore/src/turtleBotExplore.cpp"
+},
+{
+  "directory": "/home/or/Projects/AOS-Solver/build/examples/cpp_models/turtleBotExplore",
+  "command": "/usr/bin/c++ -DJSON_DIAGNOSTICS=0 -DJSON_USE_IMPLICIT_CONVERSIONS=1 -I/home/or/Projects/AOS-Solver/include -I/usr/local/include/mongocxx/v_noabi -I/usr/local/include/bsoncxx/v_noabi -I/usr/local/include/libmongoc-1.0 -I/usr/local/include/libbson-1.0 -I/usr/local/lib -I/home/or/Projects/AOS-Solver/nlohmann_json -I/home/or/Projects/AOS-Solver/nlohmann_json/single_include  -msse2 -mfpmath=sse -g -std=c++1z -o CMakeFiles/despot_turtleBotExplore.dir/src/main.cpp.o -c /home/or/Projects/AOS-Solver/examples/cpp_models/turtleBotExplore/src/main.cpp",
+  "file": "/home/or/Projects/AOS-Solver/examples/cpp_models/turtleBotExplore/src/main.cpp"
+},
+{
+  "directory": "/home/or/Projects/AOS-Solver/build/examples/cpp_models/turtleBotExplore",
+  "command": "/usr/bin/c++ -DJSON_DIAGNOSTICS=0 -DJSON_USE_IMPLICIT_CONVERSIONS=1 -I/home/or/Projects/AOS-Solver/include -I/usr/local/include/mongocxx/v_noabi -I/usr/local/include/bsoncxx/v_noabi -I/usr/local/include/libmongoc-1.0 -I/usr/local/include/libbson-1.0 -I/usr/local/lib -I/home/or/Projects/AOS-Solver/nlohmann_json -I/home/or/Projects/AOS-Solver/nlohmann_json/single_include  -msse2 -mfpmath=sse -g -std=c++1z -o CMakeFiles/despot_turtleBotExplore.dir/src/closed_model.cpp.o -c /home/or/Projects/AOS-Solver/examples/cpp_models/turtleBotExplore/src/closed_model.cpp",
+  "file": "/home/or/Projects/AOS-Solver/examples/cpp_models/turtleBotExplore/src/closed_model.cpp"
+}
+]
