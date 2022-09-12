@@ -49,7 +49,6 @@ public:
 
 class ParticleBelief: public Belief {
 protected:
-	std::vector<State*> particles_;
 	int num_particles_;
 	Belief* prior_;
 	bool split_;
@@ -57,6 +56,7 @@ protected:
 	const StateIndexer* state_indexer_;
 
 public:
+	std::vector<State*> particles_;
 	ParticleBelief(std::vector<State*> particles, const DSPOMDP* model,
 		Belief* prior = NULL, bool split = true);
 
