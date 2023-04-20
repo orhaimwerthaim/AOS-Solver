@@ -1,11 +1,9 @@
-#define LOGGING_H
 #include <despot/solver/pomcp.h>
 #include <despot/util/logging.h>
 #include <iostream>
 #include <fstream>
-#include "torch_model.hpp"
+ 
 
-using namespace torch_model;
 using namespace std;
 
 using namespace std;
@@ -107,7 +105,7 @@ ValuedAction POMCP::Search(double timeout) {
         //New sample START
         int pos = std::rand()% particles_.size();
         State* particle = model_->Copy(particles_[pos]);
- //      logd << "[POMCP::Search] Starting simulation " << num_sims << endl;
+        logd << "[POMCP::Search] Starting simulation " << num_sims << endl;
 		Simulate(particle, root_, model_, prior_, simulatedActionSequence);
         model_->Free(particle);
         if ((clock() - start_cpu) / CLOCKS_PER_SEC >= timeout) {
@@ -214,9 +212,9 @@ void POMCP::Update(int action, OBS_TYPE obs, std::map<std::string, std::string> 
 	history_.Add(action, obs);
 	belief_->Update(action, obs, localVariablesFromAction);
 
-	//logi << "[POMCP::Update] Updated belief, history and root with action "
-		// << action << ", observation " << obs
-		// << " in " << (get_time_second() - start) << "s" << endl;
+	logi << "[POMCP::Update] Updated belief, history and root with action "
+		<< action << ", observation " << obs
+		<< " in " << (get_time_second() - start) << "s" << endl;
 }
 
 int POMCP::UpperBoundAction(const VNode* vnode, double explore_constant)
@@ -244,8 +242,8 @@ int POMCP::UpperBoundAction(const VNode* vnode, double explore_constant, const D
 	 }
 	 */
 	//TODO:: activate line below only on debug mode:
-	// if(model)
-	// 	logi << model->PrintStateStr(*belief->Sample(1)[0]);
+	if(model)
+		logi << model->PrintStateStr(*belief->Sample(1)[0]);
 
 	for (int action = 0; action < qnodes.size(); action++) {
 		if (qnodes[action]->count() == 0)
@@ -351,9 +349,9 @@ double POMCP::Simulate(State* particle, RandomStreams& streams, VNode* vnode,
 	double explore_constant = prior->exploration_constant();
 
 	int action = POMCP::UpperBoundAction(vnode, explore_constant);
-//	logd << *particle << endl;
-//	logd << "depth = " << vnode->depth() << "; action = " << action << "; "
-//		<< particle->scenario_id << endl;
+	logd << *particle << endl;
+	logd << "depth = " << vnode->depth() << "; action = " << action << "; "
+		<< particle->scenario_id << endl;
 
 	double reward;
 	OBS_TYPE obs;
@@ -430,8 +428,8 @@ double POMCP::Rollout(State* particle, RandomStreams& streams, int depth,
 
 	int action = prior->GetAction(*particle);
 
-//	logd << *particle << endl;
-//	logd << "depth = " << depth << "; action = " << action << endl;
+	logd << *particle << endl;
+	logd << "depth = " << depth << "; action = " << action << endl;
 
 	double reward;
 	OBS_TYPE obs;
@@ -457,7 +455,7 @@ double POMCP::Rollout(State* particle, int depth, const DSPOMDP* model,
 	}
 
 	//int action = prior->GetAction(*particle);
-	int action = torch_model::getActionFromNN(particle);//simulateActionSequence && simulateActionSequence->size() > depth ? (*simulateActionSequence)[depth] : prior->GetAction(*particle);
+	int action = simulateActionSequence && simulateActionSequence->size() > depth ? (*simulateActionSequence)[depth] : prior->GetAction(*particle);
 	
 	double reward;
 	OBS_TYPE obs;
@@ -558,10 +556,10 @@ ValuedAction DPOMCP::Search(double timeout) {
 	for (int i = 0; i < particles.size(); i++)
 		model_->Free(particles[i]);
 
-//	logi << "[DPOMCP::Search] Time: CPU / Real = "
-		// << ((clock() - start_cpu) / CLOCKS_PER_SEC) << " / "
-		// << (get_time_second() - start_real) << endl << "Tree size = "
-		// << root_->Size() << endl;
+	logi << "[DPOMCP::Search] Time: CPU / Real = "
+		<< ((clock() - start_cpu) / CLOCKS_PER_SEC) << " / "
+		<< (get_time_second() - start_real) << endl << "Tree size = "
+		<< root_->Size() << endl;
 
 	ValuedAction astar = OptimalAction(root_);
 	if (astar.action == -1) {
@@ -584,12 +582,12 @@ VNode* DPOMCP::ConstructTree(vector<State*>& particles, RandomStreams& streams,
 	for (int i = 0; i < particles.size(); i++)
 		particles[i]->scenario_id = i;
 
-//	logi << "[DPOMCP::ConstructTree] # active particles before search = "
-//		<< model->NumActiveParticles() << endl;
+	logi << "[DPOMCP::ConstructTree] # active particles before search = "
+		<< model->NumActiveParticles() << endl;
 	double start = clock();
 	int num_sims = 0;
 	while (true) {
-//		logd << "Simulation " << num_sims << endl;
+		logd << "Simulation " << num_sims << endl;
 
 		int index = Random::RANDOM.NextInt(particles.size());
 		State* particle = model->Copy(particles[index]);
@@ -602,10 +600,10 @@ VNode* DPOMCP::ConstructTree(vector<State*>& particles, RandomStreams& streams,
 		}
 	}
 
-//	logi << "[DPOMCP::ConstructTree] OptimalAction = " << OptimalAction(root)
-//		<< endl << "# Simulations = " << root->count() << endl
-//		<< "# active particles after search = " << model->NumActiveParticles()
-//		<< endl;
+	logi << "[DPOMCP::ConstructTree] OptimalAction = " << OptimalAction(root)
+		<< endl << "# Simulations = " << root->count() << endl
+		<< "# active particles after search = " << model->NumActiveParticles()
+		<< endl;
 
 	return root;
 }
@@ -616,9 +614,9 @@ void DPOMCP::Update(int action, OBS_TYPE obs, std::map<std::string, std::string>
 	history_.Add(action, obs);
 	belief_->Update(action, obs, localVariablesFromAction);;
 
-//	logi << "[DPOMCP::Update] Updated belief, history and root with action "
-//		<< action << ", observation " << obs
-//		<< " in " << (get_time_second() - start) << "s" << endl;
+	logi << "[DPOMCP::Update] Updated belief, history and root with action "
+		<< action << ", observation " << obs
+		<< " in " << (get_time_second() - start) << "s" << endl;
 }
 /*
 std::string POMCP::GenerateDotGraph(VNode* root, int depthLimit, const DSPOMDP* model)

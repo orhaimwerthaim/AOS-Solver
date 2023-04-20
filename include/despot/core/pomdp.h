@@ -11,10 +11,12 @@
 #include <despot/util/memorypool.h>
 #include <despot/util/seeds.h>
 #include <despot/util/util.h> 
-#include <despot/model_primitives/turtleBotVisitLocations/enum_map_turtleBotVisitLocations.h> 
-#include <despot/model_primitives/turtleBotVisitLocations/actionManager.h>  
-#include <despot/model_primitives/turtleBotVisitLocations/state_var_types.h>
+#include <despot/model_primitives/iros/enum_map_iros.h> 
+#include <despot/model_primitives/iros/actionManager.h>  
+#include <despot/model_primitives/iros/state_var_types.h>
 #include <vector>
+#include <tuple>
+#include <map>
 namespace despot {
 
 /* =============================================================================
@@ -61,33 +63,16 @@ public:
 
     bool __isTermianl = false;
     bool OneTimeRewardUsed[1]={true};
-    std::vector<tDiscreteLocation> tDiscreteLocationObjects;
-    std::vector<tVisitedLocation*> tVisitedLocationObjects;
-    std::vector<tLocation*> tLocationObjects;
-    std::map<std::string, tLocation> tLocationObjectsForActions;
-    tVisitedLocation v1;
-    tVisitedLocation v2;
-    tVisitedLocation v3;
-    tVisitedLocation v4;
-    tVisitedLocation v5;
-    tVisitedLocation v6;
-    tVisitedLocation v7;
-    tLocation l1;
-    tLocation l2;
-    tLocation l3;
-    tLocation l4;
-    tLocation l5;
-    tLocation l6;
-    tLocation l7;
-    tLocation l8;
-    tLocation robotL;
+    std::vector<tSymbols> tSymbolsObjects;
+    vector<int> grid;
+    bool isRobotTurn;
     std::map<std::string, anyValue*> anyValueUpdateDic;
 
 
 	public:
 		static void SetAnyValueLinks(State *state);
 };
-typedef State TurtleBotVisitLocationsState;
+typedef State IrosState;
 
 
 /* =============================================================================

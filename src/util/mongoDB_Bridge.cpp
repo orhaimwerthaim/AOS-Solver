@@ -165,7 +165,8 @@ std::map<std::string, std::string> MongoDB_Bridge::WaitForActionResponse(bsoncxx
       for (auto it = jsonObj.begin(); it != jsonObj.end(); ++it)
       {
         //std::cout << it.key() << " : " << it.value() << "\n";
-        if(it.value().is_primitive())
+        //if(it.value().is_primitive())
+        if(true)
         {
           localVariables[it.key()] = it.value().dump();
         }

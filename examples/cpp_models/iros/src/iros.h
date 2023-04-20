@@ -18,6 +18,10 @@ class AOSUtils
 {
 	public:
 	static bool Bernoulli(double);
+    static int SampleDiscrete(vector<float>);
+    static int SampleDiscrete(vector<double>);
+	static std::default_random_engine generator;
+    static std::uniform_real_distribution<float> real_unfirom_dist;
 };
  
 
@@ -37,8 +41,8 @@ public:
 	static int num_particles; 
 	IrosBelief(std::vector<State*> particles, const DSPOMDP* model, Belief* prior =
 		NULL);
-	void Update(int actionId, OBS_TYPE obs);
-	//void Update(int actionId, OBS_TYPE obs, std::map<std::string,bool> updates);
+	//void Update(int actionId, OBS_TYPE obs);
+	void Update(int actionId, OBS_TYPE obs, std::map<std::string,std::string> localVariablesFromAction);
 };
 
 /* ==============================================================================
@@ -97,18 +101,17 @@ public:
  
 	Iros(); 
 
+
 private:
 	void SampleModuleExecutionTime(const IrosState& state, double rand_num, int actionId, int &moduleExecutionTime) const;
 	void ExtrinsicChangesDynamicModel(const IrosState& initState, IrosState& afterExState, double rand_num, int actionId,
-		const int &moduleExecutionTime) const;
+		const int &moduleExecutionTime,  double &reward) const;
 	void ModuleDynamicModel(const IrosState &initState, const IrosState &afterExState, IrosState &nextState, double rand_num, int actionId, double &reward,
 								 OBS_TYPE &observation, const int &moduleExecutionTime, const bool &__meetPrecondition) const;
 	bool ProcessSpecialStates(IrosState &state, double &reward) const;
 
 	mutable MemoryPool<IrosState> memory_pool_;
 	static std::default_random_engine generator;
-    static std::discrete_distribution<> navigate_discrete_dist1; //AOS.SampleDiscrete(enumRealCase,{0.8,0.2})
-    static std::discrete_distribution<> enhanced_pick_discrete_dist2; //AOS.SampleDiscrete(enumRealCase,{0.5238,0.0952,0,0.0476,0.4285})
 
 };
 } // namespace despot

@@ -31,7 +31,7 @@ struct Config {
 	int limitClosedModelHorizon_stepsAfterGoalDetection;
     bool closedModelPolicyByGraph;
 	Config() : 
-        handsOnDebug(false),
+        handsOnDebug(true),
         closedModelPolicyByGraph(false),
         limitClosedModelHorizon_stepsAfterGoalDetection(-1),
         sarsopTimeLimitInSeconds(0),
@@ -40,11 +40,11 @@ struct Config {
         fixedPolicyFilePath("sarsop/src/out.policy"),
 		pomdpFilePath("sarsop/examples/POMDP/auto_generate.pomdp"),
         solveProblemWithClosedPomdpModel(false),
-        solverId(1),
-		search_depth(15),
+        solverId(91),
+		search_depth(11),
 		discount(0.99),
 		root_seed(42),
-		time_per_move(0.5),
+		time_per_move(2),
 		num_scenarios(500),
 		pruning_constant(0),
 		xi(0.95),

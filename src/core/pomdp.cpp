@@ -32,25 +32,11 @@ BeliefStateVariables::BeliefStateVariables(vector<State *> bs)
 	   __isTermianl_std = sqrt(__isTermianl_variance);
    }
 
-    tLocation::tLocation()
-    {
-        x = 0.0;
-        y = 0.0;
-        z = 0.0;
-        desc = eL1;
-    }
-
-    tVisitedLocation::tVisitedLocation()
-    {
-        visited = false;
-        desc = eL1;
-    }
 
 
 
 
-
-		void TurtleBotVisitLocationsState::SetAnyValueLinks(TurtleBotVisitLocationsState *state)
+		void IrosState::SetAnyValueLinks(IrosState *state)
 		{
 
 		}

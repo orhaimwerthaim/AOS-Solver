@@ -6,10 +6,6 @@ set(JSON_BuildTests OFF CACHE INTERNAL "")
 include_directories("/home/or/AOS/AOS-Solver/nlohmann_json")  
 ##################################
 
-
-
-
-
 add_executable("${PROJECT_NAME}_iros"
 #src/state_var_types.cpp   
 src/iros.cpp
@@ -17,36 +13,28 @@ src/main.cpp
 src/closed_model.cpp
 #src/mongoDB_Bridge.cpp
 )
- 
 
-set(CMAKE_PREFIX_PATH "/home/or/Downloads/libtorch")
-#list(APPEND CMAKE_PREFIX_PATH "/home/or/Downloads/libtorch")
-find_package(Torch )  
-target_link_libraries("${PROJECT_NAME}_iros" "${TORCH_LIBRARIES}") 
-
-
-
-#  target_link_libraries("${PROJECT_NAME}_iros"
-#    ${TinyXML_LIBRARIES}
-#    PRIVATE nlohmann_json::nlohmann_json #adding json
-#  )
+ target_link_libraries("${PROJECT_NAME}_iros"
+   ${TinyXML_LIBRARIES}
+   PRIVATE nlohmann_json::nlohmann_json #adding json
+ )
 
 
 ##############
 #added for mongo DB client
-# find_package(libmongocxx REQUIRED)
-# find_package(libbsoncxx REQUIRED)
-# include_directories(${LIBMONGOCXX_INCLUDE_DIR})
-# include_directories(${LIBBSONCXX_INCLUDE_DIR})
-# include_directories("/usr/local/include/mongocxx/v_noabi")
-# include_directories("/usr/local/include/bsoncxx/v_noabi")
-# include_directories("/usr/local/include/libmongoc-1.0")
-# include_directories("/usr/local/include/libbson-1.0")
-# include_directories("/usr/local/lib")
+find_package(libmongocxx REQUIRED)
+find_package(libbsoncxx REQUIRED)
+include_directories(${LIBMONGOCXX_INCLUDE_DIR})
+include_directories(${LIBBSONCXX_INCLUDE_DIR})
+include_directories("/usr/local/include/mongocxx/v_noabi")
+include_directories("/usr/local/include/bsoncxx/v_noabi")
+include_directories("/usr/local/include/libmongoc-1.0")
+include_directories("/usr/local/include/libbson-1.0")
+include_directories("/usr/local/lib")
  
 
-# target_link_libraries("${PROJECT_NAME}_iros" ${LIBMONGOCXX_LIBRARIES})
-# target_link_libraries("${PROJECT_NAME}_iros" ${LIBBSONCXX_LIBRARIES})
+target_link_libraries("${PROJECT_NAME}_iros" ${LIBMONGOCXX_LIBRARIES})
+target_link_libraries("${PROJECT_NAME}_iros" ${LIBBSONCXX_LIBRARIES})
 ##############
 
 

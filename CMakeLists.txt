@@ -27,18 +27,17 @@ include_directories(include)
 set(JSON_BuildTests OFF CACHE INTERNAL "")
 add_subdirectory(nlohmann_json) 
 #add_library("${PROJECT_NAME}" SHARED
-#src/model_primitives/collectValuableToys/actionManager.cpp #added
+#src/model_primitives/iros/actionManager.cpp #added
 #)
 #target_link_libraries("${PROJECT_NAME}" PRIVATE nlohmann_json::nlohmann_json)
 ##################################
 
 
-set(CMAKE_PREFIX_PATH "/home/or/AOS/build-pytorch-from-source/pytorch-install")
 
 add_library("${PROJECT_NAME}" SHARED 
-  src/model_primitives/collectValuableToys/enum_map_collectValuableToys.cpp #added
-  src/model_primitives/collectValuableToys/actionManager.cpp #added
-  src/model_primitives/collectValuableToys/closed_model_policy.cpp #added
+  src/model_primitives/iros/enum_map_iros.cpp #added
+  src/model_primitives/iros/actionManager.cpp #added
+  src/model_primitives/iros/closed_model_policy.cpp #added
 
   src/core/belief.cpp
   src/core/globals.cpp
@@ -75,9 +74,6 @@ add_library("${PROJECT_NAME}" SHARED
   src/util/tinyxml/tinyxmlerror.cpp
   src/util/tinyxml/tinyxmlparser.cpp
 )
-
-find_package(Torch REQUIRED) 
-
 target_link_libraries("${PROJECT_NAME}"
   ${TinyXML_LIBRARIES}
   PRIVATE nlohmann_json::nlohmann_json #adding json
@@ -94,7 +90,7 @@ include_directories("/usr/local/include/mongocxx/v_noabi")
 include_directories("/usr/local/include/bsoncxx/v_noabi")
 include_directories("/usr/local/include/libmongoc-1.0")
 include_directories("/usr/local/include/libbson-1.0")
-include_directories("/usr/local/lib")
+#include_directories("/usr/local/lib")
  
 
 target_link_libraries("${PROJECT_NAME}" ${LIBMONGOCXX_LIBRARIES})
@@ -118,8 +114,8 @@ if(DESPOT_BUILD_EXAMPLES)
   # add_subdirectory(examples/cpp_models/tiger)
 
 
-  add_subdirectory(examples/cpp_models/collectValuableToys)
- # add_subdirectory(examples/cpp_models/collectValuableToys_working_toy)
+  add_subdirectory(examples/cpp_models/iros)
+ # add_subdirectory(examples/cpp_models/iros_working_toy)
 endif()
 
 
@@ -141,12 +137,6 @@ configure_package_config_file("cmake/DespotConfig.cmake.in"
   PATH_VARS INCLUDE_INSTALL_PATH
 )
 
-
-message(STATUS "Find Torch VERSION: ${Torch_VERSION}")
-add_definitions(-DTORCH_VERSION_MAJOR=${Torch_VERSION_MAJOR})
-add_definitions(-DTORCH_VERSION_MINOR=${Torch_VERSION_MINOR})
-add_definitions(-DTORCH_VERSION_PATCH=${Torch_VERSION_PATCH})
-
 install(EXPORT "DespotTargets"
   FILE "DespotTargets.cmake"
   DESTINATION "${CONFIG_INSTALL_PATH}"
@@ -155,4 +145,3 @@ install(FILES "${CMAKE_CURRENT_BINARY_DIR}/DespotConfig.cmake"
   DESTINATION "${CONFIG_INSTALL_PATH}"
 )
 
-target_link_libraries("${PROJECT_NAME}" "${TORCH_LIBRARIES}")

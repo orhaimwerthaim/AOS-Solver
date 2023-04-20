@@ -13,6 +13,8 @@
 #include <unistd.h>
 #include <iomanip>
 #include <float.h>
+#include <map>
+#include <tuple>
 
 using namespace std;
 
@@ -20,17 +22,45 @@ namespace despot {
 
 Iros Iros::gen_model;
 
+std::uniform_real_distribution<float> AOSUtils::real_unfirom_dist(0.0,1.0);
+std::default_random_engine AOSUtils::generator(std::random_device{}());
+
+int AOSUtils::SampleDiscrete(vector<float> weights)
+{
+    float rand = real_unfirom_dist(generator);
+    float total = 0;
+    for (int i = 0; i < weights.size();i++)
+    {
+        total += weights[i];
+        if (rand < total)
+            return i;
+    }
+    return -1;
+}
+
+int AOSUtils::SampleDiscrete(vector<double> weights)
+{
+    float rand = real_unfirom_dist(generator);
+    float total = 0;
+    for (int i = 0; i < weights.size();i++)
+    {
+        total += weights[i];
+        if (rand < total)
+            return i;
+    }
+    return -1;
+}
+
 bool AOSUtils::Bernoulli(double p)
 {
-	/* generate secret number between 1 and 100: */ 
-	int randInt = rand() % 100 + 1;
-	return (p * 100) >= randInt;
+    float rand = real_unfirom_dist(generator);
+	return rand < p;
 }
 std::hash<std::string> Iros::hasher;
 /* ==============================================================================
  *IrosBelief class
  * ==============================================================================*/
-int IrosBelief::num_particles = 40234;
+int IrosBelief::num_particles = 5234;
 std::string IrosBelief::beliefFromDB = "";
 int IrosBelief::currentInitParticleIndex = -1;
 
@@ -46,9 +76,43 @@ IrosBelief::IrosBelief(vector<State*> particles, const DSPOMDP* model,
 		 return Prints::PrintActionDescription(ActionManager::actions[actionId]);
 	 }
 
-//void IrosBelief::Update(int actionId, OBS_TYPE obs, std::map<std::string,bool> updates) {
-void IrosBelief::Update(int actionId, OBS_TYPE obs) {
+void IrosBelief::Update(int actionId, OBS_TYPE obs, map<std::string, std::string> localVariables) {
 	history_.Add(actionId, obs);
+
+    ActionType &actType = ActionManager::actions[actionId]->actionType;
+    string obsr;
+    int cell_to_mark;
+    bool success;
+
+
+
+    try
+    {
+        if(actType == draw_in_cellAction)
+        {
+            if(localVariables.find("cell_to_mark") != localVariables.end())
+            {
+                cell_to_mark = std::stoi(localVariables["cell_to_mark"]);
+            }
+            if(localVariables.find("success") != localVariables.end())
+            {
+                success = localVariables["success"] == "true";
+            }
+        }
+        if(actType == detect_board_stateAction)
+        {
+            if(localVariables.find("obsr") != localVariables.end())
+            {
+                obsr = localVariables["obsr"];
+            }
+        }
+
+    }
+    catch(const std::exception& e)
+    {
+        std::string s ="Error: problem loading LocalVariables data for belief state update. ";
+        MongoDB_Bridge::AddError(s + e.what());
+    }
 
 	vector<State*> updated;
 	double reward;
@@ -59,9 +123,24 @@ void IrosBelief::Update(int actionId, OBS_TYPE obs) {
 		bool terminal = iros_->Step(*particle, Random::RANDOM.NextDouble(),
 			actionId, reward, o);
  
-		if (!terminal && o == obs) 
+		//if (!terminal && o == obs)
+        if (o == obs) 
 			{
-				IrosState &iros_particle = static_cast<IrosState &>(*particle);
+                if(!Globals::IsInternalSimulation())
+                {
+				IrosState &state__ = static_cast<IrosState &>(*particles_[cur]);
+                IrosState &state___ = static_cast<IrosState &>(*particle);
+                    if(actType == draw_in_cellAction)
+                    {
+                        Draw_in_cellActionDescription act = *(static_cast<Draw_in_cellActionDescription *>(ActionManager::actions[actionId]));
+                        int &oCellP = act.oCellP;
+                    }
+                    if(actType == detect_board_stateAction)
+                    {
+                    }
+
+
+
 				//if(!Globals::IsInternalSimulation() && updates.size() > 0)
 				//{
 				//	IrosState::SetAnyValueLinks(&iros_particle);
@@ -71,6 +150,8 @@ void IrosBelief::Update(int actionId, OBS_TYPE obs) {
 				//		*(iros_particle.anyValueUpdateDic[it->first]) = it->second; 
 				//	} 
 				//}
+
+                }
 				updated.push_back(particle);
 		} else {
 			iros_->Free(particle);
@@ -113,7 +194,7 @@ public:
         std::vector<double> weighted_preferred_actions_un_normalized;
 
         double heuristicValueTotal = 0;
-		for (int a = 0; a < 6; a++) {
+		for (int a = 0; a < 1; a++) {
             weighted_preferred_actions_un_normalized.push_back(0);
 			double reward = 0;
 			bool meetPrecondition = false; 
@@ -130,7 +211,7 @@ public:
 
         if(heuristicValueTotal > 0)
         {
-            for (int a = 0; a < 6; a++) 
+            for (int a = 0; a < 1; a++) 
             {
                 weighted_preferred_actions_.push_back(weighted_preferred_actions_un_normalized[a] / heuristicValueTotal);
             } 
@@ -159,37 +240,15 @@ double Iros::ObsProb(OBS_TYPE obs, const State& state, int actionId) const {
 
 std::default_random_engine Iros::generator;
 
-std::discrete_distribution<> Iros::navigate_discrete_dist1{0.8,0.2}; //AOS.SampleDiscrete(enumRealCase,{0.8,0.2})
-std::discrete_distribution<> Iros::enhanced_pick_discrete_dist2{0.5238,0.0952,0,0.0476,0.4285}; //AOS.SampleDiscrete(enumRealCase,{0.5238,0.0952,0,0.0476,0.4285})
 
 State* Iros::CreateStartState(string type) const {
     IrosState* startState = memory_pool_.Allocate();
     IrosState& state = *startState;
-    startState->tDiscreteLocationObjects.push_back(eCorridor);
-    startState->tDiscreteLocationObjects.push_back(eLocationAuditoriumSide1);
-    startState->tDiscreteLocationObjects.push_back(eLocationAuditoriumSide2);
-    startState->tDiscreteLocationObjects.push_back(eRobotHand);
-    startState->tDiscreteLocationObjects.push_back(eUnknown);
-    state.locationCorridor = tLocation();
-    state.locationCorridor.discrete_location = eCorridor;
-     state.locationCorridor.actual_location = true;
-    state.locationAuditorium_toCan1 = tLocation();
-    state.locationAuditorium_toCan1.discrete_location = eLocationAuditoriumSide1;
-     state.locationAuditorium_toCan1.actual_location = true;
-    state.locationAuditorium_toCan2 = tLocation();
-    state.locationAuditorium_toCan2.discrete_location = eLocationAuditoriumSide2;
-     state.locationAuditorium_toCan2.actual_location = true;
-    state.cup1DiscreteLocation = eLocationAuditoriumSide1;
-    state.cup2DiscreteLocation = eLocationAuditoriumSide2;
-    state.holding_can=false;
-    state.drinkServed=false;
-    state.drinkServedOpenHand=false;
-    state.armOutstretched=false;
-    state.person_injured=false;
-    startState->tLocationObjectsForActions["state.locationCorridor"] = (state.locationCorridor);
-    startState->tLocationObjectsForActions["state.locationAuditorium_toCan1"] = (state.locationAuditorium_toCan1);
-    startState->tLocationObjectsForActions["state.locationAuditorium_toCan2"] = (state.locationAuditorium_toCan2);
-    state.robotGenerallocation=state.locationCorridor.discrete_location;
+    startState->tSymbolsObjects.push_back(eEmpty);
+    startState->tSymbolsObjects.push_back(eO);
+    startState->tSymbolsObjects.push_back(eX);
+    state.grid={eEmpty,eEmpty,eEmpty,eEmpty,eEmpty,eEmpty,eEmpty,eEmpty,eEmpty};
+    state.isRobotTurn=true;
     if (ActionManager::actions.size() == 0)
     {
         ActionManager::Init(const_cast <IrosState*> (startState));
@@ -298,41 +357,45 @@ void Iros::StepForModel(State& state, int actionId, double& reward,
 
         next_state_hash = hasher(Prints::PrintState(ir_state));
     }
-
 bool Iros::Step(State& s_state__, double rand_num, int actionId, double& reward,
 	OBS_TYPE& observation) const {
+    observation = default_moduleResponse;
     reward = 0;
-	bool isNextStateFinal = false;
 	Random random(rand_num);
 	int __moduleExecutionTime = -1;
 	bool meetPrecondition = false;
-	
+	double tReward = 0;
+
 	IrosState &state__ = static_cast<IrosState &>(s_state__);
 	 logd << "[Iros::Step] Selected Action:" << Prints::PrintActionDescription(ActionManager::actions[actionId]) << "||State"<< Prints::PrintState(state__);
 	CheckPreconditions(state__, reward, meetPrecondition, actionId);
-	 
 	State *s_state = Copy(&s_state__);
 	IrosState &state = static_cast<IrosState &>(*s_state);
 
 	
 	SampleModuleExecutionTime(state__, rand_num, actionId, __moduleExecutionTime);
 
-	ExtrinsicChangesDynamicModel(state, state__, rand_num, actionId, __moduleExecutionTime);
+	ExtrinsicChangesDynamicModel(state, state__, rand_num, actionId, __moduleExecutionTime, tReward);
+    reward += tReward;
+    tReward = 0;
+    
 
 	State *s_state_ = Copy(&s_state__);
 	IrosState &state_ = static_cast<IrosState &>(*s_state_);
 
-    double tReward = 0;
+    
 	ModuleDynamicModel(state, state_, state__, rand_num, actionId, tReward,
 					   observation, __moduleExecutionTime, meetPrecondition);
+    
+	
+    Free(s_state_);
+    Free(s_state);
 	reward += tReward;
-
-	Free(s_state);
-	Free(s_state_);
 	bool finalState = ProcessSpecialStates(state__, reward);
     state__.__isTermianl = state__.__isTermianl || finalState;
+
     if (!meetPrecondition)
-    {
+	{
 		//__moduleExecutionTime = 0;
 		//observation = illegalActionObs;
 		//return false;
@@ -344,26 +407,16 @@ void Iros::CheckPreconditions(const IrosState& state, double &reward, bool &__me
     {
         ActionType &actType = ActionManager::actions[actionId]->actionType;
         __meetPrecondition = true;
-            if(actType == serve_can_to_personAction)
+            if(actType == draw_in_cellAction)
             {
-                __meetPrecondition=state.holding_can==true&&state.armOutstretched==false&&state.robotGenerallocation==eCorridor;
-                if(!__meetPrecondition) reward += -12;
-            }
-            if(actType == navigateAction)
-            {
-                NavigateActionDescription act = *(static_cast<NavigateActionDescription *>(ActionManager::actions[actionId]));
-                tLocation &oDesiredLocation = act.oDesiredLocation;
-                __meetPrecondition=state.robotGenerallocation!=eUnknown;
+                Draw_in_cellActionDescription act = *(static_cast<Draw_in_cellActionDescription *>(ActionManager::actions[actionId]));
+                int &oCellP = act.oCellP;
+                __meetPrecondition=state.isRobotTurn && state.grid[oCellP] == eEmpty;
                 if(!__meetPrecondition) reward += -10;
             }
-            if(actType == release_canAction)
+            if(actType == detect_board_stateAction)
             {
-                __meetPrecondition=state.drinkServed;
-                if(!__meetPrecondition) reward += -10;
-            }
-            if(actType == enhanced_pickAction)
-            {
-                __meetPrecondition=(state.cup1DiscreteLocation==state.robotGenerallocation||state.cup2DiscreteLocation==state.robotGenerallocation)&&!state.holding_can;
+                __meetPrecondition=!state.isRobotTurn;
                 if(!__meetPrecondition) reward += -10;
             }
     }
@@ -372,18 +425,12 @@ void Iros::ComputePreferredActionValue(const IrosState& state, double &__heurist
     {
         __heuristicValue = 0;
         ActionType &actType = ActionManager::actions[actionId]->actionType;
-            if(actType == serve_can_to_personAction)
+            if(actType == draw_in_cellAction)
             {
+                Draw_in_cellActionDescription act = *(static_cast<Draw_in_cellActionDescription *>(ActionManager::actions[actionId]));
+                int &oCellP = act.oCellP;
             }
-            if(actType == navigateAction)
-            {
-                NavigateActionDescription act = *(static_cast<NavigateActionDescription *>(ActionManager::actions[actionId]));
-                tLocation &oDesiredLocation = act.oDesiredLocation;
-            }
-            if(actType == release_canAction)
-            {
-            }
-            if(actType == enhanced_pickAction)
+            if(actType == detect_board_stateAction)
             {
             }
         __heuristicValue = __heuristicValue < 0 ? 0 : __heuristicValue;
@@ -392,23 +439,42 @@ void Iros::ComputePreferredActionValue(const IrosState& state, double &__heurist
 void Iros::SampleModuleExecutionTime(const IrosState& farstate, double rand_num, int actionId, int &__moduleExecutionTime) const
 {
     ActionType &actType = ActionManager::actions[actionId]->actionType;
-    if(actType == serve_can_to_personAction)
+    if(actType == draw_in_cellAction)
     {
     }
-    if(actType == navigateAction)
-    {
-    }
-    if(actType == release_canAction)
-    {
-    }
-    if(actType == enhanced_pickAction)
+    if(actType == detect_board_stateAction)
     {
     }
 }
 
-void Iros::ExtrinsicChangesDynamicModel(const IrosState& state, IrosState& state_, double rand_num, int actionId, const int &__moduleExecutionTime)  const
+void Iros::ExtrinsicChangesDynamicModel(const IrosState& state, IrosState& state_, double rand_num, int actionId, const int &__moduleExecutionTime,  double &__reward)  const
 {
-    ActionType &actType = ActionManager::actions[actionId]->actionType;
+    ActionType &actionType = ActionManager::actions[actionId]->actionType;
+    Draw_in_cellActionDescription* draw_in_cell = actionType != (draw_in_cellAction) ? NULL : (static_cast<Draw_in_cellActionDescription *>(ActionManager::actions[actionId]));
+    Detect_board_stateActionDescription* detect_board_state = actionType != (detect_board_stateAction) ? NULL : (static_cast<Detect_board_stateActionDescription *>(ActionManager::actions[actionId]));
+    if(!state.isRobotTurn){
+int emptyC = 0;
+    
+for_each(state.grid.begin(),state.grid.end(),[&](int const& cell){emptyC += cell == eEmpty ? 1 : 0;
+    });
+    
+float w = 1.0/emptyC;
+    
+vector<float> weights{};
+    
+for(int i=0;
+    i< state.grid.size();
+    i++)
+{
+  weights.push_back(state.grid[i] == eEmpty ? w : 0.0);
+    
+}
+int sampledCell = AOSUtils::SampleDiscrete(weights);
+    
+state_.grid[sampledCell] = eX;
+    
+state_.isRobotTurn = true;
+    };
 }
 
 void Iros::ModuleDynamicModel(const IrosState &state, const IrosState &state_, IrosState &state__, double rand_num, int actionId, double &__reward, OBS_TYPE &observation, const int &__moduleExecutionTime, const bool &__meetPrecondition) const
@@ -416,51 +482,37 @@ void Iros::ModuleDynamicModel(const IrosState &state, const IrosState &state_, I
     std::hash<std::string> hasher;
     ActionType &actType = ActionManager::actions[actionId]->actionType;
     observation = -1;
-    int startObs = observation;
+    observation = default_moduleResponse;
     std::string __moduleResponseStr = "NoStrResponse";
     OBS_TYPE &__moduleResponse = observation;
-    if(actType == serve_can_to_personAction)
+    if(actType == draw_in_cellAction)
     {
-        IrosResponseModuleAndTempEnums  realCase;
-        realCase=__meetPrecondition?serve_can_to_person_action_success:serve_can_to_person_failed;
-        state__.person_injured=state.armOutstretched==true;
-        state__.drinkServed=(realCase==serve_can_to_person_action_success&&!state__.person_injured);
-        __moduleResponse=serve_can_to_person_eDelivered;
-        __reward=state__.person_injured?-20:-8;
+        Draw_in_cellActionDescription act = *(static_cast<Draw_in_cellActionDescription *>(ActionManager::actions[actionId]));
+        int &oCellP = act.oCellP;
+        bool success = oCellP != 4 || AOSUtils::Bernoulli(0.5);
+        
+state__.grid[oCellP] = state__.grid[oCellP] == eEmpty && success ? eO : state__.grid[oCellP];
+        
+state__.isRobotTurn=!state.isRobotTurn;
+        
+__moduleResponse= success ? draw_in_cell_res_success : draw_in_cell_res_failed;
+        
+__reward = 0;
     }
-    if(actType == navigateAction)
+    if(actType == detect_board_stateAction)
     {
-        NavigateActionDescription act = *(static_cast<NavigateActionDescription *>(ActionManager::actions[actionId]));
-        tLocation &oDesiredLocation = act.oDesiredLocation;
-        IrosResponseModuleAndTempEnums  realCase;
-        realCase=(IrosResponseModuleAndTempEnums)(navigate_enumRealCase + 1 + Iros::navigate_discrete_dist1(Iros::generator));
-        if(realCase==navigate_action_success)state__.robotGenerallocation=oDesiredLocation.discrete_location;
-        if(realCase==navigate_action_success)__moduleResponse=navigate_eSuccess;
-        else __moduleResponse=navigate_eFailed;
-        __reward=-6;
-    }
-    if(actType == release_canAction)
-    {
-        if(state.drinkServed){state__.drinkServedOpenHand=true;
-        __moduleResponse=release_can_eSuccess;
-        }else __moduleResponse=release_can_eFailed;
-        __reward=(state.drinkServed)?-1:-10;
-    }
-    if(actType == enhanced_pickAction)
-    {
-        IrosResponseModuleAndTempEnums  realCase;
-        realCase=!__meetPrecondition?enhanced_pick_actual_not_holding:(IrosResponseModuleAndTempEnums)(enhanced_pick_enumRealCase + 1 + Iros::enhanced_pick_discrete_dist2(Iros::generator));
-        state__.holding_can=(realCase==enhanced_pick_actual_pick_action_success||realCase==enhanced_pick_actual_arm_outstretched_with_can);
-        if(state.cup1DiscreteLocation==state.robotGenerallocation){state__.cup1DiscreteLocation=(realCase==enhanced_pick_actual_pick_action_success||realCase==enhanced_pick_actual_arm_outstretched_with_can)?eRobotHand:(realCase==enhanced_pick_actual_not_holding?state.cup1DiscreteLocation:eUnknown);
-        };
-        if(state.cup2DiscreteLocation==state.robotGenerallocation){state__.cup2DiscreteLocation=(realCase==enhanced_pick_actual_pick_action_success||realCase==enhanced_pick_actual_arm_outstretched_with_can)?eRobotHand:(realCase==enhanced_pick_actual_not_holding?state.cup2DiscreteLocation:eUnknown);
-        };
-        state__.armOutstretched=realCase==enhanced_pick_actual_arm_outstretched_with_can||realCase==enhanced_pick_actual_arm_outstretched_without_can;
-        if(realCase==enhanced_pick_actual_not_holding||realCase==enhanced_pick_actual_dropped_the_object)__moduleResponse=enhanced_pick_res_pick_not_holding;
-        if(realCase==enhanced_pick_actual_pick_action_success)__moduleResponse=AOSUtils::Bernoulli(0.818)?enhanced_pick_res_pick_holding_can:enhanced_pick_res_pick_not_holding;
-        if(realCase==enhanced_pick_actual_arm_outstretched_with_can)__moduleResponse=AOSUtils::Bernoulli(0.818)?enhanced_pick_res_pick_arm_outstretched_holding_can:enhanced_pick_res_pick_without_can_arm_outstretched;
-        if(realCase==enhanced_pick_actual_arm_outstretched_without_can)__moduleResponse=enhanced_pick_res_pick_without_can_arm_outstretched;
-        __reward=-2;
+        state__.isRobotTurn=!state.isRobotTurn;
+        
+__moduleResponseStr = "_________";
+        
+for(int i=0;
+        i<state.grid.size();
+         i++)
+{
+   __moduleResponseStr[i] = state__.grid[i] == eX ? 'X' : state__.grid[i] == eO ? 'O' : '?';
+        
+}
+__reward = 0;
     }
     if(__moduleResponseStr != "NoStrResponse")
     {
@@ -469,41 +521,49 @@ void Iros::ModuleDynamicModel(const IrosState &state, const IrosState &state_, I
         enum_map_iros::vecStringToResponseEnum[__moduleResponseStr] = responseHash;
         __moduleResponse = responseHash;
     }
-    if(startObs == __moduleResponse)
-    {
-    stringstream ss;
-    ss << "Observation/__moduleResponse Not initialized!!! on action:" << Prints::PrintActionDescription(ActionManager::actions[actionId]) << endl;
-    loge << ss.str() << endl;
-    throw 1;
-    }
 }
 
 bool Iros::ProcessSpecialStates(IrosState &state, double &reward) const
 {
+    float temp_reward = 0;
+    bool temp_IsGoalState = false;
+    bool temp_StopEvaluatingState = false;
     bool isFinalState = false;
     if(state.OneTimeRewardUsed[0])
     {
-        if (state.drinkServedOpenHand == true)
+        auto stateFunction = [&]()
         {
-            reward += 30;
-            isFinalState = true;
-        }
-    }
-    if(state.OneTimeRewardUsed[1])
-    {
-        if (state.person_injured == true)
-        {
-            reward += -10;
-            isFinalState = true;
-        }
-    }
-    if(state.OneTimeRewardUsed[2])
-    {
-        if (state.cup1DiscreteLocation == eUnknown && state.cup2DiscreteLocation == eUnknown)
-        {
-            reward += 0;
-            isFinalState = true;
-        }
+            float __reward = 0;
+            bool __isGoalState = false;
+            bool __stopEvaluatingState = false;
+            vector<vector<int>> game_end{{8,7,6},{5,4,3},{2,1,0},
+                             {8,5,2},{7,4,1},{6,3,0},
+                             {8,4,0},{6,4,2}};
+            
+for(int i =0;
+             i < game_end.size();
+             i++)
+{
+int a = game_end[i][0], b = game_end[i][1], c = game_end[i][2];
+            
+   if(state.grid[a] != eEmpty && state.grid[a] == state.grid[b] && state.grid[b] == state.grid[c])
+   {
+      __reward = state.grid[a] == eO ? 10 : -10;
+            
+      __isGoalState=true;
+            
+      break;
+            
+   }
+}
+__isGoalState |= !std::any_of(state.grid.cbegin(), state.grid.cend(), [&](int cell){ return cell == eEmpty;
+             });
+            return std::make_tuple(__reward, __isGoalState, __stopEvaluatingState);
+        };
+        std::tie(temp_reward, temp_IsGoalState, temp_StopEvaluatingState) = stateFunction();
+        state.OneTimeRewardUsed[0] = !temp_StopEvaluatingState;
+        reward += temp_reward;
+        isFinalState = temp_IsGoalState ? true : isFinalState;
     }
     return isFinalState;
 }

@@ -1,7 +1,7 @@
   
 #ifndef MONGO_BRIDGE_H
 #define MONGO_BRIDGE_H
-
+ 
 
 #include <cstdint>
 #include <iostream>
