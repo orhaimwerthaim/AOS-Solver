@@ -88,7 +88,7 @@ void TurtleBotVisitLocationsBelief::Update(int actionId, OBS_TYPE obs, map<std::
     catch(const std::exception& e)
     {
         std::string s ="Error: problem loading LocalVariables data for belief state update. ";
-        MongoDB_Bridge::AddError(s + e.what());
+        MongoDB_Bridge::AddLog(s + e.what(), eLogLevel::ERROR);
     }
 
 	vector<State*> updated;

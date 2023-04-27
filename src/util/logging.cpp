@@ -6,8 +6,8 @@ using namespace std;
 namespace despot {
 
 const string logging::markers_[] = { "NONE", "ERROR", "WARN", "INFO", "DEBUG",
-	"VERBOSE" };
-const int logging::NONE = 0;
+	"VERBOSE" }; 
+const int logging::NONE = 0; 
 const int logging::ERROR = 1;
 const int logging::WARN = 2;
 const int logging::INFO = 3;

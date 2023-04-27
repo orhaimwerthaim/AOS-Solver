@@ -39,7 +39,7 @@ private:
 	static const std::string markers_[];
 
 public:
-	static const int NONE, ERROR, WARN, INFO, DEBUG, VERBOSE;
+	static const int NONE, FATAL, ERROR, WARN, INFO, DEBUG, VERBOSE;
 
 public:
 	static void level(int verbosity);
@@ -61,7 +61,7 @@ else despot::logging::stream(lv)
 #define logv LOG(despot::logging::VERBOSE)
 
 #define default_out \
-if (Globals::config.silence) ; \
+if (Globals::config.verbosity > eLogLevel::FATAL) ; \
 else cout
 
 #endif

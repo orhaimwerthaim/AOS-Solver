@@ -5,6 +5,11 @@
 
 namespace despot {
 
+enum eLogLevel
+{
+	Off=0,FATAL=1,ERROR=2,WARN=3,INFO=4,DEBUG=5,TRACE=6
+};
+
 struct Config {
     int solverId;
 	bool internalSimulation; 
@@ -19,7 +24,8 @@ struct Config {
   std::string default_action;
 	int max_policy_sim_len; // Maximum number of steps for simulating the default policy
 	double noise;
-	bool silence;
+	bool manualControl;\
+    int verbosity;
     bool saveBeliefToDB;
     bool handsOnDebug;
 	bool solveProblemWithClosedPomdpModel;
@@ -32,6 +38,7 @@ struct Config {
     bool closedModelPolicyByGraph;
 	Config() : 
         handsOnDebug(true),
+        manualControl(false),
         closedModelPolicyByGraph(false),
         limitClosedModelHorizon_stepsAfterGoalDetection(-1),
         sarsopTimeLimitInSeconds(0),
@@ -40,9 +47,9 @@ struct Config {
         fixedPolicyFilePath("sarsop/src/out.policy"),
 		pomdpFilePath("sarsop/examples/POMDP/auto_generate.pomdp"),
         solveProblemWithClosedPomdpModel(false),
-        solverId(91),
-		search_depth(11),
-		discount(0.99),
+        solverId(8),
+		search_depth(17),
+		discount(0.9999),
 		root_seed(42),
 		time_per_move(2),
 		num_scenarios(500),
@@ -52,7 +59,8 @@ struct Config {
 		default_action(""),
 		max_policy_sim_len(10),
 		noise(0.1),
-		silence(false),
+        //Off=0,FATAL=1,ERROR=2,WARN=3,INFO=4,DEBUG=5,TRACE=6 
+		verbosity(4),
 		internalSimulation(true),
         saveBeliefToDB(true)
 		{

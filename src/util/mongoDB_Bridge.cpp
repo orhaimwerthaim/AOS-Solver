@@ -38,9 +38,9 @@ namespace despot {
   mongocxx::collection MongoDB_Bridge::actionsCollection;
   mongocxx::collection MongoDB_Bridge::globalVariablesAssignmentsColllection;
   mongocxx::collection MongoDB_Bridge::SolversCollection;
-  mongocxx::collection MongoDB_Bridge::logsCollection;
-  mongocxx::collection MongoDB_Bridge::errorsCollection;
-
+  mongocxx::collection MongoDB_Bridge::logsCollection; 
+  mongocxx::collection MongoDB_Bridge::manualActionsForSolverCollection;
+  mongocxx::collection MongoDB_Bridge::SimulatedStatesColllection;
   mongocxx::collection MongoDB_Bridge::beliefStatesColllection;
   mongocxx::collection MongoDB_Bridge::closedModelBeliefStatesColllection;
   int MongoDB_Bridge::currentActionSequenceId = 0;
@@ -64,9 +64,16 @@ namespace despot {
       MongoDB_Bridge::actionsCollection = MongoDB_Bridge::db["Actions"];
       MongoDB_Bridge::SolversCollection = MongoDB_Bridge::db["Solvers"];
       MongoDB_Bridge::beliefStatesColllection = MongoDB_Bridge::db["BeliefStates"];
-      MongoDB_Bridge::closedModelBeliefStatesColllection = MongoDB_Bridge::db["ClosedModelBeliefState"];
-      MongoDB_Bridge::errorsCollection = MongoDB_Bridge::db["Errors"];
+      MongoDB_Bridge::closedModelBeliefStatesColllection = MongoDB_Bridge::db["ClosedModelBeliefState"]; 
       MongoDB_Bridge::logsCollection = MongoDB_Bridge::db["Logs"];
+      MongoDB_Bridge::SimulatedStatesColllection = MongoDB_Bridge::db["SimulatedStates"];
+      MongoDB_Bridge::manualActionsForSolverCollection = MongoDB_Bridge::db["ManualActionsForSolver"];
+      
+      auto filter = document{} << finalize;
+      MongoDB_Bridge::SimulatedStatesColllection.delete_many(filter.view());
+      MongoDB_Bridge::beliefStatesColllection.delete_many(filter.view());
+      MongoDB_Bridge::actionToExecuteCollection.delete_many(filter.view());
+      MongoDB_Bridge::logsCollection.delete_many(filter.view());
     }
 }
 
@@ -165,7 +172,6 @@ std::map<std::string, std::string> MongoDB_Bridge::WaitForActionResponse(bsoncxx
       for (auto it = jsonObj.begin(); it != jsonObj.end(); ++it)
       {
         //std::cout << it.key() << " : " << it.value() << "\n";
-        //if(it.value().is_primitive())
         if(true)
         {
           localVariables[it.key()] = it.value().dump();
@@ -196,6 +202,31 @@ std::map<std::string, std::string> MongoDB_Bridge::WaitForActionResponse(bsoncxx
   return localVariables;
 }
 
+ int MongoDB_Bridge::WaitForManualAction()
+{
+
+  std::map<std::string, std::string> localVariables;
+  std::vector<bsoncxx::document::view> moduleLocalVars;
+  MongoDB_Bridge::Init();
+  auto filter = document{} << finalize;
+  bool actionFinished = false;
+
+    
+    while (true)
+    {
+      mongocxx::cursor cursor = MongoDB_Bridge::manualActionsForSolverCollection.find({filter});
+      for(auto doc : cursor) 
+    {
+      actionFinished = true; 
+      int actionId = doc["ActionID"].get_int32().value; 
+
+      MongoDB_Bridge::manualActionsForSolverCollection.delete_one(filter.view());
+      return actionId;
+    }
+    }
+  return -1;
+}
+
 bsoncxx::oid MongoDB_Bridge::SendActionToExecution(int actionId, std::string actionName, std::string actionParameters)
 {
   MongoDB_Bridge::Init(); 
@@ -222,30 +253,48 @@ bsoncxx::oid MongoDB_Bridge::SendActionToExecution(int actionId, std::string act
   return oid;
 }
 
-void MongoDB_Bridge::AddLog(std::string logMsg)
+void MongoDB_Bridge::AddLog(std::string logMsg, int logLevel)
 {
+  std::string logLevelDesc;
+  switch (logLevel)
+  {
+  case 1:
+    logLevelDesc = "Fatal";
+    break;
+  case 2:
+    logLevelDesc = "Error";
+    break;
+  case 3:
+    logLevelDesc = "Warn";
+    break;
+  case 4:
+    logLevelDesc = "Info";
+    break;
+  case 5:
+    logLevelDesc = "Debug";
+    break;
+  case 6:
+    logLevelDesc = "Trace";
+    break;
+    
+  
+  default:
+  logLevelDesc = "";
+    break;
+  }
+
   auto now = std::chrono::system_clock::now();
   auto builder = bsoncxx::builder::stream::document{};
   bsoncxx::document::value doc_value = (builder << "Component" << "aosSolver"
                                                 << "Event" << logMsg 
                                                 << "Time" << bsoncxx::types::b_date(now) 
+                                                << "LogLevel" << logLevel
+                                                << "LogLevelDesc" << logLevelDesc
                                                 << finalize);
 
   MongoDB_Bridge::logsCollection.insert_one(doc_value.view());
 }
-
-void MongoDB_Bridge::AddError(std::string errorMsg, std::string trace)
-{
-  auto now = std::chrono::system_clock::now();
-  auto builder = bsoncxx::builder::stream::document{};
-  bsoncxx::document::value doc_value = (builder << "Time" << bsoncxx::types::b_date(now)
-                                                << "Component" << "aosSolver"
-                                                << "Trace" << trace 
-                                                << "Error" << errorMsg 
-                                                << finalize);
-
-  MongoDB_Bridge::errorsCollection.insert_one(doc_value.view());
-}
+ 
 
 std::string MongoDB_Bridge::SampleFromBeliefState(int skipStates, int takeStates)
 {
@@ -257,6 +306,16 @@ std::string MongoDB_Bridge::SampleFromBeliefState(int skipStates, int takeStates
   auto doc = MongoDB_Bridge::beliefStatesColllection.find_one(make_document(kvp("ActionSequnceId", -1)), opts);
   return bsoncxx::to_json(doc.value());
 
+}
+
+
+void MongoDB_Bridge::SaveSimulatedState(std::string currentSimulatedState)
+{
+  MongoDB_Bridge::Init(); 
+  auto builder = bsoncxx::builder::stream::document{};
+  bsoncxx::document::value doc_value = bsoncxx::from_json(currentSimulatedState); 
+                                                    
+  MongoDB_Bridge::SimulatedStatesColllection.insert_one(doc_value.view());
 }
 
 void MongoDB_Bridge::SaveBeliefState(std::string currentActionBelief, std::string currentBelief)

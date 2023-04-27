@@ -1,8 +1,8 @@
 #include <despot/evaluator.h>
 #include <despot/util/mongoDB_Bridge.h>
-#include <despot/model_primitives/iros/enum_map_iros.h>
-#include <despot/model_primitives/iros/actionManager.h> 
-#include <despot/model_primitives/iros/closed_model_policy.h>
+#include <despot/model_primitives/collectValuableToys/enum_map_collectValuableToys.h>
+#include <despot/model_primitives/collectValuableToys/actionManager.h> 
+#include <despot/model_primitives/collectValuableToys/closed_model_policy.h>
 #include <nlohmann/json.hpp>
 using namespace std;
 
@@ -148,6 +148,7 @@ void Evaluator::SaveBeliefToDB()
 		vector<State*> temp = solver_->belief()->Sample(1);
 		Prints::SaveBeliefParticles(temp);
 	}
+	Prints::SaveSimulatedState(state_);
 }
 
 bool Evaluator::RunStep(int step, int round) {
@@ -180,7 +181,7 @@ bool Evaluator::RunStep(int step, int round) {
 	}
 
 	if (target_finish_time_ != -1 && get_time_second() > target_finish_time_) {
-		if (!Globals::config.silence && out_)
+		if (Globals::config.verbosity >= eLogLevel::TRACE && out_)
 			*out_ << "Exit. (Total time "
 				<< (get_time_second() - EvalLog::curr_inst_start_time)
 				<< "s exceeded time limit of "
@@ -205,7 +206,7 @@ bool Evaluator::RunStep(int step, int round) {
 	{
         action = solver_->Search().action;
 	}
-	else
+	if(action_sequence_to_sim.size() > 0)
 	{
 		action = action_sequence_to_sim[0];
 		action_sequence_to_sim.erase(action_sequence_to_sim.begin());
@@ -213,6 +214,19 @@ bool Evaluator::RunStep(int step, int round) {
 		{
 			action_sequence_to_sim.push_back(-1);
 		}
+	}
+	if(Globals::config.manualControl)
+	{
+		action = MongoDB_Bridge::WaitForManualAction();
+		if (action == -1)
+		return false;
+	}
+
+	if(Globals::config.verbosity >= eLogLevel::INFO)
+	{
+		std::string actionDesc = Prints::PrintActionDescription(action);
+		std::string logMsg("Solver Selected Action: " + actionDesc);
+		MongoDB_Bridge::AddLog(logMsg, eLogLevel::INFO);
 	}
 
 	double end_t = get_time_second();
@@ -228,7 +242,7 @@ bool Evaluator::RunStep(int step, int round) {
 				<< " Step " << step << "-----------------------------------"
 				<< endl;
 	logi << "--------------------------------------EXECUTION---------------------------------------------------------------------------" << endl;
-	if (!Globals::config.silence && out_) {
+	if (Globals::config.verbosity >= eLogLevel::INFO && out_) {
 		*out_ << endl << "Action = ";
 		model_->PrintAction(action, *out_);
 	}
@@ -237,16 +251,22 @@ bool Evaluator::RunStep(int step, int round) {
     model_->PrintState(*state_);
 	std::map<std::string, std::string> localVariablesFromAction;
 
-	if(MongoDB_Bridge::currentActionSequenceId == 0)
+	if(!byExternalPolicy && MongoDB_Bridge::currentActionSequenceId == 0)
 	{
 		Evaluator::SaveBeliefToDB();
 	}
     std::string obsStr;
 	bool terminal = ExecuteAction(action, reward, obs, localVariablesFromAction, obsStr);
+    
+	if(Globals::config.verbosity >= eLogLevel::INFO)
+	{
+		std::string logMsg("Received observation:"+ Prints::PrintObs(obs));
+		MongoDB_Bridge::AddLog(logMsg, eLogLevel::INFO);
+	}
     logi << endl
 		 << "After:" << endl;
 	model_->PrintState(*state_);
-	logi << endl << "Reward:" << reward << endl <<  "Observation:" << enum_map_iros::vecResponseEnumToString[(IrosResponseModuleAndTempEnums)obs] << endl;
+	logi << endl << "Reward:" << reward << endl <<  "Observation:" << enum_map_collectValuableToys::vecResponseEnumToString[(CollectValuableToysResponseModuleAndTempEnums)obs] << endl;
 	end_t = get_time_second();
 	logi << "[RunStep] Time spent in ExecuteAction(): " << (end_t - start_t)
 		<< endl;
@@ -260,19 +280,6 @@ bool Evaluator::RunStep(int step, int round) {
  
 
 	end_t = get_time_second();
-
-	// double step_end_t;
-	// if (terminal) {
-	// 	step_end_t = get_time_second();
-	// 	logi << "[RunStep] Time for step: actual / allocated = "
-	// 		<< (step_end_t - step_start_t) << " / " << EvalLog::allocated_time
-	// 		<< endl;
-	// 	if (!Globals::config.silence && out_)
-	// 		*out_ << endl;
-	// 	step_++; 
-
-	// 	return true;
-	// }
 
 	*out_<<endl;
 
@@ -289,7 +296,7 @@ bool Evaluator::RunStep(int step, int round) {
 			ClosedModelPolicy::updateBelief(obsStr, action);
 		}
 	}
-	else if(action_sequence_to_sim.size() == 0)
+	else 
 	{
 		solver_->Update(action, obs, localVariablesFromAction);
 		Evaluator::SaveBeliefToDB();
@@ -349,7 +356,7 @@ double Evaluator::StderrDiscountedRoundReward() const {
 }
 
 void Evaluator::ReportStepReward() {
-	if (!Globals::config.silence && out_)
+	if (Globals::config.verbosity >= eLogLevel::INFO && out_)
 		*out_ << "- Reward = " << reward_ << endl
 			<< "- Current rewards:" << endl
 			<< "  discounted / undiscounted = " << total_discounted_reward_
@@ -389,7 +396,7 @@ void POMDPEvaluator::InitRound() {
 	// Initial state
 	state_ = model_->CreateStartState();
 	logi << "[POMDPEvaluator::InitRound] Created start state." << endl;
-	if (!Globals::config.silence && out_) {
+	if (Globals::config.verbosity >= eLogLevel::INFO && out_) {
 		*out_ << "Initial state: " << endl;
 		model_->PrintState(*state_, *out_);
 		*out_ << endl;
@@ -415,7 +422,9 @@ void POMDPEvaluator::InitRound() {
 }
 
 double POMDPEvaluator::EndRound() {
-	if (!Globals::config.silence && out_) {
+	if (!Globals::config.verbosity >= eLogLevel::INFO && out_) {
+		std::string logMsg("Total undiscounted simulated reward:" + to_string(total_undiscounted_reward_));
+		MongoDB_Bridge::AddLog(logMsg, eLogLevel::INFO);
 		*out_ << "Total discounted reward = " << total_discounted_reward_ << endl
 			<< "Total undiscounted reward = " << total_undiscounted_reward_ << endl;
 	}
@@ -432,17 +441,17 @@ bool POMDPEvaluator::ExecuteAction(int action, double& reward, OBS_TYPE& obs, st
     ActionType acType(actDesc.actionType);
 	std::string actionParameters = actDesc.GetActionParametersJson_ForActionExecution();
 		
-	std::string actionName = enum_map_iros::vecActionTypeEnumToString[acType];
+	std::string actionName = enum_map_collectValuableToys::vecActionTypeEnumToString[acType];
 	  
 	bsoncxx::oid actionId = MongoDB_Bridge::SendActionToExecution(actDesc.actionId, actionName, actionParameters);
 
 	double random_num = random_.NextDouble();
     bool terminal = false;
+
+    terminal = model_->Step(*state_, random_num, action, reward, obs);//it is outside the 'if' below since we save the simulated state anyway
 	if(Globals::IsInternalSimulation())
 	{
-		
-		terminal = model_->Step(*state_, random_num, action, reward, obs);
-		obsStr = enum_map_iros::vecResponseEnumToString[(IrosResponseModuleAndTempEnums)obs];
+		obsStr = enum_map_collectValuableToys::vecResponseEnumToString[(CollectValuableToysResponseModuleAndTempEnums)obs];
 		MongoDB_Bridge::SaveInternalActionResponse(actionName, actionId, obsStr);
 		reward_ = reward;
 		total_discounted_reward_ += Globals::Discount(step_) * reward;
@@ -451,11 +460,12 @@ bool POMDPEvaluator::ExecuteAction(int action, double& reward, OBS_TYPE& obs, st
 		return terminal;
 	}
 	else
-	{ 
+	{
+        terminal = false; 
 		obsStr = "";
 		localVariablesFromAction = MongoDB_Bridge::WaitForActionResponse(actionId, obsStr);
 
-		obs = enum_map_iros::vecStringToResponseEnum[obsStr];
+		obs = enum_map_collectValuableToys::vecStringToResponseEnum[obsStr];
 	}
     return terminal;
 }
