@@ -1,6 +1,6 @@
 #include <despot/simple_tui.h>
-#include <despot/model_primitives/iros/enum_map_iros.h> 
-#include <despot/model_primitives/iros/actionManager.h> 
+#include <despot/model_primitives/collectValuableToys/enum_map_collectValuableToys.h> 
+#include <despot/model_primitives/collectValuableToys/actionManager.h> 
 using namespace std;
 
 namespace despot {
@@ -368,7 +368,7 @@ void SimpleTUI::PrintResult(int num_runs, Evaluator *simulator,
 }
 
 int SimpleTUI::run(int argc, char *argv[]) {
-  enum_map_iros::Init();
+  enum_map_collectValuableToys::Init();
   
   clock_t main_clock_start = clock();
   EvalLog::curr_inst_start_time = get_time_second();

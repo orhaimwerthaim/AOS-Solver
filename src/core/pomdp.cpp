@@ -37,11 +37,18 @@ BeliefStateVariables::BeliefStateVariables(vector<State *> bs)
 	   __isTermianl_std = sqrt(__isTermianl_variance);
    }
 
+    tToy::tToy()
+    {
+        location = 1;
+        type = "green";
+        reward = 0.0;
+    }
 
 
 
 
-		void IrosState::SetAnyValueLinks(IrosState *state)
+
+		void CollectValuableToysState::SetAnyValueLinks(CollectValuableToysState *state)
 		{
 
 		}

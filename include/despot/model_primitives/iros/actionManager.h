@@ -1,7 +1,11 @@
 #ifndef ACTION_MANAGER_H
 #define ACTION_MANAGER_H
 
+<<<<<<<< HEAD:include/despot/model_primitives/iros/actionManager.h
 #include "enum_map_iros.h" 
+========
+#include "enum_map_collectValuableToys.h" 
+>>>>>>>> origin/master:include/despot/model_primitives/collectValuableToys/actionManager.h
 #include <despot/core/pomdp.h>
 #include "state_var_types.h"
 #include <vector>
@@ -24,7 +28,13 @@ namespace despot {
 class Detect_board_stateActionDescription: public ActionDescription
 {
     public:
+<<<<<<<< HEAD:include/despot/model_primitives/iros/actionManager.h
         //Detect_board_stateActionDescription();
+========
+        int oDestination;
+        std::string strLink_oDestination;
+        NavigateActionDescription(int _oDestination_Index);
+>>>>>>>> origin/master:include/despot/model_primitives/collectValuableToys/actionManager.h
         virtual void SetActionParametersByState(State *state, std::vector<std::string> indexes);
 
                         
@@ -48,6 +58,32 @@ class Draw_in_cellActionDescription: public ActionDescription
         Draw_in_cellActionDescription(){};
 };
 
+class PickActionDescription: public ActionDescription
+{
+    public:
+        string toyType;
+        std::string strLink_toyType;
+        PickActionDescription(int _toyType_Index);
+        virtual void SetActionParametersByState(State *state, std::vector<std::string> indexes);
+
+                        
+        virtual std::string GetActionParametersJson_ForActionExecution();
+        virtual std::string GetActionParametersJson_ForActionRegistration();
+        PickActionDescription(){};
+};
+
+class PlaceActionDescription: public ActionDescription
+{
+    public:
+        //PlaceActionDescription();
+        virtual void SetActionParametersByState(State *state, std::vector<std::string> indexes);
+
+                        
+        virtual std::string GetActionParametersJson_ForActionExecution();
+        virtual std::string GetActionParametersJson_ForActionRegistration();
+        PlaceActionDescription(){};
+};
+
 
 
 class ActionManager {
@@ -60,7 +96,10 @@ public:
 class Prints
 {
 	public:
+<<<<<<<< HEAD:include/despot/model_primitives/iros/actionManager.h
     static std::string PrinttSymbols(tSymbols);
+========
+>>>>>>>> origin/master:include/despot/model_primitives/collectValuableToys/actionManager.h
 
 	static std::string PrintActionDescription(ActionDescription*);
     static std::string PrintActionDescription(int actionId);

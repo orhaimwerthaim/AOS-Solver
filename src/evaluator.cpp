@@ -161,7 +161,7 @@ bool Evaluator::RunStep(int step, int round) {
 
 	if(byExternalPolicy)
 	{
-		Evaluator::fixedPolicy.init_policy_vec(); 
+		Evaluator::fixedPolicy.init_policy_vec();
 	}
 
 	if(shutDown && !Globals::config.handsOnDebug)
@@ -192,7 +192,7 @@ bool Evaluator::RunStep(int step, int round) {
 	int action = -1;
 
     if(byExternalPolicy)
-    {   
+    {
 		vector<State*> particles = solver_->belief()->GetParticles();
 		map<int, int> states_hash_count;
 		for(State* par : particles)
@@ -200,7 +200,7 @@ bool Evaluator::RunStep(int step, int round) {
 			int hash = State::GetStateHash(*par);
 			states_hash_count[hash] +=1;
 		}
-		action = Evaluator::fixedPolicy.get_best_action_by_alpha_vector(states_hash_count);   
+		action = Evaluator::fixedPolicy.get_best_action_by_alpha_vector(states_hash_count);
     }
     else if(action_sequence_to_sim.size() == 0)
 	{
@@ -257,7 +257,7 @@ bool Evaluator::RunStep(int step, int round) {
 	}
     std::string obsStr;
 	bool terminal = ExecuteAction(action, reward, obs, localVariablesFromAction, obsStr);
-    
+
 	if(Globals::config.verbosity >= eLogLevel::INFO)
 	{
 		std::string logMsg("Received observation:"+ Prints::PrintObs(obs));
@@ -284,10 +284,10 @@ bool Evaluator::RunStep(int step, int round) {
 	*out_<<endl;
 
 	start_t = get_time_second();
-	
+
     solver_->Update(action, obs, localVariablesFromAction);
 	Evaluator::SaveBeliefToDB();
-	
+
 	end_t = get_time_second();
 	logi << "[RunStep] Time spent in Update(): " << (end_t - start_t) << endl;
 
@@ -448,7 +448,7 @@ bool POMDPEvaluator::ExecuteAction(int action, double& reward, OBS_TYPE& obs, st
 	}
 	else
 	{
-        terminal = false; 
+        terminal = false;
 		obsStr = "";
 		localVariablesFromAction = MongoDB_Bridge::WaitForActionResponse(actionId, obsStr);
 
