@@ -11,9 +11,9 @@
 #include <despot/util/memorypool.h>
 #include <despot/util/seeds.h>
 #include <despot/util/util.h> 
-#include <despot/model_primitives/collectValuableToys/enum_map_collectValuableToys.h> 
-#include <despot/model_primitives/collectValuableToys/actionManager.h>  
-#include <despot/model_primitives/collectValuableToys/state_var_types.h>
+#include <despot/model_primitives/iros/enum_map_iros.h> 
+#include <despot/model_primitives/iros/actionManager.h>  
+#include <despot/model_primitives/iros/state_var_types.h>
 #include <vector>
 #include <tuple>
 #include <map>
@@ -64,33 +64,17 @@ public:
 	}
 
     bool __isTermianl = false;
-    bool OneTimeRewardUsed[3]={true,true,true};
-    std::vector<tToy*> tToyObjects;
-    std::map<std::string, int> intObjectsForActions;
-    std::map<std::string, string> stringObjectsForActions;
-    int location0;
-    int location1;
-    int location2;
-    int location3;
-    int child;
-    int robotArm;
-    string toy_typeGreen;
-    string toy_typeBlue;
-    string toy_typeBlack;
-    string toy_typeRed;
-    tToy toy1;
-    tToy toy2;
-    tToy toy3;
-    tToy toy4;
-    int pickActionsLeft;
-    int robotLocation;
+    bool OneTimeRewardUsed[1]={true};
+    std::vector<tSymbols> tSymbolsObjects;
+    vector<int> grid;
+    bool isRobotTurn;
     std::map<std::string, anyValue*> anyValueUpdateDic;
 
 
 	public:
 		static void SetAnyValueLinks(State *state);
 };
-typedef State CollectValuableToysState;
+typedef State IrosState;
 
 
 /* =============================================================================

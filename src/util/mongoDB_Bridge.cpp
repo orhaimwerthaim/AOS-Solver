@@ -13,12 +13,12 @@
 #include <bsoncxx/builder/stream/array.hpp>
 #include <sstream>
 #include <unistd.h>
-#include <ctime>
+#include <ctime> 
 #include <nlohmann/json.hpp> 
 #include <thread>
 #include <chrono>
 using namespace std::chrono_literals;
-using json = nlohmann::json;
+using json = nlohmann::json; 
 
 using bsoncxx::builder::stream::close_array;
 using bsoncxx::builder::stream::close_document;
@@ -41,7 +41,7 @@ namespace despot {
   mongocxx::collection MongoDB_Bridge::actionsCollection;
   mongocxx::collection MongoDB_Bridge::globalVariablesAssignmentsColllection;
   mongocxx::collection MongoDB_Bridge::SolversCollection;
-  mongocxx::collection MongoDB_Bridge::logsCollection;
+  mongocxx::collection MongoDB_Bridge::logsCollection; 
   mongocxx::collection MongoDB_Bridge::manualActionsForSolverCollection;
   mongocxx::collection MongoDB_Bridge::SimulatedStatesColllection;
   mongocxx::collection MongoDB_Bridge::beliefStatesColllection;
@@ -67,11 +67,11 @@ namespace despot {
       MongoDB_Bridge::actionsCollection = MongoDB_Bridge::db["Actions"];
       MongoDB_Bridge::SolversCollection = MongoDB_Bridge::db["Solvers"];
       MongoDB_Bridge::beliefStatesColllection = MongoDB_Bridge::db["BeliefStates"];
-      MongoDB_Bridge::closedModelBeliefStatesColllection = MongoDB_Bridge::db["ClosedModelBeliefState"];
+      MongoDB_Bridge::closedModelBeliefStatesColllection = MongoDB_Bridge::db["ClosedModelBeliefState"]; 
       MongoDB_Bridge::logsCollection = MongoDB_Bridge::db["Logs"];
       MongoDB_Bridge::SimulatedStatesColllection = MongoDB_Bridge::db["SimulatedStates"];
       MongoDB_Bridge::manualActionsForSolverCollection = MongoDB_Bridge::db["ManualActionsForSolver"];
-
+      
       auto filter = document{} << finalize;
       MongoDB_Bridge::SimulatedStatesColllection.delete_many(filter.view());
       MongoDB_Bridge::beliefStatesColllection.delete_many(filter.view());
@@ -165,7 +165,7 @@ std::map<std::string, std::string> MongoDB_Bridge::WaitForActionResponse(bsoncxx
   while (!actionFinished)
   {
     double time_elapsed = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::high_resolution_clock::now() - start).count();
-      if(time_elapsed > 60*30)//stop waiting after 15 minutes
+      if(time_elapsed > 60*30)//stop waiting after 15 minutes 
       {
         std::string msg("Solver stopped waiting for response after 30 minutes");
         MongoDB_Bridge::AddLog(msg, 1);//FATAL logLevel Error
@@ -204,21 +204,21 @@ std::map<std::string, std::string> MongoDB_Bridge::WaitForActionResponse(bsoncxx
   auto filter = document{} << finalize;
   bool actionFinished = false;
 
-
+    
     while (true)
     {
       double time_elapsed = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::high_resolution_clock::now() - start).count();
-      if(time_elapsed > 60*5)//stop waiting after 15 minutes
+      if(time_elapsed > 60*5)//stop waiting after 15 minutes 
       {
         std::string msg("Solver terminated. It stopped waiting for manual action after 5 minutes");
         MongoDB_Bridge::AddLog(msg, 4);//FATAL logLevel Info
         break;
       }
       mongocxx::cursor cursor = MongoDB_Bridge::manualActionsForSolverCollection.find({filter});
-      for(auto doc : cursor)
+      for(auto doc : cursor) 
     {
-      actionFinished = true;
-      int actionId = doc["ActionID"].get_int32().value;
+      actionFinished = true; 
+      int actionId = doc["ActionID"].get_int32().value; 
 
       MongoDB_Bridge::manualActionsForSolverCollection.delete_one(filter.view());
       return actionId;
@@ -277,8 +277,8 @@ void MongoDB_Bridge::AddLog(std::string logMsg, int logLevel)
   case 6:
     logLevelDesc = "Trace";
     break;
-
-
+    
+  
   default:
   logLevelDesc = "";
     break;
@@ -296,7 +296,7 @@ void MongoDB_Bridge::AddLog(std::string logMsg, int logLevel)
 
   MongoDB_Bridge::logsCollection.insert_one(doc_value.view());
 }
-
+ 
 
 std::string MongoDB_Bridge::SampleFromBeliefState(int skipStates, int takeStates)
 {
@@ -313,10 +313,10 @@ std::string MongoDB_Bridge::SampleFromBeliefState(int skipStates, int takeStates
 
 void MongoDB_Bridge::SaveSimulatedState(std::string currentSimulatedState)
 {
-  MongoDB_Bridge::Init();
+  MongoDB_Bridge::Init(); 
   auto builder = bsoncxx::builder::stream::document{};
-  bsoncxx::document::value doc_value = bsoncxx::from_json(currentSimulatedState);
-
+  bsoncxx::document::value doc_value = bsoncxx::from_json(currentSimulatedState); 
+                                                    
   MongoDB_Bridge::SimulatedStatesColllection.insert_one(doc_value.view());
 }
 

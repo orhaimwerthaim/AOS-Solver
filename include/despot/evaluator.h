@@ -5,7 +5,7 @@
 #include <despot/core/pomdp.h>
 #include <despot/pomdpx/pomdpx.h>
 #include <despot/util/util.h>
-#include <despot/model_primitives/collectValuableToys/enum_map_collectValuableToys.h>
+#include <despot/model_primitives/iros/enum_map_iros.h>
 #include <unistd.h>
 #include <algorithm>
 #include <cctype> 
