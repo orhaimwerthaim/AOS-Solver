@@ -163,7 +163,7 @@ void SimpleTUI::OptionParse(option::Option *options, int &num_runs,
                             int &time_limit, string &solver_type,
                             bool &search_solver) {
   if (options[E_SILENCE])
-    Globals::config.silence = true;
+    Globals::config.verbosity = (int)eLogLevel::Off;
 
   if (options[E_DEPTH])
     Globals::config.search_depth = atoi(options[E_DEPTH].arg);

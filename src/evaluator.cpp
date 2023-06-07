@@ -145,9 +145,10 @@ void Evaluator::SaveBeliefToDB()
 {
 	if(Globals::config.saveBeliefToDB)
 	{
-		vector<State*> temp = solver_->belief()->Sample(1);
+		vector<State*> temp = solver_->belief()->Sample(5);
 		Prints::SaveBeliefParticles(temp);
 	}
+	Prints::SaveSimulatedState(state_);
 }
 
 bool Evaluator::RunStep(int step, int round) {
@@ -160,14 +161,7 @@ bool Evaluator::RunStep(int step, int round) {
 
 	if(byExternalPolicy)
 	{
-		if(Globals::config.closedModelPolicyByGraph)
-		{
-			Evaluator::fixedPolicy.init_policy();
-		}
-		else
-		{
-			ClosedModelPolicy::loadAlphaVectorsFromPolicyFile();
-		}
+		Evaluator::fixedPolicy.init_policy_vec(); 
 	}
 
 	if(shutDown && !Globals::config.handsOnDebug)
@@ -180,7 +174,7 @@ bool Evaluator::RunStep(int step, int round) {
 	}
 
 	if (target_finish_time_ != -1 && get_time_second() > target_finish_time_) {
-		if (!Globals::config.silence && out_)
+		if (Globals::config.verbosity >= eLogLevel::TRACE && out_)
 			*out_ << "Exit. (Total time "
 				<< (get_time_second() - EvalLog::curr_inst_start_time)
 				<< "s exceeded time limit of "
@@ -198,14 +192,21 @@ bool Evaluator::RunStep(int step, int round) {
 	int action = -1;
 
     if(byExternalPolicy)
-    {
-           action = Globals::config.closedModelPolicyByGraph ? Evaluator::fixedPolicy.getCurrentAction() : ClosedModelPolicy::getBestAction();
+    {   
+		vector<State*> particles = solver_->belief()->GetParticles();
+		map<int, int> states_hash_count;
+		for(State* par : particles)
+		{
+			int hash = State::GetStateHash(*par);
+			states_hash_count[hash] +=1;
+		}
+		action = Evaluator::fixedPolicy.get_best_action_by_alpha_vector(states_hash_count);   
     }
     else if(action_sequence_to_sim.size() == 0)
 	{
         action = solver_->Search().action;
 	}
-	else
+	if(action_sequence_to_sim.size() > 0)
 	{
 		action = action_sequence_to_sim[0];
 		action_sequence_to_sim.erase(action_sequence_to_sim.begin());
@@ -213,6 +214,19 @@ bool Evaluator::RunStep(int step, int round) {
 		{
 			action_sequence_to_sim.push_back(-1);
 		}
+	}
+	if(Globals::config.manualControl)
+	{
+		action = MongoDB_Bridge::WaitForManualAction();
+		if (action < 0)
+		return false;
+	}
+
+	if(Globals::config.verbosity >= eLogLevel::INFO)
+	{
+		std::string actionDesc = Prints::PrintActionDescription(action);
+		std::string logMsg("Solver Selected Action: " + actionDesc);
+		MongoDB_Bridge::AddLog(logMsg, eLogLevel::INFO);
 	}
 
 	double end_t = get_time_second();
@@ -228,7 +242,7 @@ bool Evaluator::RunStep(int step, int round) {
 				<< " Step " << step << "-----------------------------------"
 				<< endl;
 	logi << "--------------------------------------EXECUTION---------------------------------------------------------------------------" << endl;
-	if (!Globals::config.silence && out_) {
+	if (Globals::config.verbosity >= eLogLevel::INFO && out_) {
 		*out_ << endl << "Action = ";
 		model_->PrintAction(action, *out_);
 	}
@@ -243,6 +257,12 @@ bool Evaluator::RunStep(int step, int round) {
 	}
     std::string obsStr;
 	bool terminal = ExecuteAction(action, reward, obs, localVariablesFromAction, obsStr);
+    
+	if(Globals::config.verbosity >= eLogLevel::INFO)
+	{
+		std::string logMsg("Received observation:"+ Prints::PrintObs(obs));
+		MongoDB_Bridge::AddLog(logMsg, eLogLevel::INFO);
+	}
     logi << endl
 		 << "After:" << endl;
 	model_->PrintState(*state_);
@@ -261,46 +281,20 @@ bool Evaluator::RunStep(int step, int round) {
 
 	end_t = get_time_second();
 
-	// double step_end_t;
-	// if (terminal) {
-	// 	step_end_t = get_time_second();
-	// 	logi << "[RunStep] Time for step: actual / allocated = "
-	// 		<< (step_end_t - step_start_t) << " / " << EvalLog::allocated_time
-	// 		<< endl;
-	// 	if (!Globals::config.silence && out_)
-	// 		*out_ << endl;
-	// 	step_++; 
-
-	// 	return true;
-	// }
-
 	*out_<<endl;
 
 	start_t = get_time_second();
-	if(byExternalPolicy)
-	{
-		if(Globals::config.closedModelPolicyByGraph)
-		{
-			Evaluator::fixedPolicy.updateStateByObs(obsStr);
-		}
-		
-        else
-		{
-			ClosedModelPolicy::updateBelief(obsStr, action);
-		}
-	}
-	else if(action_sequence_to_sim.size() == 0)
-	{
-		solver_->Update(action, obs, localVariablesFromAction);
-		Evaluator::SaveBeliefToDB();
-	}
+	
+    solver_->Update(action, obs, localVariablesFromAction);
+	Evaluator::SaveBeliefToDB();
+	
 	end_t = get_time_second();
 	logi << "[RunStep] Time spent in Update(): " << (end_t - start_t) << endl;
 
 	step_++;
 
     BeliefStateVariables bv = BeliefStateVariables(solver_->belief()->Sample(1000));
-	if(bv.__isTermianl_mean > 0.9 && bv.__isTermianl_std < 0.10)
+	if(bv.__isTermianl_mean > 0.9 && bv.__isTermianl_std < 0.25)
 	{
 		return true;
 	}
@@ -349,7 +343,7 @@ double Evaluator::StderrDiscountedRoundReward() const {
 }
 
 void Evaluator::ReportStepReward() {
-	if (!Globals::config.silence && out_)
+	if (Globals::config.verbosity >= eLogLevel::INFO && out_)
 		*out_ << "- Reward = " << reward_ << endl
 			<< "- Current rewards:" << endl
 			<< "  discounted / undiscounted = " << total_discounted_reward_
@@ -389,7 +383,7 @@ void POMDPEvaluator::InitRound() {
 	// Initial state
 	state_ = model_->CreateStartState();
 	logi << "[POMDPEvaluator::InitRound] Created start state." << endl;
-	if (!Globals::config.silence && out_) {
+	if (Globals::config.verbosity >= eLogLevel::INFO && out_) {
 		*out_ << "Initial state: " << endl;
 		model_->PrintState(*state_, *out_);
 		*out_ << endl;
@@ -415,7 +409,9 @@ void POMDPEvaluator::InitRound() {
 }
 
 double POMDPEvaluator::EndRound() {
-	if (!Globals::config.silence && out_) {
+	if (Globals::config.verbosity >= eLogLevel::INFO && out_) {
+		std::string logMsg("Total undiscounted simulated reward:" + to_string(total_undiscounted_reward_));
+		MongoDB_Bridge::AddLog(logMsg, eLogLevel::INFO);
 		*out_ << "Total discounted reward = " << total_discounted_reward_ << endl
 			<< "Total undiscounted reward = " << total_undiscounted_reward_ << endl;
 	}
@@ -438,10 +434,10 @@ bool POMDPEvaluator::ExecuteAction(int action, double& reward, OBS_TYPE& obs, st
 
 	double random_num = random_.NextDouble();
     bool terminal = false;
+
+    terminal = model_->Step(*state_, random_num, action, reward, obs);//it is outside the 'if' below since we save the simulated state anyway
 	if(Globals::IsInternalSimulation())
 	{
-		
-		terminal = model_->Step(*state_, random_num, action, reward, obs);
 		obsStr = enum_map_iros::vecResponseEnumToString[(IrosResponseModuleAndTempEnums)obs];
 		MongoDB_Bridge::SaveInternalActionResponse(actionName, actionId, obsStr);
 		reward_ = reward;
@@ -451,7 +447,8 @@ bool POMDPEvaluator::ExecuteAction(int action, double& reward, OBS_TYPE& obs, st
 		return terminal;
 	}
 	else
-	{ 
+	{
+        terminal = false; 
 		obsStr = "";
 		localVariablesFromAction = MongoDB_Bridge::WaitForActionResponse(actionId, obsStr);
 

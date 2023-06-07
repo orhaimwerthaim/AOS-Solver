@@ -24,7 +24,10 @@ ostream& operator<<(ostream& os, const Belief& belief) {
 	os << (&belief)->text();
 	return os;
 }
-
+std::vector<State*> Belief::GetParticles() const
+{
+throw new exception();
+}
 vector<State*> Belief::Sample(int num, vector<State*> particles,
 	const DSPOMDP* model) {
 	double unit = 1.0 / num;
@@ -303,6 +306,11 @@ ParticleBelief::ParticleBelief(vector<State*> particles, const DSPOMDP* model,
 		for (int i = 0; i < particles.size(); i++)
 			initial_particles_.push_back(model_->Copy(particles[i]));
 	}
+}
+
+std::vector<State*> ParticleBelief::GetParticles() const
+{
+	return particles_;
 }
 
 ParticleBelief::~ParticleBelief() {

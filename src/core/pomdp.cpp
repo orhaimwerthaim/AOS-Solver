@@ -7,6 +7,11 @@
 using namespace std;
 
 namespace despot {
+std::hash<std::string> State::hasher;
+int State::GetStateHash(State s)
+{
+	return hasher(Prints::PrintState(s));
+}
 
 BeliefStateVariables::BeliefStateVariables(vector<State *> bs)
    {

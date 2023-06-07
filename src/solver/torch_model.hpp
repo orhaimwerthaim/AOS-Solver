@@ -1,5 +1,7 @@
 //https://download.pytorch.org/whl/torch_stable.html
 //torch-1.13.1+cpu-cp39-cp39-linux_x86_64
+#ifndef TORCH_MODEL_HPP
+#define TORCH_MODEL_HPP
 #include <torch/script.h>
 #include <iostream> 
 #include <memory>
@@ -16,7 +18,8 @@ bool wasInit=false;
 void Init()
 {
   wasInit=true;
-std::string path ("/home/or/ML_logs/iros:PPO:C15595340062B36513B57E8397AF59D2D59B654B5D33225FDFF7E2F74ACF45D5.pt");
+//std::string path ("/home/or/ML_logs/iros:PPO:C15595340062B36513B57E8397AF59D2D59B654B5D33225FDFF7E2F74ACF45D5.pt");
+std::string path ("/home/or/ML_logs/collectValuableToys:DQN:6184D29EA165B94AD86F8FC37A5EF4B23CA4782145EBE9F9891FDB2BCB6942B8.pt");
   // if (argc != 2) {
   //   std::cerr << "usage: example-app <path-to-exported-script-module>\n";
   //   return -1;
@@ -38,10 +41,20 @@ int getActionFromNN(despot::State* state)//, torch::jit::script::Module module)
   if(!wasInit)
   {
     torch_model::Init();
-  }
-  return 1;
+  } 
    std::vector<torch::jit::IValue> inputs;
-   float state_as_vec[]={}; 
+   float state_as_vec[]={
+    (int)state->pickActionsLeft,
+   (int)state->robotArm,
+   (int)state->robotLocation,
+   (int)state->toy1.location,
+   (int)state->toy1.reward,
+   (int)state->toy2.location,
+   (int)state->toy2.reward,
+   (int)state->toy3.location,
+   (int)state->toy3.reward,
+   (int)state->toy4.location,
+   (int)state->toy4.reward}; 
   //  float state_as_vec[]={(int)state->Cell1.content, state->Cell1.location, 
   //                         (int)state->Cell2.content, state->Cell2.location,
   //                         (int)state->Cell3.content, state->Cell3.location,
@@ -52,13 +65,16 @@ int getActionFromNN(despot::State* state)//, torch::jit::script::Module module)
   //                         (int)state->Cell8.content, state->Cell8.location,
   //                         (int)state->Cell9.content, state->Cell9.location,
   //                         (int)state->humanSymbol, (int)state->isRobotTurn};
-   torch::Tensor f = torch::from_blob(state_as_vec, {1,20});
+   torch::Tensor f = torch::from_blob(state_as_vec, {1,11}); 
    inputs.push_back(f);
   torch::jit::IValue output = module.forward(inputs);
-  
+ // std::cout << "output:" << output << endl;
   torch::Tensor t0 = output.toTuple()->elements()[0].toTensor();
+ // std::cout << "t0:" << t0 << endl;
+ // std::cout << "t0.size():" << t0.sizes() << endl;
+  auto sizes = t0.sizes();
   //torch::Tensor t1 = output.toTuple()->elements()[1].toTensor();
-  int action = t0.argmax(1).item().toInt();
+  int action = sizes.size() == 1 ? t0.argmax(0).item().toInt() : t0.argmax(1).item().toInt();
   
 
 //std::cout << "--------------------\n" << output << "\n";
@@ -160,3 +176,4 @@ int getActionFromNN(despot::State* state)//, torch::jit::script::Module module)
 // }
 
 }
+#endif //TORCH_MODEL_HPP

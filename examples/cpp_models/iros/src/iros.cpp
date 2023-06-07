@@ -15,7 +15,8 @@
 #include <float.h>
 #include <map>
 #include <tuple>
-
+#include <filesystem>
+namespace fs = std::filesystem;
 using namespace std;
 
 namespace despot {
@@ -56,7 +57,6 @@ bool AOSUtils::Bernoulli(double p)
     float rand = real_unfirom_dist(generator);
 	return rand < p;
 }
-std::hash<std::string> Iros::hasher;
 /* ==============================================================================
  *IrosBelief class
  * ==============================================================================*/
@@ -80,25 +80,13 @@ void IrosBelief::Update(int actionId, OBS_TYPE obs, map<std::string, std::string
 	history_.Add(actionId, obs);
 
     ActionType &actType = ActionManager::actions[actionId]->actionType;
-    string obsr;
     int cell_to_mark;
-    bool success;
+    string obsr;
 
 
 
     try
     {
-        if(actType == draw_in_cellAction)
-        {
-            if(localVariables.find("cell_to_mark") != localVariables.end())
-            {
-                cell_to_mark = std::stoi(localVariables["cell_to_mark"]);
-            }
-            if(localVariables.find("success") != localVariables.end())
-            {
-                success = localVariables["success"] == "true";
-            }
-        }
         if(actType == detect_board_stateAction)
         {
             if(localVariables.find("obsr") != localVariables.end())
@@ -106,12 +94,19 @@ void IrosBelief::Update(int actionId, OBS_TYPE obs, map<std::string, std::string
                 obsr = localVariables["obsr"];
             }
         }
+        if(actType == draw_in_cellAction)
+        {
+            if(localVariables.find("cell_to_mark") != localVariables.end())
+            {
+                cell_to_mark = std::stoi(localVariables["cell_to_mark"]);
+            }
+        }
 
     }
     catch(const std::exception& e)
     {
         std::string s ="Error: problem loading LocalVariables data for belief state update. ";
-        MongoDB_Bridge::AddError(s + e.what());
+        MongoDB_Bridge::AddLog(s + e.what(), eLogLevel::ERROR);
     }
 
 	vector<State*> updated;
@@ -130,26 +125,15 @@ void IrosBelief::Update(int actionId, OBS_TYPE obs, map<std::string, std::string
                 {
 				IrosState &state__ = static_cast<IrosState &>(*particles_[cur]);
                 IrosState &state___ = static_cast<IrosState &>(*particle);
+                    if(actType == detect_board_stateAction)
+                    {
+                    }
                     if(actType == draw_in_cellAction)
                     {
                         Draw_in_cellActionDescription act = *(static_cast<Draw_in_cellActionDescription *>(ActionManager::actions[actionId]));
                         int &oCellP = act.oCellP;
                     }
-                    if(actType == detect_board_stateAction)
-                    {
-                    }
 
-
-
-				//if(!Globals::IsInternalSimulation() && updates.size() > 0)
-				//{
-				//	IrosState::SetAnyValueLinks(&iros_particle);
-				//	map<std::string, bool>::iterator it;
-				//	for (it = updates.begin(); it != updates.end(); it++)
-				//	{
-				//		*(iros_particle.anyValueUpdateDic[it->first]) = it->second; 
-				//	} 
-				//}
 
                 }
 				updated.push_back(particle);
@@ -169,7 +153,12 @@ void IrosBelief::Update(int actionId, OBS_TYPE obs, map<std::string, std::string
 
 	for (int i = 0; i < particles_.size(); i++)
 		particles_[i]->weight = 1.0 / particles_.size();
- 
+    
+     if(Globals::config.verbosity >= eLogLevel::FATAL && particles_.size() == 0)
+ {
+    std::string logMsg("Could not update belief after action: " + Prints::PrintActionDescription(actionId) +". Received observation:" + Prints::PrintObs(obs));
+    MongoDB_Bridge::AddLog(logMsg, eLogLevel::FATAL);
+ }
 }
 
 /* ==============================================================================
@@ -262,9 +251,42 @@ State* Iros::CreateStartState(string type) const {
 
 
 Belief* Iros::InitialBelief(const State* start, string type) const {
-    if(Globals::config.solveProblemWithClosedPomdpModel)
+    if(Globals::config.solveProblemWithClosedPomdpModel  && !Globals::config.useSavedSarsopPolicy)
     {
-        POMDP_ClosedModel::closedModel.CreateAndSolveModel();
+        bool best_policy_exists = false;
+        char tmp[256];
+		getcwd(tmp, 256);
+		std::string workingDirPath(tmp);
+		workingDirPath = workingDirPath.substr(0, workingDirPath.find("build"));
+        workingDirPath.append("sarsop/src/");
+		std::string metadata_fpath(workingDirPath);
+        metadata_fpath.append("policy_metadata.txt");
+        ifstream meta_fs(metadata_fpath.c_str());
+        std::string hash; 
+        int search_depth;
+        string desc1, desc2; 
+		// std::string state_map( (std::istreambuf_iterator<char>(meta_fs) ),
+        //                (std::istreambuf_iterator<char>()    ) );
+		
+        meta_fs >> desc1 >> hash >> desc2 >> search_depth;
+        if(Globals::config.domainHash == hash && search_depth == Globals::config.search_depth)
+        {
+            for (const auto & entry : fs::directory_iterator(workingDirPath))
+            {
+                string f_name(entry.path().u8string());
+                f_name = f_name.substr(workingDirPath.size());
+                if (f_name == "out.policy")
+                {
+                    best_policy_exists=true;
+                    break;
+                }
+            }
+        }
+
+        if(!best_policy_exists)
+        {
+            POMDP_ClosedModel::closedModel.CreateAndSolveModel();
+        }
     }
 	int N = IrosBelief::num_particles;
 	vector<State*> particles(N);
@@ -332,16 +354,21 @@ int Iros::NumActiveParticles() const {
 	return memory_pool_.num_allocated();
 }
 
+int Iros::GetStateHash(State state) const
+{ 
+    return State::GetStateHash(state);
+}
+
 void Iros::StepForModel(State& state, int actionId, double& reward,
         OBS_TYPE& observation, int &state_hash, int &next_state_hash, bool& isTerminal, double& precondition_reward, double& specialStateReward) const
     {
         reward = 0;
-        IrosState &ir_state = static_cast<IrosState &>(state);
-        state_hash = hasher(Prints::PrintState(ir_state));
+        //IrosState &ir_state = static_cast<IrosState &>(state);
+        state_hash = GetStateHash(state);
 
         bool meetPrecondition;
         precondition_reward = 0;
-        CheckPreconditions(ir_state, reward, meetPrecondition, actionId);
+        CheckPreconditions(state, reward, meetPrecondition, actionId);
         if(!meetPrecondition)
         {
             precondition_reward = reward;
@@ -349,13 +376,13 @@ void Iros::StepForModel(State& state, int actionId, double& reward,
         
         isTerminal = Iros::Step(state, 0.1, actionId, reward,
                    observation);
-        ir_state = static_cast<IrosState &>(state);
+        //ir_state = static_cast<IrosState &>(state);
 
         specialStateReward = 0;
-        ProcessSpecialStates(ir_state, specialStateReward);
+        ProcessSpecialStates(state, specialStateReward);
         reward -= (precondition_reward + specialStateReward);//so that it will not consider the precondition penalty and special states reward
 
-        next_state_hash = hasher(Prints::PrintState(ir_state));
+        next_state_hash = GetStateHash(state);
     }
 bool Iros::Step(State& s_state__, double rand_num, int actionId, double& reward,
 	OBS_TYPE& observation) const {
@@ -407,16 +434,16 @@ void Iros::CheckPreconditions(const IrosState& state, double &reward, bool &__me
     {
         ActionType &actType = ActionManager::actions[actionId]->actionType;
         __meetPrecondition = true;
+            if(actType == detect_board_stateAction)
+            {
+                __meetPrecondition=!state.isRobotTurn;
+                if(!__meetPrecondition) reward += -10;
+            }
             if(actType == draw_in_cellAction)
             {
                 Draw_in_cellActionDescription act = *(static_cast<Draw_in_cellActionDescription *>(ActionManager::actions[actionId]));
                 int &oCellP = act.oCellP;
                 __meetPrecondition=state.isRobotTurn && state.grid[oCellP] == eEmpty;
-                if(!__meetPrecondition) reward += -10;
-            }
-            if(actType == detect_board_stateAction)
-            {
-                __meetPrecondition=!state.isRobotTurn;
                 if(!__meetPrecondition) reward += -10;
             }
     }
@@ -425,13 +452,13 @@ void Iros::ComputePreferredActionValue(const IrosState& state, double &__heurist
     {
         __heuristicValue = 0;
         ActionType &actType = ActionManager::actions[actionId]->actionType;
+            if(actType == detect_board_stateAction)
+            {
+            }
             if(actType == draw_in_cellAction)
             {
                 Draw_in_cellActionDescription act = *(static_cast<Draw_in_cellActionDescription *>(ActionManager::actions[actionId]));
                 int &oCellP = act.oCellP;
-            }
-            if(actType == detect_board_stateAction)
-            {
             }
         __heuristicValue = __heuristicValue < 0 ? 0 : __heuristicValue;
     }
@@ -439,10 +466,10 @@ void Iros::ComputePreferredActionValue(const IrosState& state, double &__heurist
 void Iros::SampleModuleExecutionTime(const IrosState& farstate, double rand_num, int actionId, int &__moduleExecutionTime) const
 {
     ActionType &actType = ActionManager::actions[actionId]->actionType;
-    if(actType == draw_in_cellAction)
+    if(actType == detect_board_stateAction)
     {
     }
-    if(actType == detect_board_stateAction)
+    if(actType == draw_in_cellAction)
     {
     }
 }
@@ -450,31 +477,32 @@ void Iros::SampleModuleExecutionTime(const IrosState& farstate, double rand_num,
 void Iros::ExtrinsicChangesDynamicModel(const IrosState& state, IrosState& state_, double rand_num, int actionId, const int &__moduleExecutionTime,  double &__reward)  const
 {
     ActionType &actionType = ActionManager::actions[actionId]->actionType;
-    Draw_in_cellActionDescription* draw_in_cell = actionType != (draw_in_cellAction) ? NULL : (static_cast<Draw_in_cellActionDescription *>(ActionManager::actions[actionId]));
     Detect_board_stateActionDescription* detect_board_state = actionType != (detect_board_stateAction) ? NULL : (static_cast<Detect_board_stateActionDescription *>(ActionManager::actions[actionId]));
+    Draw_in_cellActionDescription* draw_in_cell = actionType != (draw_in_cellAction) ? NULL : (static_cast<Draw_in_cellActionDescription *>(ActionManager::actions[actionId]));
     if(!state.isRobotTurn){
-int emptyC = 0;
+    int emptyC = 0;
     
-for_each(state.grid.begin(),state.grid.end(),[&](int const& cell){emptyC += cell == eEmpty ? 1 : 0;
+    for_each(state.grid.begin(),state.grid.end(),[&](int const& cell){emptyC += cell == eEmpty ? 1 : 0;
     });
     
-float w = 1.0/emptyC;
+    float w = 1.0/emptyC;
     
-vector<float> weights{};
+    vector<float> weights{};
     
-for(int i=0;
+    for(int i=0;
     i< state.grid.size();
     i++)
-{
-  weights.push_back(state.grid[i] == eEmpty ? w : 0.0);
+    {
+      weights.push_back(state.grid[i] == eEmpty ? w : 0.0);
     
-}
-int sampledCell = AOSUtils::SampleDiscrete(weights);
+    }
+    int sampledCell = AOSUtils::SampleDiscrete(weights);
     
-state_.grid[sampledCell] = eX;
+    state_.grid[sampledCell] = eX;
     
-state_.isRobotTurn = true;
-    };
+    state_.isRobotTurn = true;
+    
+};
 }
 
 void Iros::ModuleDynamicModel(const IrosState &state, const IrosState &state_, IrosState &state__, double rand_num, int actionId, double &__reward, OBS_TYPE &observation, const int &__moduleExecutionTime, const bool &__meetPrecondition) const
@@ -485,20 +513,6 @@ void Iros::ModuleDynamicModel(const IrosState &state, const IrosState &state_, I
     observation = default_moduleResponse;
     std::string __moduleResponseStr = "NoStrResponse";
     OBS_TYPE &__moduleResponse = observation;
-    if(actType == draw_in_cellAction)
-    {
-        Draw_in_cellActionDescription act = *(static_cast<Draw_in_cellActionDescription *>(ActionManager::actions[actionId]));
-        int &oCellP = act.oCellP;
-        bool success = oCellP != 4 || AOSUtils::Bernoulli(0.5);
-        
-state__.grid[oCellP] = state__.grid[oCellP] == eEmpty && success ? eO : state__.grid[oCellP];
-        
-state__.isRobotTurn=!state.isRobotTurn;
-        
-__moduleResponse= success ? draw_in_cell_res_success : draw_in_cell_res_failed;
-        
-__reward = 0;
-    }
     if(actType == detect_board_stateAction)
     {
         state__.isRobotTurn=!state.isRobotTurn;
@@ -512,6 +526,19 @@ for(int i=0;
    __moduleResponseStr[i] = state__.grid[i] == eX ? 'X' : state__.grid[i] == eO ? 'O' : '?';
         
 }
+__reward = 0;
+    }
+    if(actType == draw_in_cellAction)
+    {
+        Draw_in_cellActionDescription act = *(static_cast<Draw_in_cellActionDescription *>(ActionManager::actions[actionId]));
+        int &oCellP = act.oCellP;
+        if(state.isRobotTurn){
+state__.grid[oCellP] = state__.grid[oCellP] == eEmpty ? eO : state__.grid[oCellP];
+        
+state__.isRobotTurn=!state.isRobotTurn;
+        }
+__moduleResponse= draw_in_cell_res_success;
+        
 __reward = 0;
     }
     if(__moduleResponseStr != "NoStrResponse")
@@ -574,7 +601,7 @@ __isGoalState |= !std::any_of(state.grid.cbegin(), state.grid.cend(), [&](int ce
 
 std::string Iros::PrintObs(int action, OBS_TYPE obs) const 
 {
-	return Prints::PrintObs(action, obs);
+	return Prints::PrintObs(obs);
 }
 
 std::string Iros::PrintStateStr(const State &state) const { return ""; };

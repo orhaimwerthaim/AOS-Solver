@@ -41,6 +41,7 @@ class BeliefStateVariables
  */
 class State: public MemoryObject {
 public:
+    static std::hash<std::string> hasher;
 	int state_id;
 	int scenario_id;
 	double weight;
@@ -48,6 +49,7 @@ public:
 	State();
 	State(int _state_id, double weight);
 	virtual ~State();
+	static int GetStateHash(State s);
 
 	friend std::ostream& operator<<(std::ostream& os, const State& state);
 

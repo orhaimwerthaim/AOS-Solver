@@ -7,6 +7,11 @@
 #include <despot/util/util.h>
 #include <despot/model_primitives/iros/enum_map_iros.h>
 #include <unistd.h>
+#include <algorithm>
+#include <cctype> 
+#include <filesystem>
+namespace fs = std::filesystem;
+using namespace std;
 namespace despot {
 
 /* =============================================================================
@@ -46,11 +51,190 @@ public:
 	double GetRemainingBudget(std::string instance) const;
 };
 
+struct alpha_vector
+{
+	int action;
+	vector<double> values;
+};
+
 struct policy{
+    vector<alpha_vector> vectors;
     std::string policyFile;
     std::string currrentState;
 	std::map<std::string, std::string> obsStrToNum;
 	bool wasInit = false;
+
+    std::map<int, int> state_hash_to_vec_ind;
+
+	int get_best_action_by_alpha_vector(map<int, int> belief_hash_count)
+	{
+		int max_action = -1;
+		int max_value = -99999999;
+		for(alpha_vector vec : vectors)
+		{
+			double value=0;
+			int count = 0;
+			for (auto it = belief_hash_count.cbegin(); it != belief_hash_count.cend() /* not hoisted */; /* no increment */)
+			{  
+				if (state_hash_to_vec_ind.find(it->first) == state_hash_to_vec_ind.end())
+				{
+					belief_hash_count.erase(it++);    // or "it = m.erase(it)" since C++11
+				}
+				else
+				{
+					int ind = state_hash_to_vec_ind[it->first];
+					value += vec.values[ind]*it->second;
+					count += it->second;
+					++it;
+				}
+			}
+			value = count > 0 ? value/(double)count : -99999999;
+			if(value > max_value)
+			{
+				max_value = value;
+				max_action = vec.action;
+			}
+		}
+		return max_action;
+	}
+	
+	std::string find_policy_file()
+	{
+		string best_policy_fname("out.policy");
+		char tmp[256];
+		getcwd(tmp, 256);
+		std::string workingDirPath(tmp);
+		workingDirPath = workingDirPath.substr(0, workingDirPath.find("build"));
+		std::string pathToPoliciesDir(workingDirPath);
+		pathToPoliciesDir.append("sarsop/src");
+		vector<string> files;
+		for (const auto & entry : fs::directory_iterator(pathToPoliciesDir))
+		{
+			string ends_with(".policy");
+			string file_p(entry.path().u8string());
+			if(file_p.size() >= ends_with.size() &&
+					file_p.compare(file_p.size() - ends_with.size(), ends_with.size(), ends_with) == 0)
+					{
+						string fname(file_p.substr(pathToPoliciesDir.size()+1));
+						if(fname == best_policy_fname) return file_p;
+						files.push_back(fname);
+					}
+		}
+		int max_time = -1;
+		string best_nfile;
+		for(string s:files)
+		{
+			if(s.size()>4)
+			{
+				string t(s.substr(4));
+				if(t.find("_") >=0) 
+				{
+					t = t.substr(t.find("_")+1);
+					if(t.find(".") >=0) 
+					{
+						if(t.find(".") >= 0)
+						{
+							t = t.substr(0,t.find("."));
+							int time = stoi(t);
+							if(max_time < time)
+							{
+								max_time=time;
+								best_nfile = s;
+							}
+						}
+					}
+				}
+			}
+		}
+		if(max_time > 0)
+		{
+			pathToPoliciesDir.append("/");
+			string new_fname(pathToPoliciesDir);
+			new_fname.append(best_policy_fname);
+			string bf_path(pathToPoliciesDir);
+			bf_path.append(best_nfile);
+			//std::filesystem::copy(bf_path, new_fname);
+			return bf_path;
+		}
+		throw string("exception ! No sarsop policy found!");
+	} 
+ 
+
+	void load_policy_line(std::string line)
+	{
+		
+		if (line.rfind("<Vector action", 0) != 0) return;
+		else
+		{
+			alpha_vector vec; 
+			std::string str1(line);
+			std::string temp("<Vector action=\"");
+			str1 = str1.substr(temp.size());
+			str1 = str1.substr(0,str1.find("\""));
+			vec.action= stoi(str1);
+			std::string str(line);
+			str = str.substr(str.find(">")+1);
+			str = str.substr(0,str.find("<"));
+
+			std::stringstream sstr(str);
+			std::vector<std::string> s_hashes;
+			int ind = 0;
+			while(sstr.good())
+			{
+				std::string substr;
+				getline(sstr, substr, ' ');
+				std::string s_val = substr.substr(0, substr.find(" "));
+				remove(s_val.begin(), s_val.end(), ' '); 
+				if(s_val.size() > 0)
+				{
+				double value = stod(s_val);
+				vec.values.push_back(value);
+				}
+			}
+			vectors.push_back(vec);
+		}
+	}
+
+	void init_policy_vec()
+	{ 
+		if(wasInit)
+			return;
+		wasInit = true;
+
+		char tmp[256];
+		getcwd(tmp, 256);
+		std::string workingDirPath(tmp);
+		workingDirPath = workingDirPath.substr(0, workingDirPath.find("build"));
+		std::string stateMapFile(workingDirPath);
+		stateMapFile.append("sarsop/src/state_to_hash.txt");
+		std::ifstream ifs1(stateMapFile);
+		std::string state_map( (std::istreambuf_iterator<char>(ifs1) ),
+                       (std::istreambuf_iterator<char>()    ) );
+		std::stringstream sstr(state_map);
+		std::vector<std::string> s_hashes;
+		int ind = 0;
+		while(sstr.good())
+		{
+			std::string substr;
+			getline(sstr, substr, ',');
+			int hash =  stoi(substr.substr(0, substr.find(":")));
+			state_hash_to_vec_ind.insert({hash, ind++});
+		}
+
+
+		std::string policyFilePath(find_policy_file());
+		std::ifstream ifs(policyFilePath);
+		std::string line;
+
+// std::string state_map2( (std::istreambuf_iterator<char>(ifs) ),
+//                        (std::istreambuf_iterator<char>()    ) );
+
+		while (std::getline(ifs, line))
+		{
+			load_policy_line(line);
+		} 
+	}
+
 	void init_policy()
 	{
 		if(wasInit)
@@ -97,39 +281,6 @@ struct policy{
 			obsInd = endObs;
 		}
 	}
-
-	int getCurrentAction()
-    {
-        std::string temp = "\n" + currrentState;
-            int stateInd = policyFile.find(temp.append(" ["));
-            int actStart = policyFile.find("A (", stateInd) + 3;
-            int actEnd = policyFile.find(")", actStart);
-            return stoi(policyFile.substr(actStart, actEnd - actStart)); 
-    }
-
-    void updateStateByObs(std::string obs)
-    {
-		obs=obsStrToNum[obs];
-		std::string temp = "\n" + currrentState;
-		temp.append(" -> ");
-        bool found = false;
-        int stateInd=0;
-        while (stateInd >= 0)
-        {
-            stateInd = policyFile.find(temp,stateInd)+temp.size();
-            if(stateInd < temp.size())
-                throw std::runtime_error("ERROR: action that reach this State does not expect such an observation!");
-            int statrtObs = policyFile.find(" (", stateInd) + 2;
-            int endObs = policyFile.find(")", stateInd);
-
-            std::string curObs = policyFile.substr(statrtObs, endObs-statrtObs);
-            if(curObs == obs)
-            {
-                currrentState = policyFile.substr(stateInd, policyFile.find(" ", stateInd)-stateInd);
-                return;
-            }
-        }
-    } 
 };
 
 

@@ -21,11 +21,9 @@ class ClosedModelPolicy {
         static vector<double> _currentBelief;
         static vector <std::pair<int, vector<double>>> alpha_vectors;
 
-    public:
-        static void loadAlphaVectorsFromPolicyFile();
+    public: 
         static void loadInitialBeliefStateFromVector(vector<double> bs);
-        static void updateBelief(string observation, int action);
-        static int getBestAction();
+        static void updateBelief(string observation, int action); 
                                                      //when the rule is true for any state
         static map<std::string, map<int, map<int, double>>> obsActNState_ObservationModel; //map<observation, map<action,map<nextState, Probability>>>
 

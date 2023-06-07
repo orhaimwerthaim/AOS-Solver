@@ -26,6 +26,8 @@ public:
 	Belief(const DSPOMDP* model);
 	virtual ~Belief();
 
+	virtual std::vector<State*> GetParticles() const;
+
 	virtual std::vector<State*> Sample(int num) const = 0;
 	virtual void Update(int action, OBS_TYPE obs) = 0;
 	virtual void Update(int action, OBS_TYPE obs, std::map<std::string, std::string> localVariablesFromAction){};
@@ -41,6 +43,8 @@ public:
 		History history, int hstart = 0);
 	static std::vector<State*> Resample(int num, const DSPOMDP* model,
 		const StateIndexer* indexer, int action, OBS_TYPE obs);
+
+	
 };
 
 /* =============================================================================
@@ -59,8 +63,9 @@ public:
 	std::vector<State*> particles_;
 	ParticleBelief(std::vector<State*> particles, const DSPOMDP* model,
 		Belief* prior = NULL, bool split = true);
-
+virtual std::vector<State*> GetParticles() const;
 	virtual ~ParticleBelief();
+	
 	void state_indexer(const StateIndexer* indexer);
 
 	virtual const std::vector<State*>& particles() const;
