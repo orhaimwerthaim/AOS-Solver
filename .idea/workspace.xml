@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="d3ecc734-ffa3-409c-97db-b7f7801ea451" name="Changes" comment="adding full sarsop support">
+      <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/examples/cpp_models/iros/CMakeLists.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/examples/cpp_models/iros/Makefile" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/examples/cpp_models/iros/src/closed_model.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/examples/cpp_models/iros/src/closed_model.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/examples/cpp_models/iros/src/globals.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/examples/cpp_models/iros/src/iros.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/examples/cpp_models/iros/src/iros.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/examples/cpp_models/iros/src/main.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/include/despot/config.h" beforeDir="false" afterPath="$PROJECT_DIR$/include/despot/config.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/include/despot/core/pomdp.h" beforeDir="false" afterPath="$PROJECT_DIR$/include/despot/core/pomdp.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/include/despot/evaluator.h" beforeDir="false" afterPath="$PROJECT_DIR$/include/despot/evaluator.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/include/despot/model_primitives/iros/actionManager.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/include/despot/model_primitives/iros/closed_model_policy.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/include/despot/model_primitives/iros/enum_map_iros.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/include/despot/model_primitives/iros/state_var_types.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/include/despot/solver/pomcp.h" beforeDir="false" afterPath="$PROJECT_DIR$/include/despot/solver/pomcp.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/core/mdp.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/core/mdp.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/core/pomdp.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/core/pomdp.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/evaluator.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/evaluator.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/model_primitives/iros/actionManager.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/model_primitives/iros/closed_model_policy.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/model_primitives/iros/enum_map_iros.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/simple_tui.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/simple_tui.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/solver/pomcp.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/solver/pomcp.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/solver/torch_model.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/solver/torch_model.hpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/util/mongoDB_Bridge.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/util/mongoDB_Bridge.cpp" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Merge.Settings">
+    <option name="BRANCH" value="origin/master" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+    <option name="UPDATE_TYPE" value="REBASE" />
+  </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;history&quot;: [
+    {
+      &quot;state&quot;: &quot;MERGED&quot;
+    }
+  ],
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;MERGED&quot;
+  }
+}</component>
+  <component name="GithubPullRequestsUISettings">
+    <option name="selectedUrlAndAccountId">
+      <UrlAndAccount>
+        <option name="accountId" value="81039d40-4bb2-4651-9124-71ebc573b411" />
+        <option name="url" value="https://github.com/orhaimwerthaim/AOS-Solver.git" />
+      </UrlAndAccount>
+    </option>
+  </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
+  </component>
+  <component name="ProjectId" id="2NYrZHjNbElU3kni280QWulNOKf" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "WebServerToolWindowFactoryState": "false",
+    "last_opened_file_path": "/home/or/AOS/AOS-WebAPI",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "vue.rearranger.settings.migration": "true"
+  }
+}]]></component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="d3ecc734-ffa3-409c-97db-b7f7801ea451" name="Changes" comment="" />
+      <created>1679851910472</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1679851910472</updated>
+      <workItem from="1679851911577" duration="387000" />
+      <workItem from="1681992003325" duration="1160000" />
+      <workItem from="1682236263172" duration="599000" />
+      <workItem from="1682336115891" duration="1000" />
+      <workItem from="1686128787207" duration="61000" />
+      <workItem from="1686128848855" duration="748000" />
+      <workItem from="1686129608232" duration="1119000" />
+      <workItem from="1686131226995" duration="4179000" />
+      <workItem from="1686565620451" duration="44000" />
+      <workItem from="1687187197345" duration="26000" />
+      <workItem from="1687252619653" duration="125000" />
+      <workItem from="1688294070134" duration="151000" />
+    </task>
+    <task id="LOCAL-00001" summary="adding torch support">
+      <created>1679852207519</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1679852207519</updated>
+    </task>
+    <task id="LOCAL-00002" summary="adding torch support">
+      <created>1681992562507</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1681992562507</updated>
+    </task>
+    <task id="LOCAL-00003" summary="adding full sarsop support">
+      <created>1686128964620</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1686128964620</updated>
+    </task>
+    <task id="LOCAL-00004" summary="adding full sarsop support">
+      <created>1686137777709</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1686137777710</updated>
+    </task>
+    <task id="LOCAL-00005" summary="adding full sarsop support">
+      <created>1686137796130</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1686137796130</updated>
+    </task>
+    <task id="LOCAL-00006" summary="adding full sarsop support">
+      <created>1686138339674</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1686138339674</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State>
+              <option name="FILTERS">
+                <map>
+                  <entry key="branch">
+                    <value>
+                      <list>
+                        <option value="master" />
+                      </list>
+                    </value>
+                  </entry>
+                </map>
+              </option>
+            </State>
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="adding torch support" />
+    <MESSAGE value="adding full sarsop support" />
+    <option name="LAST_COMMIT_MESSAGE" value="adding full sarsop support" />
+  </component>
+</project>

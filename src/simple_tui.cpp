@@ -1,6 +1,6 @@
 #include <despot/simple_tui.h>
-#include <despot/model_primitives/iros/enum_map_iros.h> 
-#include <despot/model_primitives/iros/actionManager.h> 
+#include <despot/model_primitives/collect_toys/enum_map_collect_toys.h> 
+#include <despot/model_primitives/collect_toys/actionManager.h> 
 using namespace std;
 
 namespace despot {
@@ -105,7 +105,7 @@ Solver *SimpleTUI::InitializeSolver(DSPOMDP *model, string solver_type,
     ScenarioLowerBound *lower_bound =
         model->CreateScenarioLowerBound(lbtype, blbtype);
 
-    logi << "Created lower bound " << typeid(*lower_bound).name() << endl;
+    //logi << "Created lower bound " << typeid(*lower_bound).name() << endl;
 
     if (solver_type == "DESPOT") {
       string bubtype = options[E_BUBTYPE] ? options[E_BUBTYPE].arg : "DEFAULT";
@@ -113,7 +113,7 @@ Solver *SimpleTUI::InitializeSolver(DSPOMDP *model, string solver_type,
       ScenarioUpperBound *upper_bound =
           model->CreateScenarioUpperBound(ubtype, bubtype);
 
-      logi << "Created upper bound " << typeid(*upper_bound).name() << endl;
+      //logi << "Created upper bound " << typeid(*upper_bound).name() << endl;
 
       solver = new DESPOT(model, lower_bound, upper_bound);
     } else
@@ -124,14 +124,14 @@ Solver *SimpleTUI::InitializeSolver(DSPOMDP *model, string solver_type,
     BeliefLowerBound *lower_bound =
         static_cast<BeliefMDP *>(model)->CreateBeliefLowerBound(lbtype);
 
-    logi << "Created lower bound " << typeid(*lower_bound).name() << endl;
+    //logi << "Created lower bound " << typeid(*lower_bound).name() << endl;
 
     if (solver_type == "AEMS") {
       string ubtype = options[E_UBTYPE] ? options[E_UBTYPE].arg : "DEFAULT";
       BeliefUpperBound *upper_bound =
           static_cast<BeliefMDP *>(model)->CreateBeliefUpperBound(ubtype);
 
-      logi << "Created upper bound " << typeid(*upper_bound).name() << endl;
+      //logi << "Created upper bound " << typeid(*upper_bound).name() << endl;
 
       solver = new AEMS(model, lower_bound, upper_bound);
     } else
@@ -141,7 +141,7 @@ Solver *SimpleTUI::InitializeSolver(DSPOMDP *model, string solver_type,
     string ptype = options[E_PRIOR] ? options[E_PRIOR].arg : "DEFAULT";
     POMCPPrior *prior = model->CreatePOMCPPrior(ptype);
 
-    logi << "Created POMCP prior " << typeid(*prior).name() << endl;
+    //logi << "Created POMCP prior " << typeid(*prior).name() << endl;
 
     if (options[E_PRUNE]) {
       prior->exploration_constant(Globals::config.pruning_constant);
@@ -325,14 +325,14 @@ void SimpleTUI::RunEvaluator(DSPOMDP *model, Evaluator *simulator,
         break;
 
       double step_end_t = get_time_second();
-      logi << "[main] Time for step: actual / allocated = "
-           << (step_end_t - step_start_t) << " / " << EvalLog::allocated_time
-           << endl;
+      //logi << "[main] Time for step: actual / allocated = "
+        //   << (step_end_t - step_start_t) << " / " << EvalLog::allocated_time
+        //   << endl;
       simulator->UpdateTimePerMove(step_end_t - step_start_t);
-      logi << "[main] Time per move set to " << Globals::config.time_per_move
-           << endl;
-      logi << "[main] Plan time ratio set to " << EvalLog::plan_time_ratio
-           << endl;
+      //logi << "[main] Time per move set to " << Globals::config.time_per_move
+      //     << endl;
+      //logi << "[main] Plan time ratio set to " << EvalLog::plan_time_ratio
+      //     << endl;
     //  default_out << endl;
     }
 
@@ -368,7 +368,7 @@ void SimpleTUI::PrintResult(int num_runs, Evaluator *simulator,
 }
 
 int SimpleTUI::run(int argc, char *argv[]) {
-  enum_map_iros::Init();
+  enum_map_collect_toys::Init();
   
   clock_t main_clock_start = clock();
   EvalLog::curr_inst_start_time = get_time_second();

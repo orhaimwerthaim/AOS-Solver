@@ -4,7 +4,7 @@
 #include <despot/core/pomdp.h>
 #include <despot/core/node.h>
 #include <despot/core/globals.h> 
-#include <despot/model_primitives/iros/actionManager.h>
+#include <despot/model_primitives/collect_toys/actionManager.h>
 namespace despot {
 
 /* =============================================================================
@@ -116,7 +116,7 @@ public:
 	static int UpperBoundAction(const VNode* vnode, double explore_constant, const DSPOMDP* model, Belief* b);
 	static int UpperBoundAction(const VNode* vnode, double explore_constant);
     static double Simulate(State* particle, VNode* root, const DSPOMDP* model,
-		POMCPPrior* prior, std::vector<int>* simulateActionSequence);
+		POMCPPrior* prior, std::vector<int>* simulateActionSequence, bool byMDP);
 
  
 

@@ -6,15 +6,15 @@ set(JSON_BuildTests OFF CACHE INTERNAL "")
 include_directories("/home/or/AOS/AOS-Solver/nlohmann_json")  
 ##################################
 
-add_executable("${PROJECT_NAME}_iros"
+add_executable("${PROJECT_NAME}_collect_toys"
 #src/state_var_types.cpp   
-src/iros.cpp
+src/collect_toys.cpp
 src/main.cpp
-src/closed_model.cpp
+#src/closed_model.cpp
 #src/mongoDB_Bridge.cpp
 )
 
- target_link_libraries("${PROJECT_NAME}_iros"
+ target_link_libraries("${PROJECT_NAME}_collect_toys"
    ${TinyXML_LIBRARIES}
    PRIVATE nlohmann_json::nlohmann_json #adding json
  )
@@ -33,14 +33,14 @@ include_directories("/usr/local/include/libbson-1.0")
 include_directories("/usr/local/lib")
  
 
-target_link_libraries("${PROJECT_NAME}_iros" ${LIBMONGOCXX_LIBRARIES})
-target_link_libraries("${PROJECT_NAME}_iros" ${LIBBSONCXX_LIBRARIES})
+target_link_libraries("${PROJECT_NAME}_collect_toys" ${LIBMONGOCXX_LIBRARIES})
+target_link_libraries("${PROJECT_NAME}_collect_toys" ${LIBBSONCXX_LIBRARIES})
 ##############
 
 
-target_link_libraries("${PROJECT_NAME}_iros"
+target_link_libraries("${PROJECT_NAME}_collect_toys"
   "${PROJECT_NAME}"
 )
-install(TARGETS "${PROJECT_NAME}_iros"
+install(TARGETS "${PROJECT_NAME}_collect_toys"
   RUNTIME DESTINATION "${BINARY_INSTALL_PATH}"
 )

@@ -20,7 +20,7 @@ void MDP::ComputeOptimalPolicyUsingVI() {
 	}
 
 	clock_t start = clock();
-	logi << "[MDP::ComputeOptimalPolicyUsingVI] Computing optimal MDP policy...";
+	//logi << "[MDP::ComputeOptimalPolicyUsingVI] Computing optimal MDP policy...";
 	vector<ValuedAction> next_policy = vector<ValuedAction>(num_states);
 
 	int iter = 0;

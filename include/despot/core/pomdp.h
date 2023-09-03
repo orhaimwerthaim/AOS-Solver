@@ -11,9 +11,9 @@
 #include <despot/util/memorypool.h>
 #include <despot/util/seeds.h>
 #include <despot/util/util.h> 
-#include <despot/model_primitives/iros/enum_map_iros.h> 
-#include <despot/model_primitives/iros/actionManager.h>  
-#include <despot/model_primitives/iros/state_var_types.h>
+#include <despot/model_primitives/collect_toys/enum_map_collect_toys.h> 
+#include <despot/model_primitives/collect_toys/actionManager.h>  
+#include <despot/model_primitives/collect_toys/state_var_types.h>
 #include <vector>
 #include <tuple>
 #include <map>
@@ -65,16 +65,22 @@ public:
 
     bool __isTermianl = false;
     bool OneTimeRewardUsed[1]={true};
-    std::vector<tSymbols> tSymbolsObjects;
-    vector<int> grid;
-    bool isRobotTurn;
+    std::vector<eLocation> eLocationObjects;
+    std::vector<tToy*> tToyObjects;
+    tToy tGreen;
+    bool observed_reward;
+    tToy tBlue;
+    tToy tBlack;
+    tToy tRed;
+    int pickActionsLeft;
+    int robotLocation;
     std::map<std::string, anyValue*> anyValueUpdateDic;
 
 
 	public:
 		static void SetAnyValueLinks(State *state);
 };
-typedef State IrosState;
+typedef State Collect_toysState;
 
 
 /* =============================================================================

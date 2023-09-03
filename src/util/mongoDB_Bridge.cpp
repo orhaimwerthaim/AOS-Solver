@@ -208,7 +208,7 @@ std::map<std::string, std::string> MongoDB_Bridge::WaitForActionResponse(bsoncxx
     while (true)
     {
       double time_elapsed = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::high_resolution_clock::now() - start).count();
-      if(time_elapsed > 60*5)//stop waiting after 15 minutes 
+      if(time_elapsed > 60*35)//stop waiting after 15 minutes 
       {
         std::string msg("Solver terminated. It stopped waiting for manual action after 5 minutes");
         MongoDB_Bridge::AddLog(msg, 4);//FATAL logLevel Info
@@ -221,11 +221,15 @@ std::map<std::string, std::string> MongoDB_Bridge::WaitForActionResponse(bsoncxx
       int actionId = doc["ActionID"].get_int32().value; 
 
       MongoDB_Bridge::manualActionsForSolverCollection.delete_one(filter.view());
+      if(actionId < 0)
+      {
+        exit(0);
+      }
       return actionId;
     }
     std::this_thread::sleep_for(200ms);
     }
-  return -1;
+  exit(0);
 }
 
 bsoncxx::oid MongoDB_Bridge::SendActionToExecution(int actionId, std::string actionName, std::string actionParameters)

@@ -1,0 +1,58 @@
+int tHasher::add(string str)
+    {
+        if(hashed.find(str) != hashed.end()) return hashed[str];
+        else hashed[str] = ++counter;
+        return counter;
+    }
+    bool tHasher::exist(string str)
+    {
+        return hashed.find(str) != hashed.end();
+    }
+    tHasher::tHasher()
+    {
+
+    }
+tHasher AOSUtils::hasher;
+
+
+
+
+if(__moduleResponseStr != "NoStrResponse")
+    {
+        bool exist = AOSUtils::hasher.exist(__moduleResponseStr);
+        int responseHash = (int)AOSUtils::hasher.add(__moduleResponseStr);
+        if(!exist)
+        {
+            enum_map_collect_toys::vecResponseEnumToString[responseHash] = __moduleResponseStr;
+            enum_map_collect_toys::vecStringToResponseEnum[__moduleResponseStr] = responseHash;
+        }
+        __moduleResponse = responseHash;
+    }
+
+
+
+
+
+
+
+
+struct tHasher
+	{
+        int counter=10000;
+		map<string, int> hashed;  
+		int add(string str);
+		bool exist(string str);
+
+		tHasher(); 
+	};
+
+class AOSUtils
+{
+	public:
+	static bool Bernoulli(double);
+    static int SampleDiscrete(vector<float>);
+    static int SampleDiscrete(vector<double>);
+	static std::default_random_engine generator;
+    static std::uniform_real_distribution<float> real_unfirom_dist;
+	static tHasher hasher;
+};

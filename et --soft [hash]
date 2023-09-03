@@ -1,0 +1,221 @@
+[33mcommit 9c5d6d4eea19a721b7f03bed25abb9bf6aa708f0[m[33m ([m[1;36mHEAD -> [m[1;32mmaster[m[33m)[m
+Author: orhaimwerthaim <orhaimwerthaim@gmail.com>
+Date:   Wed Jun 7 12:09:21 2023 +0300
+
+    adding full sarsop support
+
+[33mcommit f25796e2ddef3ca92aaee41ed1a41ab43acd6d49[m
+Author: orhaimwerthaim <orhaimwerthaim@gmail.com>
+Date:   Thu Apr 20 15:09:18 2023 +0300
+
+    adding torch support
+
+[33mcommit 0c897b27222e1810f2776077669f21c1b53de2d1[m
+Author: orhaimwerthaim <orhaimwerthaim@gmail.com>
+Date:   Sun Mar 26 20:36:43 2023 +0300
+
+    adding torch support
+
+[33mcommit 0535c16ef19913b56ad79ed441e05cb87842b455[m
+Author: orhaimwerthaim <orhaimwerthaim@users.noreply.github.com>
+Date:   Thu Oct 6 11:40:40 2022 +0300
+
+    Update BuildSolverWrapper.sh
+
+[33mcommit 3b6dda100b5c82dce1105154aa5f747010cd9f70[m
+Author: orhaimwerthaim <orhaimwerthaim@users.noreply.github.com>
+Date:   Thu Oct 6 11:25:47 2022 +0300
+
+    Create runSolverWrapper.sh
+
+[33mcommit 27cf37a7f3207ecaa24ae52311ad35bd0e4001c3[m
+Author: orhaimwerthaim <orhaimwerthaim@users.noreply.github.com>
+Date:   Mon Sep 12 17:26:20 2022 +0300
+
+    Update belief.h
+
+[33mcommit 3f400aad45585e83c738b75efed4ccf34cc6b6a8[m
+Author: orhaimwerthaim <orhaimwerthaim@gmail.com>
+Date:   Mon Aug 1 17:38:29 2022 +0300
+
+    update compilation instruction
+
+[33mcommit 0a2a27c1068da2148104a8eb06b15cac6a0718a1[m
+Author: orhaimwerthaim <orhaimwerthaim@gmail.com>
+Date:   Mon Aug 1 17:29:07 2022 +0300
+
+    add compile commands
+
+[33mcommit 503d8b78f8eebe5fd1688c4f39ea2e030cf7610c[m
+Author: orhaimwerthaim <orhaimwerthaim@gmail.com>
+Date:   Tue Jun 21 15:55:39 2022 +0300
+
+    adding state given observation
+
+[33mcommit fe2fc96ce956b407fe687ad2b3d7bf648e210a63[m
+Author: orhaimwerthaim <orhaimwerthaim@gmail.com>
+Date:   Sun Jun 19 14:45:08 2022 +0300
+
+    update
+
+[33mcommit 96f321c3c8612145cc3db8b071d3b978b173fc48[m
+Author: orhaimwerthaim <orhaimwerthaim@gmail.com>
+Date:   Thu May 26 19:02:33 2022 +0300
+
+    refactore moving solver states to be the same as ExampleModelStates
+
+[33mcommit e6dde174ffc14ff57ecd955957626e091bbe4d27[m
+Author: orhaimwerthaim <orhaimwerthaim@gmail.com>
+Date:   Thu Apr 7 16:58:55 2022 +0300
+
+    adding the option to work with sarsop alpha vectors, not only graph policy
+
+[33mcommit c7955db04df9b6b69a15daa06ecf9266c6c90f62[m
+Author: orhaimwerthaim <orhaimwerthaim@gmail.com>
+Date:   Tue Apr 5 22:34:40 2022 +0300
+
+    adding closed model functionality. refactored that code
+
+[33mcommit 489f9811d697ce9ef82fc28284673d38817b36b1[m
+Author: orhaimwerthaim <orhaimwerthaim@gmail.com>
+Date:   Mon Apr 4 11:23:40 2022 +0300
+
+    example
+
+[33mcommit 3a4570f16ab3c76771fe1dfc3a6412186a5fc282[m
+Author: orhaimwerthaim <orhaimwerthaim@gmail.com>
+Date:   Mon Apr 4 11:23:12 2022 +0300
+
+    example
+
+[33mcommit a46269b395a3f4f003fca9e2b5b001cc3a61c31d[m
+Author: orhaimwerthaim <orhaimwerthaim@gmail.com>
+Date:   Sun Mar 27 17:29:43 2022 +0300
+
+    adding full sasop support sarsop with initial belief.
+
+[33mcommit 3a6f3e37259da0cf3a67e62751b18dc3c664e979[m[33m ([m[1;33mtag: v1.0.0[m[33m)[m
+Author: orhaimwerthaim <orhaimwerthaim@gmail.com>
+Date:   Thu Feb 10 23:23:24 2022 +0200
+
+    backup
+
+[33mcommit 36da3db59d4292122ddd16c4bc3eb3b88581368f[m
+Author: orhaimwerthaim <orhaimwerthaim@gmail.com>
+Date:   Thu Feb 10 23:23:01 2022 +0200
+
+    a lot of changes :) backup
+
+[33mcommit a178f72dfeb4fad82a69cf8fd538180edf6a311c[m
+Author: orhaimwerthaim <orhaimwerthaim@gmail.com>
+Date:   Sun Sep 19 17:51:40 2021 +0300
+
+    adding the option to load belief state from DB
+
+[33mcommit c08d3f668def63a96945c0ccdfaff622bffd4efc[m
+Author: orhaimwerthaim <orhaimwerthaim@gmail.com>
+Date:   Mon Sep 13 17:58:14 2021 +0300
+
+    adding save belife and response text in internal simulation
+
+[33mcommit e0952827a8eae92f1c02bf599a148760f4dc6cb2[m
+Author: orhaimwerthaim <orhaimwerthaim@gmail.com>
+Date:   Fri Sep 3 01:56:32 2021 +0300
+
+    changing mongoDB_Bridge to kill zombie solver process
+
+[33mcommit d3d7951dd632c780aec6f6f50a0b5e1c7b43c7fc[m
+Author: orhaimwerthaim <orhaimwerthaim@gmail.com>
+Date:   Sun Aug 29 15:56:13 2021 +0300
+
+    adding Solver shutdown control
+
+[33mcommit 24ce59cecbe9608b2678fa9dc2499b4b1280481d[m
+Author: orhaimwerthaim <orhaimwerthaim@gmail.com>
+Date:   Wed Aug 25 17:04:56 2021 +0300
+
+    many fixes and preffered actions
+
+[33mcommit 58ac093f6cd6de18ae53b76558ae626747e90417[m
+Author: orhaimwerthaim <orhaimwerthaim@gmail.com>
+Date:   Wed Aug 25 16:16:03 2021 +0300
+
+    test
+
+[33mcommit 75d9efafab19f67c32b3cb5e2d80ecf770a3b497[m
+Author: orhaimwerthaim <orhaimwerthaim@gmail.com>
+Date:   Wed Aug 25 16:00:51 2021 +0300
+
+    test
+
+[33mcommit 7454c81dae02102e177940f0027c3e8aa3874c7f[m
+Author: orhaimwerthaim <orhaimwerthaim@gmail.com>
+Date:   Sun Aug 22 12:46:43 2021 +0300
+
+    adding econfigurable save belife state
+
+[33mcommit cab18a7216f8b6013baa2f8bdbf91f56dba2ec1d[m
+Author: orhaimwerthaim <orhaimwerthaim@gmail.com>
+Date:   Thu Aug 19 17:31:37 2021 +0300
+
+    starting to save belief state. more work is needed
+
+[33mcommit 8774e1f66532e7ad01680743282ab5d9bd8d3cd4[m
+Author: orhaimwerthaim <orhaimwerthaim@gmail.com>
+Date:   Thu Aug 19 15:57:37 2021 +0300
+
+    some fixes, with some auto generate code
+
+[33mcommit 52e4a5f34e300e8c13af18c5b017f9a2626f8f32[m
+Author: orhaimwerthaim <orhaimwerthaim@gmail.com>
+Date:   Mon Jul 26 13:46:43 2021 +0300
+
+    adding sleep in mongoDB_bridge between moduleResponse to load GlobalVariableAssignments (should be fixed by a transaction)
+
+[33mcommit da7a28ced0cb0ef1871019b173eba13437a2cb99[m
+Author: orhaimwerthaim <orhaimwerthaim@gmail.com>
+Date:   Mon Jul 19 11:22:44 2021 +0300
+
+    temp
+
+[33mcommit 8594bd26e9893717c8f86048adb3b8cc160dd0db[m
+Author: orhaimwerthaim <orhaimwerthaim@gmail.com>
+Date:   Wed Jul 7 18:27:31 2021 +0300
+
+    finished updating state  by ROSmodules, started working on actions with parameters
+
+[33mcommit 5e79fae2a3e6980f7877147f25a58813fc657cee[m
+Author: orhaimwerthaim <orhaimwerthaim@gmail.com>
+Date:   Tue Jul 6 18:17:40 2021 +0300
+
+    need to fix updates of global vars by modules
+
+[33mcommit ab45acaed28ed4bfdc4d898d942b36e10ec2fec3[m
+Author: orhaimwerthaim <orhaimwerthaim@gmail.com>
+Date:   Mon Jul 5 17:17:43 2021 +0300
+
+    adding module response calculation
+
+[33mcommit 30708c313c1d3df5ebd4f97389c7c443c355bddd[m
+Author: orhaimwerthaim <orhaimwerthaim@gmail.com>
+Date:   Mon Jun 28 15:54:08 2021 +0300
+
+    refactor, adding command selected by solver to mongoDB, waiting for ROS response given by mongoDB
+
+[33mcommit 8026f0fe1b69c14e6c51cc6b38d0d888c9c59f40[m
+Author: orhaimwerthaim <orhaimwerthaim@gmail.com>
+Date:   Mon Jun 28 15:53:02 2021 +0300
+
+    refactor, adding commads sent to mongoDB, reading moduleResponse from mongoDB
+
+[33mcommit ba8a519c16d17b04ecc27c7e93477ce57370e81c[m
+Author: orhaimwerthaim <orhaimwerthaim@gmail.com>
+Date:   Sun Jun 27 18:14:09 2021 +0300
+
+    working on ROS-Solver connection
+
+[33mcommit 90679f3b98a547ee2b3517e0a0ff909e5e5f69b4[m
+Author: orhaimwerthaim <orhaimwerthaim@gmail.com>
+Date:   Wed Jun 23 20:36:33 2021 +0300
+
+    first commit

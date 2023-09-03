@@ -37,21 +37,23 @@ struct Config {
 	int limitClosedModelHorizon_stepsAfterGoalDetection;
     bool useSavedSarsopPolicy;
     std::string domainHash;
+	float treePolicyByMdpRate;
+	int rollouts_count;
 	Config() : 
         handsOnDebug(true),
         manualControl(false),
         useSavedSarsopPolicy(false),
         limitClosedModelHorizon_stepsAfterGoalDetection(-1),
         //sarsopTimeLimitInSeconds(60),//not working well in sarsop
-        numOfSamplesPerActionStateWhenLearningTheModel(15),
+        numOfSamplesPerActionStateWhenLearningTheModel(20),
         fixedGraphPolicyDotFilePath("sarsop/src/autoGen.dot"), //the path ../sarsop/src/autoGen.dot because working dir is /build/ so we need go one directory backwards.
         fixedPolicyFilePath("sarsop/src/out.policy"),
 		pomdpFilePath("sarsop/examples/POMDP/auto_generate.pomdp"),
-        solveProblemWithClosedPomdpModel(true),
-        solverId(55),
-		search_depth(11),
-		discount(0.99),
-		domainHash("AC5E6558DCFC07B470B318BCF7451027E3E5A205BAC8688D8285533A6FE0E0C8"),
+        solveProblemWithClosedPomdpModel(false),
+        solverId(17),
+		search_depth(21),
+		discount(0.9999),
+		domainHash("8111B1ED6949F50470429AB56EF6A0EB6AC59A693EC6DEB390B13A9ED93E6E63"),
         root_seed(42),
 		time_per_move(2),
 		num_scenarios(500),
@@ -63,6 +65,8 @@ struct Config {
 		noise(0.1),
         //Off=0,FATAL=1,ERROR=2,WARN=3,INFO=4,DEBUG=5,TRACE=6 
 		verbosity(4),
+        treePolicyByMdpRate(0.5),
+		rollouts_count(200),
 		internalSimulation(true),
         saveBeliefToDB(true)
 		{
