@@ -4,34 +4,14 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="d3ecc734-ffa3-409c-97db-b7f7801ea451" name="Changes" comment="adding full sarsop support">
-      <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/examples/cpp_models/iros/CMakeLists.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/examples/cpp_models/iros/Makefile" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/examples/cpp_models/iros/src/closed_model.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/examples/cpp_models/iros/src/closed_model.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/examples/cpp_models/iros/src/globals.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/examples/cpp_models/iros/src/iros.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/examples/cpp_models/iros/src/iros.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/examples/cpp_models/iros/src/main.cpp" beforeDir="false" />
+    <list default="true" id="d3ecc734-ffa3-409c-97db-b7f7801ea451" name="Changes" comment="check">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/examples/cpp_models/collect_toys/src/collect_toys.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/examples/cpp_models/collect_toys/src/collect_toys.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/include/despot/config.h" beforeDir="false" afterPath="$PROJECT_DIR$/include/despot/config.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/include/despot/core/pomdp.h" beforeDir="false" afterPath="$PROJECT_DIR$/include/despot/core/pomdp.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/include/despot/evaluator.h" beforeDir="false" afterPath="$PROJECT_DIR$/include/despot/evaluator.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/include/despot/model_primitives/iros/actionManager.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/include/despot/model_primitives/iros/closed_model_policy.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/include/despot/model_primitives/iros/enum_map_iros.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/include/despot/model_primitives/iros/state_var_types.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/include/despot/solver/pomcp.h" beforeDir="false" afterPath="$PROJECT_DIR$/include/despot/solver/pomcp.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/core/mdp.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/core/mdp.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/core/pomdp.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/core/pomdp.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/evaluator.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/evaluator.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/model_primitives/iros/actionManager.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/model_primitives/iros/closed_model_policy.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/model_primitives/iros/enum_map_iros.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/simple_tui.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/simple_tui.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/solver/pomcp.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/solver/pomcp.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/include/despot/model_primitives/collect_toys/actionManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/include/despot/model_primitives/collect_toys/actionManager.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/include/despot/model_primitives/collect_toys/enum_map_collect_toys.h" beforeDir="false" afterPath="$PROJECT_DIR$/include/despot/model_primitives/collect_toys/enum_map_collect_toys.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/model_primitives/collect_toys/actionManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/model_primitives/collect_toys/actionManager.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/solver/torch_model.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/solver/torch_model.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/util/mongoDB_Bridge.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/util/mongoDB_Bridge.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -76,7 +56,7 @@
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "WebServerToolWindowFactoryState": "false",
-    "last_opened_file_path": "/home/or/AOS/AOS-WebAPI",
+    "last_opened_file_path": "/home/or/AOS/AOS-Solver",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
@@ -105,6 +85,7 @@
       <workItem from="1687187197345" duration="26000" />
       <workItem from="1687252619653" duration="125000" />
       <workItem from="1688294070134" duration="151000" />
+      <workItem from="1693734670511" duration="673000" />
     </task>
     <task id="LOCAL-00001" summary="adding torch support">
       <created>1679852207519</created>
@@ -148,7 +129,14 @@
       <option name="project" value="LOCAL" />
       <updated>1686138339674</updated>
     </task>
-    <option name="localTasksCounter" value="7" />
+    <task id="LOCAL-00007" summary="check">
+      <created>1693734743124</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1693734743124</updated>
+    </task>
+    <option name="localTasksCounter" value="8" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -180,6 +168,7 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="adding torch support" />
     <MESSAGE value="adding full sarsop support" />
-    <option name="LAST_COMMIT_MESSAGE" value="adding full sarsop support" />
+    <MESSAGE value="check" />
+    <option name="LAST_COMMIT_MESSAGE" value="check" />
   </component>
 </project>

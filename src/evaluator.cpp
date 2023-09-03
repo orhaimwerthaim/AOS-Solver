@@ -1,8 +1,8 @@
 #include <despot/evaluator.h>
 #include <despot/util/mongoDB_Bridge.h>
-#include <despot/model_primitives/collect_toys/enum_map_collect_toys.h>
-#include <despot/model_primitives/collect_toys/actionManager.h> 
-#include <despot/model_primitives/collect_toys/closed_model_policy.h>
+#include <despot/model_primitives/iros/enum_map_iros.h>
+#include <despot/model_primitives/iros/actionManager.h> 
+#include <despot/model_primitives/iros/closed_model_policy.h>
 #include <nlohmann/json.hpp>
 using namespace std;
 
@@ -267,7 +267,7 @@ bool Evaluator::RunStep(int step, int round) {
     logi << endl
 		 << "After:" << endl;
 	model_->PrintState(*state_);
-	logi << endl << "Reward:" << reward << endl <<  "Observation:" << enum_map_collect_toys::vecResponseEnumToString[(Collect_toysResponseModuleAndTempEnums)obs] << endl;
+	logi << endl << "Reward:" << reward << endl <<  "Observation:" << enum_map_iros::vecResponseEnumToString[(IrosResponseModuleAndTempEnums)obs] << endl;
 	end_t = get_time_second();
 	logi << "[RunStep] Time spent in ExecuteAction(): " << (end_t - start_t)
 		<< endl;
@@ -429,7 +429,7 @@ bool POMDPEvaluator::ExecuteAction(int action, double& reward, OBS_TYPE& obs, st
     ActionType acType(actDesc.actionType);
 	std::string actionParameters = actDesc.GetActionParametersJson_ForActionExecution();
 		
-	std::string actionName = enum_map_collect_toys::vecActionTypeEnumToString[acType];
+	std::string actionName = enum_map_iros::vecActionTypeEnumToString[acType];
 	  
 	bsoncxx::oid actionId = MongoDB_Bridge::SendActionToExecution(actDesc.actionId, actionName, actionParameters);
 
@@ -439,7 +439,7 @@ bool POMDPEvaluator::ExecuteAction(int action, double& reward, OBS_TYPE& obs, st
     terminal = model_->Step(*state_, random_num, action, reward, obs);//it is outside the 'if' below since we save the simulated state anyway
 	if(Globals::IsInternalSimulation())
 	{
-		obsStr = enum_map_collect_toys::vecResponseEnumToString[(Collect_toysResponseModuleAndTempEnums)obs];
+		obsStr = enum_map_iros::vecResponseEnumToString[(IrosResponseModuleAndTempEnums)obs];
 		MongoDB_Bridge::SaveInternalActionResponse(actionName, actionId, obsStr);
 		reward_ = reward;
 		total_discounted_reward_ += Globals::Discount(step_) * reward;
@@ -453,7 +453,7 @@ bool POMDPEvaluator::ExecuteAction(int action, double& reward, OBS_TYPE& obs, st
 		obsStr = "";
 		localVariablesFromAction = MongoDB_Bridge::WaitForActionResponse(actionId, obsStr);
 
-		obs = enum_map_collect_toys::vecStringToResponseEnum[obsStr];
+		obs = enum_map_iros::vecStringToResponseEnum[obsStr];
 	}
     return terminal;
 }
