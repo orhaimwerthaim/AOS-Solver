@@ -180,7 +180,7 @@ int MajorityActionPolicy::Action(const vector<State*>& particles,
 
 	for (int i = 0; i < particles.size(); i++) {
 		State* particle = particles[i];
-		int action = policy_.GetAction(*particle);
+		int action = policy_.GetAction(*particle, NULL);
 		frequencies[action] += particle->weight;
 	}
 
@@ -229,7 +229,7 @@ int ModeStatePolicy::Action(const vector<State*>& particles,
 	}
 
 	assert(mode != NULL);
-	return policy_.GetAction(*mode);
+	return policy_.GetAction(*mode,NULL);
 }
 
 /* =============================================================================
@@ -246,7 +246,7 @@ MMAPStatePolicy::MMAPStatePolicy(const DSPOMDP* model,
 
 int MMAPStatePolicy::Action(const vector<State*>& particles,
 	RandomStreams& streams, History& history) const {
-	return policy_.GetAction(*inferencer_.GetMMAP(particles));
+	return policy_.GetAction(*inferencer_.GetMMAP(particles),NULL);
 }
 
 } // namespace despot

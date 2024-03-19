@@ -3,7 +3,7 @@
 #include <despot/util/logging.h>
 #include <iostream>
 #include <fstream>
- #include "torch_model.hpp"
+ 
  
 
 using namespace std;
@@ -18,7 +18,7 @@ POMCPPrior::POMCPPrior(const DSPOMDP* model) :
 	double x = (40 / Globals::config.search_depth) > 1 ? (40 / Globals::config.search_depth) : 1;
 	exploration_constant_ = (model->GetMaxReward() - model->GetMinRewardAction().value) * x;
 }
-
+map<int,int> POMCPPrior::preferred_actions_cache_;
 POMCPPrior::~POMCPPrior() {
 }
 
@@ -34,12 +34,23 @@ const vector<double>& POMCPPrior::weighted_preferred_actions() const {
 	return weighted_preferred_actions_;
 }
 
-int POMCPPrior::GetAction(const State& state) {
-	ComputePreference(state);
+int POMCPPrior::GetAction(const State& state, const DSPOMDP* model) {
+    int stateHash = Prints::GetHash(Prints::PrintState(state));
+    map<int,int>::iterator it = POMCPPrior::preferred_actions_cache_.find(stateHash);
+
+    if ( it != POMCPPrior::preferred_actions_cache_.end() ) {
+        return it->second;
+        }
+
+	ComputePreference(state,model);
+    int action = -1;
 
 	if (weighted_preferred_actions_.size() != 0)
-		return Random::RANDOM.NextCategory(weighted_preferred_actions_);
-
+    {
+		action = Random::RANDOM.NextCategory(weighted_preferred_actions_);
+        POMCPPrior::preferred_actions_cache_.insert({stateHash, action});
+        return action;
+    }
 	if (preferred_actions_.size() != 0)
 		return Random::RANDOM.NextElement(preferred_actions_);
 
@@ -60,8 +71,9 @@ UniformPOMCPPrior::UniformPOMCPPrior(const DSPOMDP* model) :
 UniformPOMCPPrior::~UniformPOMCPPrior() {
 }
 
-void UniformPOMCPPrior::ComputePreference(const State& state) {
+void UniformPOMCPPrior::ComputePreference(const State& state, const DSPOMDP* model) {
 }
+double UniformPOMCPPrior::HeuristicValue(const State& state, const State& prev_state){return 0.0;}
 
 /* =============================================================================
  * POMCP class
@@ -110,65 +122,26 @@ ValuedAction POMCP::Search(double timeout) {
 		float r = (float) std::rand()/RAND_MAX;	
 		bool byMDP = r < Globals::config.treePolicyByMdpRate;;
 		Simulate(particle, root_, model_, prior_, simulatedActionSequence, byMDP);
+        Globals::config.stream_id= Globals::config.stream_id+1 >= Globals::config.total_streams ? 0 
+            : Globals::config.stream_id+1;
+        Globals::config.stream_step=0;
+        num_sims++;
         model_->Free(particle);
         if ((clock() - start_cpu) / CLOCKS_PER_SEC >= timeout) {
 				done = true;
+                cout<<"Number of simulated traces:"<<num_sims << ", Simulated steps:" <<
+                    Globals::config.steps_counter << ", Rollouts:" << Globals::config.rollout_counter<< 
+                    ", heuristic Calcs:" << Globals::config.heuristic_counter<<
+                    ", heuristic cache Calcs:" << Globals::config.heuristic_cache_counter << endl;
+                Globals::config.steps_counter=0;
+                Globals::config.rollout_counter=0;
+                Globals::config.heuristic_counter=0;
 				break;
 			}
-        //New sample END  
-
-        /*  
-		vector<State*> particles = belief_->Sample(1000);
-		for (int i = 0; i < particles.size(); i++) {
-			State* particle = particles[i];
-			//logd << "[POMCP::Search] Starting simulation " << num_sims << endl;
-			Simulate(particle, root_, model_, prior_, simulatedActionSequence);
- 
-			
- 
-			num_sims++;
-			//logd << "[POMCP::Search] " << num_sims << " simulations done" << endl;
-			history_.Truncate(hist_size);
-
-			if ((clock() - start_cpu) / CLOCKS_PER_SEC >= timeout) {
-				done = true;
-				break;
-			}
-		}
-
-		for (int i = 0; i < particles.size(); i++) {
-			model_->Free(particles[i]);
-		}
-
-		if (done)
-			break;
-            */
 	}
 
 	ValuedAction astar = OptimalAction(root_);
-	
-	
-	//TODO::remove only for debug
-	double explore_constant = prior_->exploration_constant();
-	std::cout << "--------------------------------------------------------------SEARCH-ACTION--END---------------------------------------------------------------" << endl;
-	//model_->PrintState(*belief_->Sample(1)[0]);
-	int action = UpperBoundAction(root_, explore_constant, model_, belief_);
-	//untill here
-	
-	
-	// logi << "[POMCP::Search] Search statistics" << endl
-	// 	<< "OptimalAction = " << astar << endl 
-	// 	<< "# Simulations = " << root_->count() << endl
-	// 	<< "Time: CPU / Real = " << ((clock() - start_cpu) / CLOCKS_PER_SEC) << " / " << (get_time_second() - start_real) << endl
-	// 	<< "# active particles = " << model_->NumActiveParticles() << endl
-	// 	<< "Tree size = " << root_->Size() << endl;
-
-	// if (astar.action == -1) {
-	// 	for (int action = 0; action < model_->NumActions(); action++) {
-	// 		cout << "action " << action << ": " << root_->Child(action)->count()
-	// 			<< " " << root_->Child(action)->value() << endl;
-	// 	}
-	// }
+	 
     if(0 > 0)
     {
 	    //std::string dot = POMCP::GenerateDotGraph(root_,0, model_);
@@ -346,43 +319,7 @@ VNode* POMCP::CreateVNode(int depth, const State* state, POMCPPrior* prior,
 
 double POMCP::Simulate(State* particle, RandomStreams& streams, VNode* vnode,
 	const DSPOMDP* model, POMCPPrior* prior) {
-	if (streams.Exhausted())
-		return 0;
-
-	double explore_constant = prior->exploration_constant();
-
-	int action = POMCP::UpperBoundAction(vnode, explore_constant);
-	//logd << *particle << endl;
-	//logd << "depth = " << vnode->depth() << "; action = " << action << "; "
-	//	<< particle->scenario_id << endl;
-
-	double reward;
-	OBS_TYPE obs;
-	bool terminal = model->Step(*particle, streams.Entry(particle->scenario_id),
-		action, reward, obs);
-
-	QNode* qnode = vnode->Child(action);
-	if (!terminal) {
-		prior->Add(action, obs);
-		streams.Advance();
-		map<OBS_TYPE, VNode*>& vnodes = qnode->children();
-		if (vnodes[obs] != NULL) {
-			reward += Globals::Discount()
-				* Simulate(particle, streams, vnodes[obs], model, prior);
-		} else { // Rollout upon encountering a node not in curren tree, then add the node
-			reward += Globals::Discount() 
-        * Rollout(particle, streams, vnode->depth() + 1, model, prior);
-			vnodes[obs] = CreateVNode(vnode->depth() + 1, particle, prior,
-				model);
-		}
-		streams.Back();
-		prior->PopLast();
-	}
-
-	qnode->Add(reward);
-	vnode->Add(reward);
-
-	return reward;
+	return 0;
 }
 
 // static
@@ -398,7 +335,7 @@ double POMCP::Simulate(State* particle, VNode* vnode, const DSPOMDP* model,
 	
 	if(byMDP)
 	{
-		action = torch_model::getActionFromNN(particle); 		
+		action = prior->GetAction(*particle, model);		
     } 
 	double reward;
 	OBS_TYPE obs;
@@ -417,14 +354,15 @@ double POMCP::Simulate(State* particle, VNode* vnode, const DSPOMDP* model,
                 vnodes[obs] = CreateVNode(vnode->depth() + 1, particle, prior,
                     model);
                 reward += Globals::Discount()
-                    * Rollout(particle, vnode->depth() + 1, model, prior,simulateActionSequence);
+* Rollout(particle, vnode->depth() + 1, model, prior,simulateActionSequence);
+ 
             }
             prior->PopLast();
 		}
 		else
 		{
 			reward += Globals::Discount()
-					* Rollout(particle, vnode->depth() + 1, model, prior,simulateActionSequence);
+* Rollout(particle, vnode->depth() + 1, model, prior,simulateActionSequence);					
 		}
 	}
 
@@ -437,43 +375,23 @@ double POMCP::Simulate(State* particle, VNode* vnode, const DSPOMDP* model,
 // static
 double POMCP::Rollout(State* particle, RandomStreams& streams, int depth,
 	const DSPOMDP* model, POMCPPrior* prior) {
-	if (streams.Exhausted()) {
-		return 0;
-	}
-
-	int action = prior->GetAction(*particle);
-
-	//logd << *particle << endl;
-	//logd << "depth = " << depth << "; action = " << action << endl;
-
-	double reward;
-	OBS_TYPE obs;
-	bool terminal = model->Step(*particle, streams.Entry(particle->scenario_id),
-		action, reward, obs);
-	if (!terminal) {
-		prior->Add(action, obs);
-		streams.Advance();
-		reward += Globals::Discount()
-			* Rollout(particle, streams, depth + 1, model, prior);
-		streams.Back();
-		prior->PopLast();
-	}
-
-	return reward;
+	return 0;
 }
 
 // static
 double POMCP::Rollout(State* particle, int depth, const DSPOMDP* model,
 	POMCPPrior* prior, std::vector<int>* simulateActionSequence) {
+    Globals::config.rollout_counter++;
 	if (depth >= Globals::config.search_depth) {
-		return 0;
+
+return 0; 
 	}
 
-	//int action = prior->GetAction(*particle);
+	//int action = prior->GetAction(*particle, model);
 	
 	
     
-        int action = torch_model::getActionFromNN(particle); 
+        int action = simulateActionSequence && simulateActionSequence->size() > depth ? (*simulateActionSequence)[depth] : prior->GetAction(*particle, model);
         
 	double reward;
 	OBS_TYPE obs;
@@ -506,7 +424,7 @@ ValuedAction POMCP::Evaluate(VNode* root, vector<State*>& particles,
 		while (!streams.Exhausted()) {
 			int action =
 				(cur != NULL) ?
-					UpperBoundAction(cur, 0) : prior->GetAction(*particle);
+					UpperBoundAction(cur, 0) : prior->GetAction(*particle, model);
 
 			double reward;
 			OBS_TYPE obs;
@@ -561,33 +479,7 @@ void DPOMCP::belief(Belief* b) {
 }
 
 ValuedAction DPOMCP::Search(double timeout) {
-	double start_cpu = clock(), start_real = get_time_second();
-
-	vector<State*> particles = belief_->Sample(Globals::config.num_scenarios);
-
-	RandomStreams streams(Globals::config.num_scenarios,
-		Globals::config.search_depth);
-
-	root_ = ConstructTree(particles, streams, model_, prior_, history_,
-		timeout);
-
-	for (int i = 0; i < particles.size(); i++)
-		model_->Free(particles[i]);
-
-	//logi << "[DPOMCP::Search] Time: CPU / Real = "
-	//	<< ((clock() - start_cpu) / CLOCKS_PER_SEC) << " / "
-	//	<< (get_time_second() - start_real) << endl << "Tree size = "
-	//	<< root_->Size() << endl;
-
-	ValuedAction astar = OptimalAction(root_);
-	if (astar.action == -1) {
-		for (int action = 0; action < model_->NumActions(); action++) {
-			cout << "action " << action << ": " << root_->Child(action)->count()
-				<< " " << root_->Child(action)->value() << endl;
-		}
-	}
-
-	delete root_;
+	ValuedAction astar;
 	return astar;
 }
 

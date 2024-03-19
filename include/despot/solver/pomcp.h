@@ -4,7 +4,7 @@
 #include <despot/core/pomdp.h>
 #include <despot/core/node.h>
 #include <despot/core/globals.h> 
-#include <despot/model_primitives/iros/actionManager.h>
+#include <despot/model_primitives/example/actionManager.h>
 namespace despot {
 
 /* =============================================================================
@@ -24,6 +24,8 @@ protected:
 public:
 	POMCPPrior(const DSPOMDP* model);
 	virtual ~POMCPPrior();
+
+    static map<int,int> preferred_actions_cache_;
 
 	inline void exploration_constant(double constant) {
 		exploration_constant_ = constant;
@@ -61,13 +63,13 @@ public:
 		history_.Truncate(0);
 	}
 
-	virtual void ComputePreference(const State& state) = 0;
-
+	virtual void ComputePreference(const State& state, const DSPOMDP* model) = 0; 
+    virtual double HeuristicValue(const State& state, const State& prev_state) = 0;
 	const std::vector<int>& preferred_actions() const;
 	const std::vector<int>& legal_actions() const;
     const std::vector<double>& weighted_preferred_actions() const;
 
-	int GetAction(const State& state);
+	int GetAction(const State& state, const DSPOMDP* model);
 };
 
 /* =============================================================================
@@ -79,7 +81,8 @@ public:
 	UniformPOMCPPrior(const DSPOMDP* model);
 	virtual ~UniformPOMCPPrior();
 
-	void ComputePreference(const State& state);
+	void ComputePreference(const State& state, const DSPOMDP* model);
+    double HeuristicValue(const State& state, const State& prev_state);
 };
 
 /* =============================================================================

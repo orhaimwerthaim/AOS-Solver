@@ -725,7 +725,7 @@ ValuedAction DESPOT::Evaluate(VNode* root, vector<State*>& particles,
 		while (!streams.Exhausted()) {
 			int action =
 				(cur != NULL) ?
-					OptimalAction(cur).action : prior->GetAction(*copy);
+					OptimalAction(cur).action : prior->GetAction(*copy,NULL);
 
 			assert(action != -1);
 

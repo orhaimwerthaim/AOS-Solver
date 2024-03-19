@@ -11,9 +11,9 @@
 #include <despot/util/memorypool.h>
 #include <despot/util/seeds.h>
 #include <despot/util/util.h> 
-#include <despot/model_primitives/iros/enum_map_iros.h> 
-#include <despot/model_primitives/iros/actionManager.h>  
-#include <despot/model_primitives/iros/state_var_types.h>
+#include <despot/model_primitives/example/enum_map_example.h> 
+#include <despot/model_primitives/example/actionManager.h>  
+#include <despot/model_primitives/example/state_var_types.h>
 #include <vector>
 #include <tuple>
 #include <map>
@@ -64,17 +64,24 @@ public:
 	}
 
     bool __isTermianl = false;
-    bool OneTimeRewardUsed[9]={true,true,true,true,true,true,true,true,true};
-    std::vector<tSymbols> tSymbolsObjects;
-    vector<int> grid;
-    bool isRobotTurn;
+    bool OneTimeRewardUsed[2]={true,true};
+    std::vector<tLocation*> tLocationObjects;
+    std::vector<tVisitedLocation*> tVisitedLocationObjects;
+    std::map<std::string, tLocation> tLocationObjectsForActions;
+    tLocation robotLocation;
+    tVisitedLocation v1;
+    tVisitedLocation v2;
+    tVisitedLocation v3;
+    tLocation l1;
+    tLocation l2;
+    tLocation l3;
     std::map<std::string, anyValue*> anyValueUpdateDic;
 
 
 	public:
 		static void SetAnyValueLinks(State *state);
 };
-typedef State IrosState;
+typedef State ExampleState;
 
 
 /* =============================================================================
@@ -101,7 +108,7 @@ public:
 class StatePolicy {
 public:
 	virtual ~StatePolicy();
-	virtual int GetAction(const State& state) const = 0;
+	virtual int GetAction(const State& state, const DSPOMDP* model) const = 0;
 };
 
 /* =============================================================================

@@ -1,7 +1,7 @@
 #ifndef ACTION_MANAGER_H
 #define ACTION_MANAGER_H
 
-#include "enum_map_iros.h" 
+#include "enum_map_example.h" 
 #include <despot/core/pomdp.h>
 #include "state_var_types.h"
 #include <vector>
@@ -21,31 +21,18 @@ namespace despot {
         
     };
 
-class Detect_board_stateActionDescription: public ActionDescription
+class NavigateActionDescription: public ActionDescription
 {
     public:
-        //Detect_board_stateActionDescription();
+        tLocation oDesiredLocation;
+        std::string strLink_oDesiredLocation;
+        NavigateActionDescription(int _oDesiredLocation_Index);
         virtual void SetActionParametersByState(State *state, std::vector<std::string> indexes);
 
                         
         virtual std::string GetActionParametersJson_ForActionExecution();
         virtual std::string GetActionParametersJson_ForActionRegistration();
-        Detect_board_stateActionDescription(){};
-};
-
-class Draw_in_cellActionDescription: public ActionDescription
-{
-    public:
-        int oCellP;
-        std::string strLink_oCellP;
-        Draw_in_cellActionDescription(int _oCellP_Index);
-        virtual void SetActionParametersByState(State *state, std::vector<std::string> indexes);
-        virtual void SetActionParametersByState(std::tuple<int> parameters);
-
-                        
-        virtual std::string GetActionParametersJson_ForActionExecution();
-        virtual std::string GetActionParametersJson_ForActionRegistration();
-        Draw_in_cellActionDescription(){};
+        NavigateActionDescription(){};
 };
 
 
@@ -60,7 +47,7 @@ public:
 class Prints
 {
 	public:
-    static std::string PrinttSymbols(tSymbols);
+    static int GetHash(string s);
 
 	static std::string PrintActionDescription(ActionDescription*);
     static std::string PrintActionDescription(int actionId);

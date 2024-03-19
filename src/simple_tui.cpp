@@ -1,6 +1,7 @@
 #include <despot/simple_tui.h>
-#include <despot/model_primitives/iros/enum_map_iros.h> 
-#include <despot/model_primitives/iros/actionManager.h> 
+#include <despot/util/mongoDB_Bridge.h>
+#include <despot/model_primitives/example/enum_map_example.h> 
+#include <despot/model_primitives/example/actionManager.h> 
 using namespace std;
 
 namespace despot {
@@ -319,7 +320,17 @@ void SimpleTUI::RunEvaluator(DSPOMDP *model, Evaluator *simulator,
                   << endl;*/
       double step_start_t = get_time_second();
 
-      bool terminal = simulator->RunStep(i, round);
+      bool terminal =false;
+      try
+      {
+        terminal = simulator->RunStep(i, round);
+      }
+      catch(const std::exception& e)
+      { 
+        std::cout << "ERROR: " << e.what() << endl;
+        MongoDB_Bridge::AddLog(e.what(), 1);
+        throw e;
+      }
 
       if (terminal)
         break;
@@ -368,7 +379,7 @@ void SimpleTUI::PrintResult(int num_runs, Evaluator *simulator,
 }
 
 int SimpleTUI::run(int argc, char *argv[]) {
-  enum_map_iros::Init();
+  enum_map_example::Init();
   
   clock_t main_clock_start = clock();
   EvalLog::curr_inst_start_time = get_time_second();

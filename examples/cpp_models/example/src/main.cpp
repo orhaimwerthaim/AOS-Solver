@@ -1,5 +1,5 @@
 #include <despot/simple_tui.h>
-#include "iros.h"
+#include "example.h"
 
 using namespace despot;
 
@@ -9,7 +9,7 @@ public:
   }
 
   DSPOMDP* InitializeModel(option::Option* options) {
-    DSPOMDP* model = new Iros();
+    DSPOMDP* model = new Example();
     return model;
    }
 

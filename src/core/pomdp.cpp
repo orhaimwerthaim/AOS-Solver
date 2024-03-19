@@ -37,11 +37,25 @@ BeliefStateVariables::BeliefStateVariables(vector<State *> bs)
 	   __isTermianl_std = sqrt(__isTermianl_variance);
    }
 
+    tLocation::tLocation()
+    {
+        x = 0.0;
+        y = 0.0;
+        z = 0.0;
+        discrete = -1;
+    }
+
+    tVisitedLocation::tVisitedLocation()
+    {
+        discrete = 1;
+        visited = false;
+    }
 
 
 
 
-		void IrosState::SetAnyValueLinks(IrosState *state)
+
+		void ExampleState::SetAnyValueLinks(ExampleState *state)
 		{
 
 		}

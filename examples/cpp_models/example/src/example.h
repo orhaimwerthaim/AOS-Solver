@@ -1,18 +1,18 @@
 
-#ifndef IROS_H
-#define IROS_H
+#ifndef EXAMPLE_H
+#define EXAMPLE_H
 #include "globals.h"
 #include <despot/core/pomdp.h>
 #include <despot/solver/pomcp.h> 
 #include <random>
 #include <string>
-#include <despot/model_primitives/iros/enum_map_iros.h>  
+#include <despot/model_primitives/example/enum_map_example.h>  
 
 
 namespace despot {
 
 /* ==============================================================================
- * IrosState class
+ * ExampleState class
  * ==============================================================================*/
 
 
@@ -20,12 +20,16 @@ namespace despot {
 class AOSUtils
 {
 	public:
+    static float GetRandom();
+    static vector<vector<float>*> *streams;
 	static bool Bernoulli(double);
     static int SampleDiscrete(vector<float>);
     static int SampleDiscrete(vector<double>);
 	static std::default_random_engine generator;
     static std::uniform_real_distribution<float> real_unfirom_dist;
 	static int get_hash(string str);
+    static map<int, double> heuristics_values_cache;
+    static map<int, string> heuristics_values_cache_checker;
 };
  
 
@@ -33,32 +37,32 @@ class AOSUtils
 
 
 /* ==============================================================================
- * Iros and PocmanBelief class
+ * Example and PocmanBelief class
  * ==============================================================================*/
-class Iros;
-class IrosBelief: public ParticleBelief {
+class Example;
+class ExampleBelief: public ParticleBelief {
 	
 public:
-    const Iros* iros_;
+    const Example* example_;
 	static std::string beliefFromDB;
 	static int currentInitParticleIndex;
 	static int num_particles; 
-	IrosBelief(std::vector<State*> particles, const DSPOMDP* model, Belief* prior =
+	ExampleBelief(std::vector<State*> particles, const DSPOMDP* model, Belief* prior =
 		NULL);
 	//void Update(int actionId, OBS_TYPE obs);
 	void Update(int actionId, OBS_TYPE obs, std::map<std::string,std::string> localVariablesFromAction);
 };
 
 /* ==============================================================================
- * Iros 
+ * Example 
  * ==============================================================================*/
 /**
  * The implementation is adapted from that included in the POMCP software.
  */
 
-class Iros: public DSPOMDP {
+class Example: public DSPOMDP {
 public:
-    static Iros gen_model;
+    static Example gen_model;
     virtual std::string PrintObs(int action, OBS_TYPE obs) const;
 	virtual std::string PrintStateStr(const State &state) const;
 	virtual std::string GetActionDescription(int) const;
@@ -99,25 +103,25 @@ public:
 	virtual State* Copy(const State* particle) const;
 	virtual void Free(State* particle) const;
 	int NumActiveParticles() const;
- 	static void CheckPreconditions(const IrosState& state, double &reward, bool &meetPrecondition, int actionId);
-    static void ComputePreferredActionValue(const IrosState& state, double &__heuristicValue, int actionId);
+ 	static void CheckPreconditions(const ExampleState& state, double &reward, bool &meetPrecondition, int actionId);
+    static void ComputePreferredActionValue(const ExampleState& state, double &__heuristicValue, int actionId);
      
  
-	Iros(); 
+	Example(); 
 
 
 private:
-	void SampleModuleExecutionTime(const IrosState& state, double rand_num, int actionId, int &moduleExecutionTime) const;
-	void ExtrinsicChangesDynamicModel(const IrosState& initState, IrosState& afterExState, double rand_num, int actionId,
+	void SampleModuleExecutionTime(const ExampleState& state, double rand_num, int actionId, int &moduleExecutionTime) const;
+	void ExtrinsicChangesDynamicModel(const ExampleState& initState, ExampleState& afterExState, double rand_num, int actionId,
 		const int &moduleExecutionTime,  double &reward) const;
-	void ModuleDynamicModel(const IrosState &initState, const IrosState &afterExState, IrosState &nextState, double rand_num, int actionId, double &reward,
+	void ModuleDynamicModel(const ExampleState &initState, const ExampleState &afterExState, ExampleState &nextState, double rand_num, int actionId, double &reward,
 								 OBS_TYPE &observation, const int &moduleExecutionTime, const bool &__meetPrecondition) const;
-	bool ProcessSpecialStates(IrosState &state, double &reward) const;
+	bool ProcessSpecialStates(ExampleState &state, double &reward) const;
 
-	mutable MemoryPool<IrosState> memory_pool_;
+	mutable MemoryPool<ExampleState> memory_pool_;
 	static std::default_random_engine generator;
 
 };
 } // namespace despot
-#endif//IROS_H
+#endif//EXAMPLE_H
  

@@ -51,6 +51,21 @@ int Random::NextCategory(const vector<double>& category_probs) {
 }
 
 int Random::GetCategory(const vector<double>& category_probs, double rand_num) {
+	bool use_max = true;
+	if(use_max)
+	{
+		double max_val = category_probs[0];
+		int max_cat = 0;
+		for(int i=1; i<category_probs.size();i++)
+		{
+			if(category_probs[i] > max_val)
+			{
+				max_val = category_probs[i];
+				max_cat = i;
+			}
+		}
+		return max_cat;
+	}
 	int c = 0;
 	double sum = category_probs[0];
 	while (sum < rand_num) {

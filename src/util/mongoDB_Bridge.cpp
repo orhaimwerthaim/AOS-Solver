@@ -260,6 +260,7 @@ bsoncxx::oid MongoDB_Bridge::SendActionToExecution(int actionId, std::string act
 
 void MongoDB_Bridge::AddLog(std::string logMsg, int logLevel)
 {
+  MongoDB_Bridge::Init();
   std::string logLevelDesc;
   switch (logLevel)
   {

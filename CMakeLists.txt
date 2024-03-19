@@ -27,7 +27,7 @@ include_directories(include)
 set(JSON_BuildTests OFF CACHE INTERNAL "")
 add_subdirectory(nlohmann_json) 
 #add_library("${PROJECT_NAME}" SHARED
-#src/model_primitives/iros/actionManager.cpp #added
+#src/model_primitives/example/actionManager.cpp #added
 #)
 #target_link_libraries("${PROJECT_NAME}" PRIVATE nlohmann_json::nlohmann_json)
 ##################################
@@ -35,9 +35,9 @@ add_subdirectory(nlohmann_json)
 
 
 add_library("${PROJECT_NAME}" SHARED 
-  src/model_primitives/iros/enum_map_iros.cpp #added
-  src/model_primitives/iros/actionManager.cpp #added
-  src/model_primitives/iros/closed_model_policy.cpp #added
+  src/model_primitives/example/enum_map_example.cpp #added
+  src/model_primitives/example/actionManager.cpp #added
+  src/model_primitives/example/closed_model_policy.cpp #added
 
   src/core/belief.cpp
   src/core/globals.cpp
@@ -48,7 +48,7 @@ add_library("${PROJECT_NAME}" SHARED
   src/core/pomdp.cpp
   src/core/solver.cpp
   src/core/upper_bound.cpp
-  
+  src/backward.cpp
   src/evaluator.cpp
   src/pomdpx/parser/function.cpp
   src/pomdpx/parser/parser.cpp
@@ -114,26 +114,12 @@ if(DESPOT_BUILD_EXAMPLES)
   # add_subdirectory(examples/cpp_models/tiger)
 
 
-  add_subdirectory(examples/cpp_models/iros)
- # add_subdirectory(examples/cpp_models/iros_working_toy)
+  add_subdirectory(examples/cpp_models/example)
+ # add_subdirectory(examples/cpp_models/example_working_toy)
 endif()
 
 
 
-    #-----------------TORCH---------------------------------------------------------
-set(CMAKE_PREFIX_PATH "/home/or/AOS/build-pytorch-from-source/pytorch-install")
-find_package(Torch REQUIRED)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TORCH_CXX_FLAGS}")
- 
-target_link_libraries("${PROJECT_NAME}" "${TORCH_LIBRARIES}")
- 
-message(STATUS "Find Torch VERSION: ${Torch_VERSION}")
-add_definitions(-DTORCH_VERSION_MAJOR=${Torch_VERSION_MAJOR})
-add_definitions(-DTORCH_VERSION_MINOR=${Torch_VERSION_MINOR})
-add_definitions(-DTORCH_VERSION_PATCH=${Torch_VERSION_PATCH})
-#--------------------------------------------------------------------------------
-
-    
 
 
 install(TARGETS "${PROJECT_NAME}"

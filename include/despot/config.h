@@ -39,6 +39,13 @@ struct Config {
     std::string domainHash;
 	float treePolicyByMdpRate;
 	int rollouts_count;
+    int steps_counter;
+    int rollout_counter;
+    int heuristic_counter;
+    int heuristic_cache_counter;
+    int stream_id;
+    int stream_step;
+    int total_streams;
 	Config() : 
         handsOnDebug(true),
         manualControl(false),
@@ -50,10 +57,10 @@ struct Config {
         fixedPolicyFilePath("sarsop/src/out.policy"),
 		pomdpFilePath("sarsop/examples/POMDP/auto_generate.pomdp"),
         solveProblemWithClosedPomdpModel(false),
-        solverId(21),
+        solverId(217),
 		search_depth(11),
-		discount(0.99),
-		domainHash("B81C562BCF4F0E2F28025B000370A12A66CC9389915A80402A0F5D37539D578B"),
+		discount(0.97),
+		domainHash("8447D005E99C698DF3DD01C9A623C19036D7DFDDAB13A72A6F6CF75D09DD1396"),
         root_seed(42),
 		time_per_move(2),
 		num_scenarios(500),
@@ -65,10 +72,17 @@ struct Config {
 		noise(0.1),
         //Off=0,FATAL=1,ERROR=2,WARN=3,INFO=4,DEBUG=5,TRACE=6 
 		verbosity(4),
-        treePolicyByMdpRate(0.5),
-		rollouts_count(200),
+        treePolicyByMdpRate(0),
+		rollouts_count(-1),
 		internalSimulation(true),
-        saveBeliefToDB(true)
+        saveBeliefToDB(true),
+        steps_counter(0),
+        rollout_counter(-1),
+        heuristic_counter(0),
+        stream_id(0),
+        stream_step(0),
+        total_streams(100000),
+        heuristic_cache_counter(1)
 		{
 		
 	}

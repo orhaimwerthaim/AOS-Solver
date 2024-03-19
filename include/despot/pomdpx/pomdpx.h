@@ -89,7 +89,7 @@ public:
   std::vector<State*> ApproxInitialParticleSet() const;
 	Belief* InitialBelief(const State* start, std::string type = "DEFAULT") const;
 
-	inline int GetAction(const State& state) const {
+	inline int GetAction(const State& state, const DSPOMDP* model) const {
 		const POMDPXState& pomdpx_state = static_cast<const POMDPXState&>(state);
 		return default_action_[parser_->ComputeIndex(pomdpx_state.vec_id)];
 	}
