@@ -153,7 +153,9 @@ bool VNode::IsLeaf() {
 }
 
 void VNode::Add(double val) {
-	value_ = (value_ * count_ + val) / (count_ + 1);
+	int c = count_ == 0 ? 1 : log2(count_);
+	value_ = (value_ * count_ + val*c) / (count_ + 1*c);
+	//value_ = (value_ * count_ + val) / (count_ + 1);
 	count_++;
 }
 
@@ -357,7 +359,9 @@ double QNode::upper_bound() const {
 }
 
 void QNode::Add(double val) {
-	value_ = (value_ * count_ + val) / (count_ + 1);
+	int c = count_ == 0 ? 1 : log2(count_);
+	value_ = (value_ * count_ + val*c) / (count_ + 1*c);
+	//value_ = (value_ * count_ + val) / (count_ + 1);
 	count_++;
 }
 
